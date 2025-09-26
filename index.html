@@ -427,7 +427,7 @@
         const DATABASE_URL = "https://happp-96438-default-rtdb.firebaseio.com/";
         let countdownInterval;
         let timetableCheckInterval;
-        let isPublicView = false; // New flag for public vs logged-in view
+        let isPublicView = false;
 
         const App = {
             pages: ['loginPage', 'profilePage', 'searchPage', 'friendsPage', 'analyticsPage', 'settingsPage'],
@@ -468,7 +468,7 @@
             App.pages.forEach(pId => {
                 if (App.elements[pId]) App.elements[pId].style.display = 'none';
             });
-            if (App.elements[pageId]) App.elements[pageId].style.display = 'block';
+            if (App.elements[pageId]) App.elements[pId].style.display = 'block';
 
             document.querySelectorAll('.nav-btn').forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.page === pageId);
@@ -506,7 +506,6 @@
             const params = new URLSearchParams(window.location.search);
             const userIdFromUrl = params.get('user');
 
-            // Get references to the card containers for sharing/searching safely
             const shareCard = document.getElementById('share-status-btn') ? document.getElementById('share-status-btn').closest('.card') : null;
             const searchCard = document.getElementById('show-search-btn') ? document.getElementById('show-search-btn').closest('.card') : null;
 
@@ -549,7 +548,6 @@
             renderProfile(data);
             populateSettings(data);
             
-            // Start minute-by-minute timetable check
             await checkTimetableAndApplyStatus(data); 
             timetableCheckInterval = setInterval(async () => {
                 const updatedDataRes = await fetch(`${DATABASE_URL}/users/${App.currentUser.userId}.json`);
@@ -571,44 +569,49 @@
             renderCustomLinks(data.links, document.getElementById('profile-links'));
             renderActionLinks(data);
             
-            // New: Render Personal Details (controlled by privacy)
-            if (isPublicView) {
-                renderPersonalDetails(data);
-            } else {
-                // Logged-in user sees their own info always
-                renderPersonalDetails(data, true); 
-            }
+            // Render Personal Details (check if logged in viewer is a friend)
+            renderPersonalDetails(data);
         }
 
-        async function renderPersonalDetails(profileData, isOwner = false) {
+        async function renderPersonalDetails(profileData) {
             const container = document.getElementById('personal-details-list');
             container.innerHTML = '';
             
-            // If viewing a public profile, we need to check if the viewer is a friend
+            const profileOwnerId = profileData.userId;
+            const isOwner = App.currentUser && App.currentUser.userId === profileOwnerId;
             let isFriend = false;
-            if (isPublicView && App.currentUser) {
-                const friendStatusRes = await fetch(`${DATABASE_URL}/friends/${App.currentUser.userId}/${profileData.userId}.json`);
+            
+            // Only check friendship if we are logged in AND viewing someone else's profile
+            if (App.currentUser && !isOwner) {
+                const friendStatusRes = await fetch(`${DATABASE_URL}/friends/${App.currentUser.userId}/${profileOwnerId}.json`);
                 const friendStatus = await friendStatusRes.json();
                 isFriend = friendStatus === 'accepted';
             }
 
-            const getDetailHTML = (label, value, field) => {
+            const getDetailHTML = (label, value, field, fallback = '🔒 Private') => {
                 const privacyLevel = profileData.privacy ? profileData.privacy[field] : 'public';
                 
-                if (isOwner || privacyLevel === 'public' || (privacyLevel === 'friends' && isFriend)) {
-                    if (value) {
-                        return `<div class="personal-detail-item"><strong>${label}:</strong> ${value}</div>`;
-                    }
-                }
+                if (isOwner) return `<div class="personal-detail-item"><strong>${label}:</strong> ${value || 'N/A'}</div>`;
+                
+                if (privacyLevel === 'public' && value) return `<div class="personal-detail-item"><strong>${label}:</strong> ${value}</div>`;
+
+                if (privacyLevel === 'friends' && isFriend && value) return `<div class="personal-detail-item"><strong>${label}:</strong> ${value}</div>`;
+                
+                if (value) return `<div class="personal-detail-item" style="opacity: 0.6;"><strong>${label}:</strong> ${fallback}</div>`;
+                
                 return '';
             };
             
             let html = '';
             
-            // Email (Only visible if public or if owner/friend)
-            const emailValue = isOwner ? App.currentUser.email : (profileData.privacy?.email === 'public' || isFriend ? profileData.email : '🔒 Private');
-            if (emailValue) {
+            // Email (must be fetched separately if we're not the owner)
+            const emailValue = profileData.email || 'N/A';
+            const emailVisible = isOwner || (profileData.privacy?.email === 'public' || isFriend);
+            
+            if (emailVisible && emailValue !== 'N/A') {
                 html += `<div class="personal-detail-item"><strong>Email:</strong> ${emailValue}</div>`;
+            } else if (!isOwner) {
+                 html += `<div class="personal-detail-item" style="opacity: 0.6;"><strong>Email:</strong> 🔒 Restricted</div>`;
             }
 
             html += getDetailHTML('Phone', profileData.phone, 'phone');
@@ -617,6 +620,7 @@
             
             container.innerHTML = html || '<p class="muted">No public or shared contact details.</p>';
         }
+
 
         function renderActionLinks(data) {
             const container = document.getElementById('profile-action-links');
@@ -719,18 +723,17 @@
             });
         }
 
-        function displayPublicProfile(userId) {
+        async function displayPublicProfile(userId) {
             const fetchAndUpdate = async () => {
                 const userRes = await fetch(`${DATABASE_URL}/users/${userId}.json`);
                 const userData = await userRes.json();
                 
-                // Get email from logins for public display
                 const loginRes = await fetch(`${DATABASE_URL}/logins/${userId}.json`);
                 const loginData = await loginRes.json();
 
                 if (userData && loginData) {
                     userData.userId = userId;
-                    userData.email = loginData.email; // Temporarily add email for privacy check
+                    userData.email = loginData.email; 
                     applyVisuals(userData);
                     renderProfile(userData);
                 }
@@ -782,7 +785,6 @@
             showToast('Status automatically reset to Available.');
         }
 
-        // --- Timetable Logic (omitted for brevity, assume contents are the same as last confirmed working version) ---
         // --- Timetable Logic ---
         function renderTimetableSettings(timetable = []) {
             const container = document.getElementById('timetable-entries-container');
@@ -934,14 +936,12 @@
             for (const fId in friendsData) {
                 const status = friendsData[fId];
                 
-                // Fetch display name from login data
                 const loginRes = await fetch(`${DATABASE_URL}/logins/${fId}.json`);
                 const loginData = await loginRes.json();
                 const displayName = loginData ? loginData.displayName : 'Unknown User';
 
+                // NOTE: 'pending' means fId is pending for *us* (they sent it to us)
                 if (status === 'pending') {
-                    // Check if *we* sent the request (no way to know without another DB lookup, so we assume received for simplicity)
-                    // In a real app, we'd check against a separate /requests_sent node. Here, assume 'pending' means they sent it to us.
                     hasPending = true;
                     pendingList.innerHTML += `
                         <div class="request-item">
@@ -970,7 +970,6 @@
             
             if (action === 'accept') {
                 await fetch(`${DATABASE_URL}/friends/${userId}/${friendId}.json`, { method: 'PUT', body: JSON.stringify('accepted') });
-                // Also update the friend's record
                 await fetch(`${DATABASE_URL}/friends/${friendId}/${userId}.json`, { method: 'PUT', body: JSON.stringify('accepted') });
                 showToast(`Friend request from accepted!`);
             } else if (action === 'reject' || action === 'remove') {
@@ -997,7 +996,6 @@
                 messageEl.textContent = 'You cannot friend yourself.'; return;
             }
 
-            // 1. Check if user exists (via logins)
             const loginRes = await fetch(`${DATABASE_URL}/logins/${friendId}.json`);
             const loginData = await loginRes.json();
             
@@ -1005,440 +1003,23 @@
                 messageEl.textContent = 'User not found.'; return;
             }
             
-            // 2. Check current status
             const currentStatusRes = await fetch(`${DATABASE_URL}/friends/${userId}/${friendId}.json`);
             const currentStatus = await currentStatusRes.json();
             
             if (currentStatus === 'accepted') {
                 messageEl.textContent = `${loginData.displayName} is already your friend.`; return;
             }
+            if (currentStatus === 'pending') {
+                messageEl.textContent = `A request from ${loginData.displayName} is pending your acceptance.`; return;
+            }
 
-            // 3. Send request (Set status to 'pending' on the *recipient's* side)
+            // Send request (Set status to 'pending' on the *recipient's* side)
             await fetch(`${DATABASE_URL}/friends/${friendId}/${userId}.json`, { method: 'PUT', body: JSON.stringify('pending') });
             messageEl.textContent = `Request sent to ${loginData.displayName}.`;
         }
 
 
         // --- Search ---
-        async function handleSearchUsers() {
-            const searchTerm = document.getElementById('user-search-input').value.trim().toLowerCase();
-            const resultsList = document.getElementById('search-results-list');
-            resultsList.innerHTML = '<p class="muted">Searching...</p>';
-            
-            if (searchTerm.length < 2) {
-                resultsList.innerHTML = '<p class="muted">Enter at least 2 characters to search.</p>';
-                return;
-            }
-
-            try {
-                const response = await fetch(`${DATABASE_URL}/users.json`);
-                const allUsersData = await response.json(); 
-                
-                let foundResults = 0;
-                let resultsHTML = '';
-                
-                if (allUsersData) {
-                    for (const userId in allUsersData) {
-                        const user = allUsersData[userId];
-                        const displayName = (user.displayName || '').toLowerCase();
-                        
-                        if (displayName.includes(searchTerm)) {
-                            foundResults++;
-                            const publicUrl = `${window.location.origin}${window.location.pathname}?user=${userId}`;
-
-                            resultsHTML += `
-                                <div class="card" style="padding: 15px; margin-bottom: 10px;">
-                                    <a href="${publicUrl}" style="text-decoration: none; color: var(--text); display: flex; align-items: center; justify-content: space-between;">
-                                        <div>
-                                            <div style="font-size: 1.2rem; font-weight: 600;">${user.status || '❓'} ${user.displayName || 'Unnamed User'}</div>
-                                            <p style="font-size: 0.9rem; margin-top: 4px;">${user.message || 'No message set.'}</p>
-                                    </div>
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path fill-rule="evenodd" d="M16.28 11.47a.75.75 0 0 1 0 1.06l-7.5 7.5a.75.75 0 0 1-1.06-1.06L14.69 12 7.72 5.03a.75.75 0 0 1 1.06-1.06l7.5 7.5Z" clip-rule="evenodd"></path></svg>
-                                </a>
-                            </div>`;
-                        }
-                    }
-                }
-                
-                if (foundResults > 0) {
-                    resultsList.innerHTML = `<strong>${foundResults} user(s) found:</strong><div style="margin-top: 15px;">${resultsHTML}</div>`;
-                } else {
-                    resultsList.innerHTML = '<p class="muted">No users found matching your search term.</p>';
-                }
-
-            } catch (error) {
-                resultsList.innerHTML = '<p class="muted" style="color: #ef4444;">Error fetching user data for search.</p>';
-            }
-        }
-
-        // --- Authentication & Session ---
-        
-        async function handleSignup(e) {
-            e.preventDefault();
-            const email = document.getElementById('signup-email').value.trim();
-            const password = document.getElementById('signup-password').value;
-            const displayName = document.getElementById('signup-name').value.trim();
-            const errorMessage = document.getElementById('error-message');
-            errorMessage.textContent = '';
-            
-            if (!email || !password || !displayName) {
-                errorMessage.textContent = 'All fields are required.'; return;
-            }
-
-            const userId = emailToId(email);
-            const response = await fetch(`${DATABASE_URL}/logins/${userId}.json`);
-            const existingLogin = await response.json();
-
-            if (existingLogin) {
-                errorMessage.textContent = 'An account with this email already exists.'; return;
-            }
-
-            await fetch(`${DATABASE_URL}/logins/${userId}.json`, { method: 'PUT', body: JSON.stringify({ email, password, displayName }) });
-            
-            const initialProfile = {
-                displayName: displayName,
-                theme: 'light',
-                profileAccentColor: '#0ea5e9',
-                status: '🟢',
-                message: 'Ready for the day!',
-                links: [],
-                endTime: null,
-                pfpUrl: null,
-                schedulingLink: null,
-                autoResetStatus: false,
-                timetable: [],
-                phone: '',
-                country: '',
-                school: '',
-                privacy: { email: 'public', phone: 'friends', school: 'public' },
-                updatedAt: new Date().toISOString()
-            };
-            await fetch(`${DATABASE_URL}/users/${userId}.json`, { method: 'PUT', body: JSON.stringify(initialProfile) });
-            
-            await fetch(`${DATABASE_URL}/history/${userId}.json`, { 
-                method: 'POST', 
-                body: JSON.stringify({ 
-                    status: initialProfile.status, 
-                    message: initialProfile.message,
-                    endTime: initialProfile.endTime,
-                    timestamp: initialProfile.updatedAt
-                })
-            });
-
-            App.currentUser = { email, displayName, userId };
-            sessionStorage.setItem('hapUser', JSON.stringify(App.currentUser));
-            App.elements.mainHeader.classList.remove('hidden');
-            setupUserSession();
-        }
-
-        async function handleLogin(e) {
-            e.preventDefault();
-            const email = document.getElementById('login-email').value.trim();
-            const password = document.getElementById('login-password').value;
-            const errorMessage = document.getElementById('error-message');
-            errorMessage.textContent = '';
-            
-            if (!email || !password) {
-                errorMessage.textContent = 'Email and password cannot be empty.'; return;
-            }
-
-            const userId = emailToId(email);
-            const response = await fetch(`${DATABASE_URL}/logins/${userId}.json`);
-            const data = await response.json();
-
-            if (data && data.password === password) {
-                App.currentUser = { email, displayName: data.displayName, userId };
-                sessionStorage.setItem('hapUser', JSON.stringify(App.currentUser));
-                App.elements.mainHeader.classList.remove('hidden');
-                setupUserSession();
-            } else {
-                errorMessage.textContent = 'Invalid email or password.';
-            }
-        }
-        
-        function handleLogout() {
-            sessionStorage.removeItem('hapUser');
-            window.location.href = window.location.origin + window.location.pathname;
-        }
-
-        // --- Settings & Save ---
-        async function handleSaveSettings() {
-            if (!App.currentUser) return;
-            
-            const customLinks = [];
-            for (let i = 0; i < 5; i++) {
-                const label = document.getElementById(`link-label-${i}`).value.trim();
-                const url = document.getElementById(`link-url-${i}`).value.trim();
-                if (label && url) customLinks.push({ label, url });
-            }
-
-            const timeType = document.getElementById('status-time-type').value;
-            let endTime = null;
-
-            if (timeType === 'duration') {
-                const duration = parseInt(document.getElementById('status-duration').value, 10);
-                if (duration > 0) {
-                    endTime = new Date(Date.now() + duration * 60 * 1000).toISOString();
-                }
-            } else if (timeType === 'until') {
-                const timeString = document.getElementById('status-until').value;
-                if (timeString) {
-                    const [hours, minutes] = timeString.split(':').map(Number);
-                    const d = new Date();
-                    d.setHours(hours, minutes, 0, 0);
-                    if (d.getTime() < Date.now()) {
-                        d.setDate(d.getDate() + 1);
-                    }
-                    endTime = d.toISOString();
-                }
-            }
-            
-            const currentPfpUrl = App.currentProfileData ? App.currentProfileData.pfpUrl : null;
-            const currentTimetable = App.currentProfileData ? App.currentProfileData.timetable : [];
-
-            const dataToSave = {
-                displayName: document.getElementById('display-name').value.trim(),
-                theme: document.getElementById('themeSelect').value,
-                profileAccentColor: document.getElementById('accent-color').value,
-                schedulingLink: document.getElementById('scheduling-link').value.trim(),
-                status: document.getElementById('status-emoji').value,
-                message: document.getElementById('status-message').value.trim(),
-                autoResetStatus: document.getElementById('auto-reset').checked,
-                updatedAt: new Date().toISOString(),
-                links: customLinks,
-                endTime: endTime,
-                pfpUrl: currentPfpUrl,
-                timetable: currentTimetable,
-                phone: document.getElementById('phone-number').value.trim(),
-                country: document.getElementById('country').value.trim(),
-                school: document.getElementById('school').value.trim(),
-                privacy: {
-                    email: document.getElementById('privacy-email').value,
-                    phone: document.getElementById('privacy-phone').value,
-                    school: document.getElementById('privacy-school').value,
-                }
-            };
-            
-            const pfpFile = document.getElementById('pfp-upload').files[0];
-            const pfpPreviewEl = document.getElementById('pfp-preview-text');
-
-            if (pfpFile) {
-                const reader = new FileReader();
-                reader.onload = async function(e) {
-                    dataToSave.pfpUrl = e.target.result;
-                    document.getElementById('pfp-upload').value = ''; 
-                    pfpPreviewEl.textContent = 'Image saved.';
-                    await saveAndLogStatus(dataToSave);
-                };
-                reader.readAsDataURL(pfpFile);
-            } else {
-                await saveAndLogStatus(dataToSave);
-            }
-        }
-        
-        async function saveAndLogStatus(dataToSave) {
-            await fetch(`${DATABASE_URL}/users/${App.currentUser.userId}.json`, { method: 'PUT', body: JSON.stringify(dataToSave) });
-            
-            await fetch(`${DATABASE_URL}/history/${App.currentUser.userId}.json`, { 
-                method: 'POST', 
-                body: JSON.stringify({ 
-                    status: dataToSave.status, 
-                    message: dataToSave.message,
-                    endTime: dataToSave.endTime,
-                    timestamp: dataToSave.updatedAt
-                })
-            });
-
-            App.currentProfileData = dataToSave; 
-            applyVisuals(dataToSave);
-            showToast('Settings Saved & Status Updated!');
-            showPage('profilePage');
-            renderProfile(dataToSave);
-        }
-
-        // --- VCard & Share --- (omitted for brevity)
-        function handleVCardDownload() {
-            const user = App.currentUser;
-            if (!user) { showToast('Must be logged in to generate contact card.'); return; }
-
-            const vcard = [
-                'BEGIN:VCARD',
-                'VERSION:3.0',
-                `FN:${user.displayName}`,
-                `EMAIL;TYPE=internet,work:${user.email}`,
-                `UID:${user.userId}`,
-                'END:VCARD'
-            ].join('\n');
-
-            const blob = new Blob([vcard], { type: 'text/vcard;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${user.displayName.replace(/\s/g, '_')}_contact.vcf`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            showToast('Contact Card downloaded!');
-        }
-
-        async function handleShareStatus() {
-            if (!App.currentUser) return;
-            const shareUrl = `${window.location.origin}${window.location.pathname}?user=${App.currentUser.userId}`;
-            const shareData = {
-                title: `${App.currentUser.displayName}'s HAP Status`,
-                text: "Check out my current availability and status!",
-                url: shareUrl,
-            };
-
-            try {
-                if (navigator.share) {
-                    await navigator.share(shareData);
-                } else {
-                    throw new Error('Web Share API not supported');
-                }
-            } catch (err) {
-                navigator.clipboard.writeText(shareUrl).then(() => {
-                    showToast('Profile link copied to clipboard!');
-                }).catch(clipErr => {
-                    showToast('Could not copy link.', 'error');
-                });
-            }
-        }
-
-        // --- Timetable Logic (omitted for brevity) ---
-        function renderTimetableSettings(timetable = []) {
-            const container = document.getElementById('timetable-entries-container');
-            container.innerHTML = '';
-
-            if (!timetable || timetable.length === 0) {
-                container.innerHTML = '<p class="muted" id="no-timetable-message">No scheduled entries yet.</p>';
-                return;
-            }
-
-            timetable.forEach((entry, index) => {
-                const entryDiv = document.createElement('div');
-                entryDiv.className = 'timetable-entry-card';
-                
-                entryDiv.innerHTML = `
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <strong style="font-size: 1rem; color: var(--text);">
-                            ${entry.status} ${entry.message}
-                        </strong>
-                        <button data-index="${index}" class="remove-timetable-btn btn secondary" style="width: auto; padding: 5px 10px; font-size: 0.8rem;">
-                            Remove
-                        </button>
-                    </div>
-                    <p style="margin-top: 5px; color: var(--primary); font-size: 0.9rem;">
-                        ${DAYS_OF_WEEK[entry.day]} ${entry.start} - ${entry.end}
-                    </p>`;
-                
-                container.appendChild(entryDiv);
-            });
-            
-            document.querySelectorAll('.remove-timetable-btn').forEach(btn => {
-                btn.addEventListener('click', handleRemoveTimetableEntry);
-            });
-        }
-
-        function handleAddTimetableEntry() {
-            const day = prompt("Enter Day (0=Sun, 1=Mon, ..., 6=Sat):");
-            if (day === null || isNaN(day) || day < 0 || day > 6) return showToast("Invalid day (Must be 0-6).");
-            
-            const start = prompt("Enter Start Time (HH:MM, e.g., 09:00):");
-            if (!start || !/^\d{2}:\d{2}$/.test(start)) return showToast("Invalid start time format (HH:MM).");
-
-            const end = prompt("Enter End Time (HH:MM, e.g., 17:00):");
-            if (!end || !/^\d{2}:\d{2}$/.test(end)) return showToast("Invalid end time format (HH:MM).");
-
-            const status = document.getElementById('status-emoji').value; 
-            const message = document.getElementById('status-message').value.trim() || 'Scheduled Activity';
-
-            const newEntry = {
-                day: parseInt(day, 10),
-                start: start,
-                end: end,
-                status: status,
-                message: message
-            };
-            
-            const data = App.currentProfileData || { timetable: [] };
-            data.timetable = data.timetable || [];
-            data.timetable.push(newEntry);
-            
-            App.currentProfileData = data; 
-            renderTimetableSettings(data.timetable);
-            showToast("Timetable entry added (Click 'Save' to apply).");
-        }
-
-        function handleRemoveTimetableEntry(e) {
-            const index = parseInt(e.currentTarget.dataset.index, 10);
-            
-            const data = App.currentProfileData || { timetable: [] };
-            data.timetable = data.timetable.filter((_, i) => i !== index); 
-            
-            App.currentProfileData = data; 
-            renderTimetableSettings(data.timetable);
-            showToast("Timetable entry removed (Click 'Save' to apply).");
-        }
-
-        async function checkTimetableAndApplyStatus(data) {
-            if (!App.currentUser || !data || !data.timetable) return;
-            
-            if (data.endTime && new Date(data.endTime).getTime() > Date.now()) return; 
-
-            const now = new Date();
-            const currentDay = now.getDay(); 
-            const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-            
-            let activeSchedule = null;
-
-            for (const entry of data.timetable) {
-                if (entry.day === currentDay && currentTime >= entry.start && currentTime < entry.end) {
-                    activeSchedule = entry;
-                    break;
-                }
-            }
-
-            if (activeSchedule) {
-                if (data.status !== activeSchedule.status || data.message !== activeSchedule.message) {
-                    const [endHour, endMinute] = activeSchedule.end.split(':').map(Number);
-                    
-                    const endTime = new Date(now);
-                    endTime.setHours(endHour, endMinute, 0, 0); 
-                    
-                    if (endTime.getTime() < Date.now()) { 
-                        endTime.setDate(endTime.getDate() + 1);
-                    }
-
-                    const updateData = {
-                        status: activeSchedule.status,
-                        message: activeSchedule.message,
-                        endTime: endTime.toISOString(), 
-                        autoResetStatus: true, 
-                        updatedAt: now.toISOString()
-                    };
-                    
-                    await fetch(`${DATABASE_URL}/users/${App.currentUser.userId}.json`, { 
-                        method: 'PATCH', 
-                        body: JSON.stringify(updateData) 
-                    });
-                    
-                    showToast(`Timetable activated: ${activeSchedule.status} ${activeSchedule.message}`);
-                    setupUserSession(); 
-                }
-            } else {
-                if (data.autoResetStatus && data.endTime) {
-                    const scheduledEndTime = new Date(data.endTime).getTime();
-                    if (Date.now() >= scheduledEndTime) {
-                        resetStatusToDefault(); 
-                    }
-                }
-            }
-        }
-
-
-        // --- Search --- (omitted for brevity)
         async function handleSearchUsers() {
             const searchTerm = document.getElementById('user-search-input').value.trim().toLowerCase();
             const resultsList = document.getElementById('search-results-list');
