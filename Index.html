@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hyper Availability Profile (HAP)</title>
+    <style>
+        /* --- General Styles --- */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f2f5;
+            margin: 0;
+            color: #333;
+        }
+
+        /* --- Container for both views --- */
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 6px R20px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 500px;
+            box-sizing: border-box;
+        }
+
+        h1, h2, h3 {
+            text-align: center;
+            color: #1c1e21;
+        }
+        
+        h1 {
+            margin-bottom: 5px;
+        }
+        
+        h3 {
+            color: #606770;
+            font-weight: normal;
+            margin-top: 0;
+            margin-bottom: 30px;
+        }
+        
+        /* --- Form Styles (Dashboard) --- */
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #606770;
+        }
+        
+        input, select, button {
+            width: 100%;
+            padding: 14px;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+            border: 1px solid #dddfe2;
+            border-radius: 6px;
+            font-size: 1.05em;
+        }
+        
+        input::placeholder {
+            color: #999;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+        
+        button:hover {
+            background-color: #0056b3;
+        }
+        
+        /* --- Generated Link Styles --- */
+        #link-container {
+            margin-top: 25px;
+            padding: 15px;
+            border-radius: 6px;
+            word-wrap: break-word;
+            background-color: #f0f2f5;
+            border: 1px solid #e0e0e0;
+            display: none; /* Hidden by default */
+        }
+        
+        #generated-link {
+            color: #0056b3;
+            font-weight: bold;
+            text-decoration: none;
+        }
+        
+        /* --- Profile Card Styles --- */
+        #profile-card {
+            text-align: center;
+        }
+        
+        #profile-user-id {
+            font-weight: bold;
+            color: #606770;
+            word-wrap: break-word;
+            font-size: 1.5em;
+        }
+        
+        #profile-emoji {
+            font-size: 6em;
+            margin: 20px 0;
+            animation: pop-in 0.5s ease-out;
+        }
+
+        #profile-message {
+            font-size: 1.25em;
+            min-height: 25px;
+            color: #1c1e21;
+        }
+        
+        #profile-timer {
+            margin-top: 25px;
+            font-size: 2em;
+            color: #007bff;
+            font-weight: bold;
+            min-height: 40px;
+        }
+
+        /* --- Utility --- */
+        .hidden {
+            display: none;
+        }
+
+        @keyframes pop-in {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Dashboard View: For setting the status -->
+        <div id="dashboard-view">
+            <h1>Hyper Availability Profile</h1>
+            <h3>Status Link Generator</h3>
+
+            <label for="user-id">Your Unique User ID:</label>
+            <input type="text" id="user-id" placeholder="Create a secret ID, e.g., Kabir-alpha-7">
+            
+            <label for="status-emoji">Status:</label>
+            <select id="status-emoji">
+                <option value="🟢">🟢 Available</option>
+                <option value="🧠">🧠 Deep Work</option>
+                <option value="🚗">🚗 Commuting</option>
+                <option value="☕">☕ On a Break</option>
+                <option value="🔴">🔴 Do Not Disturb</option>
+            </select>
+
+            <label for="status-message">Message:</label>
+            <input type="text" id="status-message" placeholder="e.g., Drafting 2026 Strategy">
+
+            <label for="status-duration">Duration (minutes, 0 for none):</label>
+            <input type="number" id="status-duration" placeholder="e.g., 180">
+            
+            <button id="update-btn">Update Status & Get Link</button>
+            
+            <div id="link-container">
+                <h4>Share this link:</h4>
+                <a href="" id="generated-link" target="_blank"></a>
+            </div>
+        </div>
+
+        <!-- Profile View: The public page for display -->
+        <div id="profile-view" class="hidden">
+            <div id="profile-card">
+                <h2 id="profile-user-id">Loading...</h2>
+                <div id="profile-emoji">❓</div>
+                <p id="profile-message">Fetching status...</p>
+                <div id="profile-timer"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Your provided Firebase Database URL
+        const DATABASE_URL = 'https://happp-96438-default-rtdb.firebaseio.com/';
+
+        // Global variable to hold the timer interval
+        let countdownInterval;
+
+        /**
+         * This is the main function that runs when the page loads.
+         * It checks the URL to decide whether to show the dashboard or a public profile.
+         */
+        function handlePageLoad() {
+            const params = new URLSearchParams(window.location.search);
+            const userIdFromUrl = params.get('user');
+
+            if (userIdFromUrl) {
+                // If a 'user' is in the URL, show the profile view
+                document.getElementById('dashboard-view').classList.add('hidden');
+                document.getElementById('profile-view').classList.remove('hidden');
+                displayProfile(userIdFromUrl);
+            } else {
+                // Otherwise, show the dashboard to set a status
+                document.getElementById('dashboard-view').classList.remove('hidden');
+                document.getElementById('profile-view').classList.add('hidden');
+                setupDashboard();
+            }
+        }
+        
+        /**
+         * Sets up the event listener for the button on the dashboard view.
+         */
+        function setupDashboard() {
+            const updateBtn = document.getElementById('update-btn');
+            
+            updateBtn.addEventListener('click', () => {
+                const userId = document.getElementById('user-id').value.trim();
+                if (!userId) {
+                    alert('Please enter a User ID. This is how you and others will find your status.');
+                    return;
+                }
+
+                // Gather data from the form
+                const statusData = {
+                    status: document.getElementById('status-emoji').value,
+                    message: document.getElementById('status-message').value,
+                    updatedAt: new Date().toISOString()
+                };
+
+                const duration = parseInt(document.getElementById('status-duration').value, 10);
+                if (duration > 0) {
+                    statusData.endTime = new Date(Date.now() + duration * 60 * 1000).toISOString();
+                } else {
+                    statusData.endTime = null;
+                }
+
+                // Construct the full URL to your data location in Firebase
+                const firebaseUrl = `${DATABASE_URL}/users/${userId}.json`;
+                
+                // Use the Fetch API to send a PUT request, which overwrites the data at that location.
+                fetch(firebaseUrl, {
+                    method: 'PUT',
+                    body: JSON.stringify(statusData),
+                    headers: { 'Content-Type': 'application/json' }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Successfully updated status:', data);
+                    generateAndShowLink(userId);
+                })
+                .catch(error => {
+                    console.error('Error updating status:', error);
+                    alert('An error occurred. Could not update status.');
+                });
+            });
+        }
+
+        /**
+         * Generates the sharable link and makes it visible on the dashboard.
+         */
+        function generateAndShowLink(userId) {
+            const linkContainer = document.getElementById('link-container');
+            const generatedLink = document.getElementById('generated-link');
+            
+            const publicUrl = `${window.location.href.split('?')[0]}?user=${encodeURIComponent(userId)}`;
+            
+            generatedLink.href = publicUrl;
+            generatedLink.textContent = publicUrl;
+            linkContainer.style.display = 'block';
+            alert('Status updated! Share the link below.');
+        }
+
+        /**
+         * Fetches and displays a user's profile based on the ID.
+         */
+        function displayProfile(userId) {
+            const firebaseUrl = `${DATABASE_URL}/users/${userId}.json`;
+            const userIdEl = document.getElementById('profile-user-id');
+            const emojiEl = document.getElementById('profile-emoji');
+            const messageEl = document.getElementById('profile-message');
+            const timerEl = document.getElementById('profile-timer');
+
+            userIdEl.textContent = userId;
+
+            const fetchAndUpdate = () => {
+                fetch(firebaseUrl)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data) {
+                            emojiEl.textContent = data.status || '❓';
+                            messageEl.textContent = data.message || 'No status message set.';
+                            updateTimer(data.endTime, timerEl);
+                        } else {
+                            emojiEl.textContent = '🚫';
+                            messageEl.textContent = 'This user profile does not exist.';
+                            if (countdownInterval) clearInterval(countdownInterval);
+                            timerEl.textContent = '';
+                        }
+                    })
+                    .catch(error => console.error("Error fetching data:", error));
+            };
+
+            // Fetch data immediately, and then poll for new data every 10 seconds.
+            fetchAndUpdate(); 
+            setInterval(fetchAndUpdate, 10000); // Polls for changes every 10s
+        }
+
+        /**
+         * Handles the logic for the countdown timer.
+         */
+        function updateTimer(endTimeString, timerEl) {
+            if (countdownInterval) clearInterval(countdownInterval);
+
+            if (!endTimeString) {
+                timerEl.textContent = '';
+                return;
+            }
+
+            const endTime = new Date(endTimeString).getTime();
+
+            countdownInterval = setInterval(() => {
+                const now = new Date().getTime();
+                const distance = endTime - now;
+
+                if (distance < 0) {
+                    clearInterval(countdownInterval);
+                    timerEl.textContent = "Time's up!";
+                    return;
+                }
+
+                const hours = Math.floor(distance / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                // Display as HH:MM:SS if there are hours, otherwise MM:SS
+                if (hours > 0) {
+                    timerEl.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                } else {
+                    timerEl.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                }
+
+            }, 1000);
+        }
+
+        // --- Start the App ---
+        document.addEventListener('DOMContentLoaded', handlePageLoad);
+
+    </script>
+</body>
+</html>
