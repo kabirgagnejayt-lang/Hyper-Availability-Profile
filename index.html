@@ -59,36 +59,39 @@
         p { color: var(--muted); line-height: 1.6; margin: 4px 0; }
         label { display: block; margin-bottom: 8px; font-weight: 500; color: var(--muted); }
 
-        input, select, button { font-size: 1rem; font-family: inherit; }
-        input, select {
+        input[type="text"], input[type="email"], input[type="password"], input[type="url"], input[type="number"], input[type="time"], select, button { font-size: 1rem; font-family: inherit; }
+        input[type="text"], input[type="email"], input[type="password"], input[type="url"], input[type="number"], input[type="time"], select {
             width: 100%; box-sizing: border-box; padding: 12px; border-radius: 8px;
             border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text);
         }
+        input[type="color"] { height: 44px; padding: 0; border: none; background: transparent; cursor: pointer; }
         input:focus, select:focus { outline: 2px solid var(--primary); border-color: var(--primary); }
+        input[type="file"] { padding: 10px; }
 
         .btn {
             background: var(--primary); color: white; border: none; padding: 12px 18px;
             border-radius: 8px; cursor: pointer; font-weight: 600; transition: background-color 0.2s;
             width: 100%; text-align: center; display: inline-flex; justify-content: center; align-items: center; gap: 8px;
         }
-        .btn:hover { opacity: 0.9; }
+        .btn:hover { background-color: var(--primary-dark); }
         .btn.secondary { background: var(--primary-light); color: var(--primary-dark); }
+        .btn.secondary:hover { background-color: var(--primary); color: white; }
         .form-group { margin-bottom: 20px; }
 
         /* --- Page Specific Styles --- */
-        /* Login Page */
-        #loginPage .card { margin-top: 40px; }
-        .auth-tabs { display: flex; margin-bottom: 25px; border-radius: 10px; background: var(--input-bg); padding: 5px; }
-        .tab { flex: 1; padding: 12px; text-align: center; cursor: pointer; border-radius: 8px; font-weight: 500; transition: background-color 0.3s ease; }
-        .tab.active { background-color: var(--primary); color: #fff; }
-        #error-message { color: #ef4444; text-align: center; min-height: 24px; font-weight: bold; margin-top: 15px; }
-        
         /* Profile Page */
         .profile-header { text-align: center; margin-bottom: 30px; }
-        .profile-emoji { font-size: 6rem; line-height: 1; margin: 16px 0; }
+        #profile-pfp {
+            width: 96px; height: 96px; border-radius: 50%; margin: 0 auto 16px auto;
+            background-color: var(--primary-light); background-size: cover; background-position: center;
+            border: 3px solid var(--primary);
+            transition: all 0.3s;
+        }
+        .profile-emoji { font-size: 4rem; line-height: 1; margin: 16px 0; }
         .profile-name { font-size: 2.25rem; font-weight: 700; color: var(--text); margin: 0; }
         .profile-message { font-size: 1.2rem; color: var(--muted); min-height: 28px; }
         .profile-timer { font-size: 2.5rem; color: var(--primary); font-weight: 700; margin-top: 24px; min-height: 40px; }
+        
         .profile-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 30px; }
         .custom-link {
             display: inline-flex; align-items: center; gap: 8px; background: var(--primary-light);
@@ -97,10 +100,21 @@
         }
         .custom-link:hover { background-color: var(--primary); color: #fff; transform: translateY(-2px); }
         .custom-link svg { width: 18px; height: 18px; }
-
+        .action-links-container { 
+            display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 20px;
+        }
+        
         /* Settings Page */
         .link-group { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; margin-bottom: 15px; align-items: center; }
         @media (max-width: 500px) { .link-group { grid-template-columns: 1fr; } }
+        
+        /* Analytics Page */
+        .history-item { padding: 10px 0; border-bottom: 1px dashed var(--border-color); }
+        .history-item:last-child { border-bottom: none; }
+        .history-status { font-weight: 600; color: var(--text); }
+        .history-time { color: var(--primary); font-size: 0.9rem; margin-top: 4px; }
+        .analytics-status-bar { height: 20px; background-color: var(--input-bg); border-radius: 4px; overflow: hidden; margin-top: 10px; }
+        .analytics-status-segment { height: 100%; float: left; transition: width 0.5s ease; }
 
         /* --- Utilities --- */
         .hidden { display: none !important; }
@@ -121,6 +135,10 @@
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5a5.5 5.5 0 0 1 3.096 10.047 9.005 9.005 0 0 1 5.9 8.181.75.75 0 0 1-1.498.07 7.502 7.502 0 0 0-15 0 .75.75 0 0 1-1.498-.07A9.005 9.005 0 0 1 9 12.55a5.5 5.5 0 0 1 3-10.05ZM12 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z"></path></svg>
                 <span>Profile</span>
             </button>
+            <button class="nav-btn" data-page="analyticsPage">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M16.5 7.5a3 3 0 0 0-3-3h-3a3 3 0 0 0-3 3v9a3 3 0 0 0 3 3h3a3 3 0 0 0 3-3v-9Z"></path><path fill-rule="evenodd" d="M12 1.5a.75.75 0 0 1 .75.75v3.25a.75.75 0 0 1-1.5 0V2.25A.75.75 0 0 1 12 1.5ZM4 6.75a.75.75 0 0 0-.75.75v3.25a.75.75 0 0 0 1.5 0V7.5A.75.75 0 0 0 4 6.75ZM20 6.75a.75.75 0 0 0-.75.75v3.25a.75.75 0 0 0 1.5 0V7.5a.75.75 0 0 0-.75-.75ZM4 13.5a.75.75 0 0 0-.75.75v3.25a.75.75 0 0 0 1.5 0V14.25a.75.75 0 0 0-.75-.75ZM20 13.5a.75.75 0 0 0-.75.75v3.25a.75.75 0 0 0 1.5 0V14.25a.75.75 0 0 0-.75-.75Z" clip-rule="evenodd"></path></svg>
+                <span>Analytics</span>
+            </button>
             <button class="nav-btn" data-page="settingsPage">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M11.64 3.023a.75.75 0 0 1 .72 0l1.517.65a.75.75 0 0 0 .841-.252l1.11-1.48A.75.75 0 0 1 17 2.25a.75.75 0 0 1 .633.368l1.11 1.48a.75.75 0 0 0 .84.253l1.518-.65a.75.75 0 0 1 .72 0l1.016.436a.75.75 0 0 1 .45 1.033l-.74 1.385a.75.75 0 0 0 .14.925l1.28.96a.75.75 0 0 1 0 1.302l-1.28.96a.75.75 0 0 0-.14.925l.74 1.385a.75.75 0 0 1-.45 1.033l-1.017.436a.75.75 0 0 1-.72 0l-1.517-.65a.75.75 0 0 0-.84.252l-1.11 1.48A.75.75 0 0 1 17 21.75a.75.75 0 0 1-.633-.368l-1.11-1.48a.75.75 0 0 0-.84-.253l-1.518.65a.75.75 0 0 1-.72 0l-1.016-.436a.75.75 0 0 1-.45-1.033l.74-1.385a.75.75 0 0 0-.14-.925l-1.28-.96a.75.75 0 0 1 0-1.302l1.28-.96a.75.75 0 0 0 .14-.925l-.74-1.385a.75.75 0 0 1 .45-1.033l1.017-.436ZM12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"></path></svg>
                 <span>Settings</span>
@@ -130,7 +148,6 @@
 
     <div class="container">
 
-        <!-- Login/Signup Page -->
         <div id="loginPage" class="page">
             <div class="card">
                 <h1>Hyper Availability</h1>
@@ -156,28 +173,29 @@
             </div>
         </div>
 
-        <!-- Public Profile & User's Main Profile Page -->
         <div id="profilePage" class="page">
             <div class="card profile-header">
-                <div class="profile-emoji" id="profile-emoji">❓</div>
+                <div id="profile-pfp"></div> <div class="profile-emoji" id="profile-emoji">❓</div>
                 <h1 class="profile-name" id="profile-name">Loading...</h1>
                 <p class="profile-message" id="profile-message">Fetching status...</p>
                 <div class="profile-timer" id="profile-timer"></div>
             </div>
+            
+            <div class="card action-links-container" id="profile-action-links">
+                </div>
+
             <div class="card">
-                <h2>Links</h2>
+                <h2>Custom Links</h2>
                 <div class="profile-links" id="profile-links"><p class="muted">No links provided.</p></div>
             </div>
-            <!-- NEW SHARE BUTTON CARD -->
             <div class="card">
-                 <button id="share-status-btn" class="btn">
+                <button id="share-status-btn" class="btn">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M10.5 4.5a.75.75 0 0 0 0 1.5h4.51L7.24 13.76a.75.75 0 0 0 1.06 1.06L16.06 7.06v4.44a.75.75 0 0 0 1.5 0V4.5h-7.06Z"></path><path d="M5.25 3.75A1.5 1.5 0 0 0 3.75 5.25v13.5A1.5 1.5 0 0 0 5.25 20.25h13.5A1.5 1.5 0 0 0 20.25 18.75V12a.75.75 0 0 0-1.5 0v6.75a.25.25 0 0 1-.25.25H5.25a.25.25 0 0 1-.25-.25V5.25a.25.25 0 0 1 .25-.25H12a.75.75 0 0 0 0-1.5H5.25Z"></path></svg>
                     <span>Share Status</span>
                 </button>
             </div>
         </div>
 
-        <!-- Settings Page -->
         <div id="settingsPage" class="page">
             <div class="card">
                 <h2>Profile Settings</h2>
@@ -193,6 +211,24 @@
                     </select>
                 </div>
             </div>
+            
+            <div class="card">
+                <h2>Visuals & Scheduling 🎨</h2>
+                <div class="form-group">
+                    <label for="pfp-upload">Profile Picture (Upload)</label>
+                    <input type="file" id="pfp-upload" accept="image/*">
+                    <p style="margin-top: 8px; font-size: 0.85rem; color: var(--muted);" id="pfp-preview-text">No image selected.</p>
+                </div>
+                <div class="form-group">
+                    <label for="accent-color">Profile Accent Color</label>
+                    <input type="color" id="accent-color" value="#0ea5e9">
+                </div>
+                <div class="form-group">
+                    <label for="scheduling-link">Scheduling Link (e.g., Calendly)</label>
+                    <input type="url" id="scheduling-link" placeholder="https://calendly.com/yourname">
+                </div>
+            </div>
+
             <div class="card">
                 <h2>Update Status</h2>
                 <div class="form-group">
@@ -209,11 +245,36 @@
                     <label for="status-message">Message</label>
                     <input type="text" id="status-message" placeholder="e.g., Drafting 2026 Strategy">
                 </div>
+                
                 <div class="form-group">
+                    <label for="status-time-type">Set Availability</label>
+                    <select id="status-time-type">
+                        <option value="duration">For a Duration (minutes)</option>
+                        <option value="until">Until a Specific Time</option>
+                        <option value="none">No Time Limit</option>
+                    </select>
+                </div>
+                
+                <div class="form-group" id="status-duration-group">
                     <label for="status-duration">Duration (minutes)</label>
-                    <input type="number" id="status-duration" placeholder="e.g., 180 (0 for none)">
+                    <input type="number" id="status-duration" placeholder="e.g., 180">
+                </div>
+                <div class="form-group hidden" id="status-until-group">
+                    <label for="status-until">Until Time (Local Time)</label>
+                    <input type="time" id="status-until">
+                </div>
+                
+                <div class="form-group" style="margin-top: 10px;">
+                    <input type="checkbox" id="auto-reset" style="width: auto;">
+                    <label for="auto-reset" style="display: inline; margin-left: 8px;">Auto-reset status after end time?</label>
                 </div>
             </div>
+
+            <div class="card">
+                <h2>Status Presets (TBD)</h2>
+                <p class="muted">Feature to save/apply common status settings will be built here.</p>
+            </div>
+
             <div class="card">
                 <h2>Custom Links</h2>
                 <div id="custom-links-container"></div>
@@ -221,6 +282,23 @@
             <div class="card">
                 <button id="save-settings-btn" class="btn">Save & Update Status</button>
                 <button id="logout-btn" class="btn secondary" style="margin-top: 12px;">Logout</button>
+            </div>
+        </div>
+        
+        <div id="analyticsPage" class="page">
+            <div class="card">
+                <h2>Availability Trends 📈 (Last 7 Days)</h2>
+                <p>Calculated percentage of time spent in each status.</p>
+                <div id="status-summary" style="margin-top: 20px;">
+                    <p class="muted">Loading summary...</p>
+                </div>
+                <div class="analytics-status-bar" id="analytics-status-bar"></div>
+            </div>
+            <div class="card">
+                <h2>Status History Log (Last 10)</h2>
+                <div id="history-log">
+                    <p class="muted">Loading history...</p>
+                </div>
             </div>
         </div>
     </div>
@@ -233,11 +311,15 @@
         let countdownInterval;
 
         const App = {
-            pages: ['loginPage', 'profilePage', 'settingsPage'],
+            pages: ['loginPage', 'profilePage', 'analyticsPage', 'settingsPage'],
             elements: {},
             currentUser: null,
             svg: {
-                link: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72"></path></svg>`
+                link: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72"></path></svg>`,
+                vcard: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M18 1.5a2.25 2.25 0 0 1 2.25 2.25v16.5A2.25 2.25 0 0 1 18 22.5H6a2.25 2.25 0 0 1-2.25-2.25V3.75A2.25 2.25 0 0 1 6 1.5h12ZM6.75 6A.75.75 0 0 0 6 6.75a.75.75 0 0 0 .75.75h10.5a.75.75 0 0 0 .75-.75.75.75 0 0 0-.75-.75H6.75Z"></path><path d="M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z"></path><path d="M6 16.5a.75.75 0 0 0-.75.75v3.25a.75.75 0 0 0 1.5 0v-3.25a.75.75 0 0 0-.75-.75ZM18 16.5a.75.75 0 0 0-.75.75v3.25a.75.75 0 0 0 1.5 0v-3.25a.75.75 0 0 0-.75-.75Z"></path></svg>`
+            },
+            statusColors: { // For Analytics
+                '🟢': '#10b981', '🧠': '#3b82f6', '🚗': '#f59e0b', '☕': '#ef4444', '🔴': '#ef4444', '❓': '#64748b'
             }
         };
         
@@ -248,6 +330,15 @@
             toast.textContent = message;
             toast.classList.add('show');
             setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+        function getStatusLabel(emoji) {
+            const options = document.getElementById('status-emoji').options;
+            for (let i = 0; i < options.length; i++) {
+                if (options[i].value === emoji) {
+                    return options[i].text.split(' ')[1].trim();
+                }
+            }
+            return 'Unknown';
         }
 
         // --- Navigation & Page Handling ---
@@ -260,12 +351,27 @@
             document.querySelectorAll('.nav-btn').forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.page === pageId);
             });
+            
+            if (pageId === 'analyticsPage') {
+                if (App.currentUser) fetchAndRenderAnalytics();
+            }
             window.scrollTo(0, 0);
         }
         
-        function applyTheme(theme) {
+        function applyVisuals(data) {
+            // 1. Theme
+            const theme = data.theme || 'light';
             document.body.className = theme === 'dark' ? 'dark' : '';
             App.elements.themeSelect.value = theme;
+            
+            // 2. Accent Color
+            const accent = data.profileAccentColor || '#0ea5e9';
+            document.documentElement.style.setProperty('--primary', accent);
+            document.documentElement.style.setProperty('--primary-dark', data.theme === 'dark' ? '#7dd3fc' : accent); // Re-calculate primary-dark for contrast
+
+            // 3. PFP
+            const pfpElement = document.getElementById('profile-pfp');
+            if (pfpElement) pfpElement.style.backgroundImage = data.pfpUrl ? `url(${data.pfpUrl})` : 'none';
         }
 
         // --- Core Application Logic ---
@@ -280,6 +386,7 @@
 
             if (userIdFromUrl) {
                 App.elements.mainHeader.classList.add('hidden');
+                document.getElementById('share-status-btn').closest('.card').classList.add('hidden');
                 showPage('profilePage');
                 displayPublicProfile(userIdFromUrl);
             } else {
@@ -287,6 +394,7 @@
                 if (user) {
                     App.currentUser = user;
                     App.elements.mainHeader.classList.remove('hidden');
+                    document.getElementById('share-status-btn').closest('.card').classList.remove('hidden');
                     setupUserSession();
                 } else {
                     App.elements.mainHeader.classList.add('hidden');
@@ -299,7 +407,7 @@
         async function setupUserSession() {
             const response = await fetch(`${DATABASE_URL}/users/${App.currentUser.userId}.json`);
             const data = await response.json() || {};
-            applyTheme(data.theme || 'light');
+            applyVisuals(data);
             showPage('profilePage');
             renderProfile(data);
             populateSettings(data);
@@ -310,18 +418,77 @@
             document.getElementById('profile-name').textContent = data.displayName || 'Unnamed User';
             document.getElementById('profile-emoji').textContent = data.status || '❓';
             document.getElementById('profile-message').textContent = data.message || 'No message set.';
-            updateTimer(data.endTime, document.getElementById('profile-timer'));
+            
+            // PFP is handled by applyVisuals
+            
+            // Timer/Next Available Time
+            updateTimer(data, document.getElementById('profile-timer'));
+            
+            // Custom Links
             renderCustomLinks(data.links, document.getElementById('profile-links'));
+            
+            // Action Links (Scheduling & VCard)
+            renderActionLinks(data);
+        }
+        
+        function renderActionLinks(data) {
+            const container = document.getElementById('profile-action-links');
+            container.innerHTML = '';
+            
+            if (data.schedulingLink) {
+                container.innerHTML += `
+                    <a href="${data.schedulingLink}" target="_blank" class="btn secondary" style="max-width: 250px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M12 7.5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0v-4.5A.75.75 0 0 1 12 7.5ZM12 18a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z"></path><path fill-rule="evenodd" d="M12 2.25c-5.405 0-9.75 4.345-9.75 9.75s4.345 9.75 9.75 9.75 9.75-4.345 9.75-9.75S17.405 2.25 12 2.25Zm0 1.5a8.25 8.25 0 1 0 0 16.5 8.25 8.25 0 0 0 0-16.5Z" clip-rule="evenodd"></path></svg>
+                        <span>Book a Meeting</span>
+                    </a>`;
+            }
+
+            container.innerHTML += `
+                <button id="download-vcard-btn" class="btn secondary" style="max-width: 250px;">
+                    ${App.svg.vcard}
+                    <span>Get Contact Card</span>
+                </button>`;
         }
 
         function populateSettings(data) {
             document.getElementById('display-name').value = data.displayName || App.currentUser.displayName;
             document.getElementById('themeSelect').value = data.theme || 'light';
+            
+            // Visuals
+            document.getElementById('accent-color').value = data.profileAccentColor || '#0ea5e9';
+            document.getElementById('scheduling-link').value = data.schedulingLink || '';
+            
+            // Status
             document.getElementById('status-emoji').value = data.status || '🟢';
             document.getElementById('status-message').value = data.message || '';
-            const duration = data.endTime ? (new Date(data.endTime).getTime() - Date.now()) / 60000 : 0;
-            document.getElementById('status-duration').value = duration > 0 ? Math.round(duration) : '';
+            document.getElementById('auto-reset').checked = !!data.autoResetStatus;
             
+            // Time setup
+            const durationInput = document.getElementById('status-duration');
+            const untilInput = document.getElementById('status-until');
+            const timeTypeSelect = document.getElementById('status-time-type');
+            
+            if (data.endTime) {
+                const now = Date.now();
+                const endTime = new Date(data.endTime).getTime();
+                const duration = (endTime - now) / 60000;
+                
+                if (duration > 0 && duration < (24 * 60)) { // Assume anything < 24h was set as duration
+                    durationInput.value = Math.round(duration);
+                    timeTypeSelect.value = 'duration';
+                } else if (endTime > now) { // Assume a specific time was set
+                    const d = new Date(data.endTime);
+                    untilInput.value = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+                    timeTypeSelect.value = 'until';
+                }
+            } else {
+                timeTypeSelect.value = 'none';
+            }
+            
+            // Toggle initial visibility based on selection
+            toggleTimeInputs(timeTypeSelect.value);
+
+            // Custom Links
             const linksContainer = document.getElementById('custom-links-container');
             linksContainer.innerHTML = '';
             for (let i = 0; i < 5; i++) {
@@ -336,12 +503,12 @@
         
         function renderCustomLinks(links, container) {
             container.innerHTML = '';
-            if (!links || links.filter(l => l.url).length === 0) {
+            if (!links || links.filter(l => l && l.url).length === 0) {
                 container.innerHTML = '<p class="muted">No links provided.</p>';
                 return;
             }
             links.forEach(link => {
-                if (link.label && link.url) {
+                if (link && link.label && link.url) {
                     container.innerHTML += `
                         <a href="${link.url}" target="_blank" class="custom-link">
                             ${App.svg.link} <span>${link.label}</span>
@@ -355,7 +522,10 @@
                 fetch(`${DATABASE_URL}/users/${userId}.json`)
                     .then(res => res.json())
                     .then(data => {
-                        if (data) renderProfile(data);
+                        if (data) {
+                            applyVisuals(data);
+                            renderProfile(data);
+                        }
                         else document.getElementById('profile-name').textContent = 'User Not Found';
                     });
             };
@@ -363,25 +533,139 @@
             setInterval(fetchAndUpdate, 15000);
         }
         
-        function updateTimer(endTimeString, timerEl) {
+        function updateTimer(data, timerEl) {
             if (countdownInterval) clearInterval(countdownInterval);
-            if (!endTimeString) { timerEl.textContent = ''; return; }
-            const endTime = new Date(endTimeString).getTime();
-            countdownInterval = setInterval(() => {
-                const distance = endTime - Date.now();
-                if (distance < 0) {
-                    clearInterval(countdownInterval);
-                    timerEl.textContent = "Time's up!";
-                    return;
-                }
-                const h = Math.floor(distance / 36e5);
-                const m = Math.floor((distance % 36e5) / 6e4);
-                const s = Math.floor((distance % 6e4) / 1000);
-                timerEl.textContent = h > 0 ? `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}` : `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-            }, 1000);
+            timerEl.textContent = '';
+            
+            if (data.endTime) {
+                const endTime = new Date(data.endTime).getTime();
+                
+                countdownInterval = setInterval(() => {
+                    const distance = endTime - Date.now();
+                    if (distance < 0) {
+                        clearInterval(countdownInterval);
+                        timerEl.textContent = "Time's up! Status expired.";
+                        
+                        // Auto-Reset Logic for the owner (only runs if logged in)
+                        if (App.currentUser && data.autoResetStatus && data.userId === App.currentUser.userId) {
+                            resetStatusToDefault();
+                        }
+                        return;
+                    }
+                    const h = Math.floor(distance / 36e5);
+                    const m = Math.floor((distance % 36e5) / 6e4);
+                    const s = Math.floor((distance % 6e4) / 1000);
+                    timerEl.textContent = `Ends in: ${h > 0 ? `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}` : `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`}`;
+                }, 1000);
+            } else if (data.nextAvailableTime) {
+                // Feature not fully implemented for simplicity, but reserved.
+                timerEl.textContent = `Available: ${new Date(data.nextAvailableTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+            }
         }
         
-        // --- Event Listeners ---
+        async function resetStatusToDefault() {
+            const defaultData = {
+                status: '🟢',
+                message: 'Available again.',
+                endTime: null,
+                autoResetStatus: false, // Reset the flag too
+                updatedAt: new Date().toISOString()
+            };
+            // Use PATCH to update only specific fields
+            await fetch(`${DATABASE_URL}/users/${App.currentUser.userId}.json`, { 
+                method: 'PATCH', 
+                body: JSON.stringify(defaultData) 
+            });
+            setupUserSession(); 
+            showToast('Status automatically reset to Available.');
+        }
+
+        // --- Analytics ---
+        async function fetchAndRenderAnalytics() {
+            const userId = App.currentUser.userId;
+            const userHistoryRes = await fetch(`${DATABASE_URL}/history/${userId}.json`);
+            const historyData = await userHistoryRes.json();
+            
+            const historyLogEl = document.getElementById('history-log');
+            const statusSummaryEl = document.getElementById('status-summary');
+            const statusBarEl = document.getElementById('analytics-status-bar');
+            
+            if (!historyData) {
+                historyLogEl.innerHTML = '<p class="muted">No status history found.</p>';
+                statusSummaryEl.innerHTML = '<p class="muted">No data to summarize.</p>';
+                statusBarEl.innerHTML = '';
+                return;
+            }
+
+            const history = Object.values(historyData).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            const last7Days = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+            const relevantHistory = history.filter(item => item.timestamp > last7Days);
+
+            // 1. Render History Log
+            historyLogEl.innerHTML = '';
+            history.slice(0, 10).forEach(item => {
+                historyLogEl.innerHTML += `
+                    <div class="history-item">
+                        <span class="history-status">${item.status} ${item.message || '(No message)'}</span>
+                        <p class="history-time">${new Date(item.timestamp).toLocaleString()}</p>
+                    </div>`;
+            });
+            
+            // 2. Render Summary & Status Bar
+            let totalTimeMs = 0;
+            const statusDurations = {};
+            
+            for (let i = 0; i < relevantHistory.length - 1; i++) {
+                const current = relevantHistory[i];
+                const next = relevantHistory[i + 1];
+                
+                // Calculate time spent in 'current' status until 'next' status started
+                const durationMs = new Date(next.timestamp).getTime() - new Date(current.timestamp).getTime();
+                
+                // Check if current status has an endTime (i.e., it expired prematurely)
+                if (current.endTime) {
+                    const expiryTime = new Date(current.endTime).getTime();
+                    // Use the earlier of 'next' or 'expiry' as the end time
+                    const effectiveEndMs = Math.min(new Date(next.timestamp).getTime(), expiryTime);
+                    const effectiveDurationMs = effectiveEndMs - new Date(current.timestamp).getTime();
+                    if (effectiveDurationMs > 0) {
+                        statusDurations[current.status] = (statusDurations[current.status] || 0) + effectiveDurationMs;
+                        totalTimeMs += effectiveDurationMs;
+                    }
+                } else {
+                    statusDurations[current.status] = (statusDurations[current.status] || 0) + durationMs;
+                    totalTimeMs += durationMs;
+                }
+            }
+            
+            let summaryHTML = '';
+            let statusBarHTML = '';
+
+            if (totalTimeMs > 0) {
+                Object.keys(statusDurations).sort((a,b) => statusDurations[b] - statusDurations[a]).forEach(status => {
+                    const durationMs = statusDurations[status];
+                    const percentage = (durationMs / totalTimeMs * 100).toFixed(1);
+                    const color = App.statusColors[status] || App.statusColors['❓'];
+                    
+                    summaryHTML += `<p>${status} ${getStatusLabel(status)}: <strong>${percentage}%</strong></p>`;
+                    
+                    statusBarHTML += `<div class="analytics-status-segment" style="width: ${percentage}%; background-color: ${color};" title="${status} ${percentage}%"></div>`;
+                });
+            } else {
+                summaryHTML = '<p class="muted">Not enough data points in the last 7 days.</p>';
+            }
+
+            statusSummaryEl.innerHTML = summaryHTML;
+            statusBarEl.innerHTML = statusBarHTML;
+        }
+
+        // --- Event Listeners and Handlers ---
+        
+        function toggleTimeInputs(type) {
+            document.getElementById('status-duration-group').classList.toggle('hidden', type !== 'duration');
+            document.getElementById('status-until-group').classList.toggle('hidden', type !== 'until');
+        }
+        
         function addEventListeners() {
             document.querySelector('.auth-tabs').addEventListener('click', e => {
                 if (e.target.classList.contains('tab')) {
@@ -397,21 +681,198 @@
                 const navBtn = e.target.closest('.nav-btn');
                 if (navBtn) showPage(navBtn.dataset.page);
             });
+            
+            document.getElementById('status-time-type').addEventListener('change', (e) => toggleTimeInputs(e.target.value));
 
             document.getElementById('signup-form').addEventListener('submit', handleSignup);
             document.getElementById('login-form').addEventListener('submit', handleLogin);
             document.getElementById('logout-btn').addEventListener('click', handleLogout);
             document.getElementById('save-settings-btn').addEventListener('click', handleSaveSettings);
             document.getElementById('share-status-btn').addEventListener('click', handleShareStatus);
+            document.getElementById('download-vcard-btn')?.addEventListener('click', handleVCardDownload);
+
+            document.getElementById('pfp-upload').addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                const previewEl = document.getElementById('pfp-preview-text');
+                if (file) {
+                    previewEl.textContent = `Image selected: ${file.name}. Click 'Save' to upload.`;
+                } else {
+                    previewEl.textContent = 'No image selected.';
+                }
+            });
         }
         
-        // --- Event Handlers ---
-        async function handleSignup(e) { /* ... no changes ... */ }
-        async function handleLogin(e) { /* ... no changes ... */ }
-        function handleLogout() { /* ... no changes ... */ }
-        async function handleSaveSettings() { /* ... no changes ... */ }
+        async function handleSignup(e) {
+            e.preventDefault();
+            const email = document.getElementById('signup-email').value.trim();
+            const password = document.getElementById('signup-password').value;
+            const displayName = document.getElementById('signup-name').value.trim();
+            const errorMessage = document.getElementById('error-message');
+            errorMessage.textContent = '';
+            
+            if (!email || !password || !displayName) {
+                errorMessage.textContent = 'All fields are required.'; return;
+            }
+
+            const userId = emailToId(email);
+            const response = await fetch(`${DATABASE_URL}/logins/${userId}.json`);
+            const existingLogin = await response.json();
+
+            if (existingLogin) {
+                errorMessage.textContent = 'An account with this email already exists.'; return;
+            }
+
+            await fetch(`${DATABASE_URL}/logins/${userId}.json`, { method: 'PUT', body: JSON.stringify({ email, password, displayName }) });
+            
+            const initialProfile = {
+                displayName: displayName,
+                theme: 'light',
+                profileAccentColor: '#0ea5e9',
+                status: '🟢',
+                message: 'Ready for the day!',
+                links: [],
+                endTime: null,
+                pfpUrl: null,
+                schedulingLink: null,
+                autoResetStatus: false,
+                updatedAt: new Date().toISOString()
+            };
+            await fetch(`${DATABASE_URL}/users/${userId}.json`, { method: 'PUT', body: JSON.stringify(initialProfile) });
+            
+            // Log initial status
+            await fetch(`${DATABASE_URL}/history/${userId}.json`, { 
+                method: 'POST', 
+                body: JSON.stringify({ 
+                    status: initialProfile.status, 
+                    message: initialProfile.message,
+                    endTime: initialProfile.endTime,
+                    timestamp: initialProfile.updatedAt
+                })
+            });
+
+            App.currentUser = { email, displayName, userId };
+            sessionStorage.setItem('hapUser', JSON.stringify(App.currentUser));
+            App.elements.mainHeader.classList.remove('hidden');
+            setupUserSession();
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value;
+            const errorMessage = document.getElementById('error-message');
+            errorMessage.textContent = '';
+            
+            if (!email || !password) {
+                errorMessage.textContent = 'Email and password cannot be empty.'; return;
+            }
+
+            const userId = emailToId(email);
+            const response = await fetch(`${DATABASE_URL}/logins/${userId}.json`);
+            const data = await response.json();
+
+            if (data && data.password === password) {
+                App.currentUser = { email, displayName: data.displayName, userId };
+                sessionStorage.setItem('hapUser', JSON.stringify(App.currentUser));
+                App.elements.mainHeader.classList.remove('hidden');
+                setupUserSession();
+            } else {
+                errorMessage.textContent = 'Invalid email or password.';
+            }
+        }
         
-        // NEW SHARE HANDLER
+        function handleLogout() {
+            sessionStorage.removeItem('hapUser');
+            window.location.href = window.location.origin + window.location.pathname;
+        }
+        
+        async function handleSaveSettings() {
+            if (!App.currentUser) return;
+            
+            const customLinks = [];
+            for (let i = 0; i < 5; i++) {
+                const label = document.getElementById(`link-label-${i}`).value.trim();
+                const url = document.getElementById(`link-url-${i}`).value.trim();
+                if (label && url) customLinks.push({ label, url });
+            }
+
+            const timeType = document.getElementById('status-time-type').value;
+            let endTime = null;
+
+            if (timeType === 'duration') {
+                const duration = parseInt(document.getElementById('status-duration').value, 10);
+                if (duration > 0) {
+                    endTime = new Date(Date.now() + duration * 60 * 1000).toISOString();
+                }
+            } else if (timeType === 'until') {
+                const timeString = document.getElementById('status-until').value;
+                if (timeString) {
+                    const [hours, minutes] = timeString.split(':').map(Number);
+                    const d = new Date();
+                    d.setHours(hours, minutes, 0, 0);
+                    // Handle time being in the past (assume next day)
+                    if (d.getTime() < Date.now()) {
+                        d.setDate(d.getDate() + 1);
+                    }
+                    endTime = d.toISOString();
+                }
+            }
+            
+            // Fetch current data to preserve pfpUrl if not being changed
+            const currentProfileRes = await fetch(`${DATABASE_URL}/users/${App.currentUser.userId}.json`);
+            const currentProfile = await currentProfileRes.json() || {};
+
+            const dataToSave = {
+                displayName: document.getElementById('display-name').value.trim(),
+                theme: document.getElementById('themeSelect').value,
+                profileAccentColor: document.getElementById('accent-color').value,
+                schedulingLink: document.getElementById('scheduling-link').value.trim(),
+                status: document.getElementById('status-emoji').value,
+                message: document.getElementById('status-message').value.trim(),
+                autoResetStatus: document.getElementById('auto-reset').checked,
+                updatedAt: new Date().toISOString(),
+                links: customLinks,
+                endTime: endTime,
+                pfpUrl: currentProfile.pfpUrl || null // Preserve existing PFP
+            };
+            
+            // Handle PFP Upload (Convert to Base64)
+            const pfpFile = document.getElementById('pfp-upload').files[0];
+            
+            if (pfpFile) {
+                const reader = new FileReader();
+                reader.onload = async function(e) {
+                    dataToSave.pfpUrl = e.target.result;
+                    await saveAndLogStatus(dataToSave);
+                };
+                reader.readAsDataURL(pfpFile);
+            } else {
+                await saveAndLogStatus(dataToSave);
+            }
+        }
+        
+        async function saveAndLogStatus(dataToSave) {
+            // 1. Save Profile Data
+            await fetch(`${DATABASE_URL}/users/${App.currentUser.userId}.json`, { method: 'PUT', body: JSON.stringify(dataToSave) });
+            
+            // 2. Log Status Change (for Analytics)
+            await fetch(`${DATABASE_URL}/history/${App.currentUser.userId}.json`, { 
+                method: 'POST', 
+                body: JSON.stringify({ 
+                    status: dataToSave.status, 
+                    message: dataToSave.message,
+                    endTime: dataToSave.endTime,
+                    timestamp: dataToSave.updatedAt
+                })
+            });
+
+            // 3. Update UI
+            applyVisuals(dataToSave);
+            showToast('Settings Saved & Status Updated!');
+            showPage('profilePage');
+            renderProfile(dataToSave);
+        }
+        
         async function handleShareStatus() {
             if (!App.currentUser) return;
             const shareUrl = `${window.location.origin}${window.location.pathname}?user=${App.currentUser.userId}`;
@@ -436,9 +897,33 @@
                 });
             }
         }
+
+        function handleVCardDownload() {
+            const user = App.currentUser;
+            if (!user) { showToast('Must be logged in to generate contact card.'); return; }
+
+            const vcard = [
+                'BEGIN:VCARD',
+                'VERSION:3.0',
+                `FN:${user.displayName}`,
+                `EMAIL;TYPE=internet,work:${user.email}`,
+                `UID:${user.userId}`,
+                'END:VCARD'
+            ].join('\n');
+
+            const blob = new Blob([vcard], { type: 'text/vcard;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${user.displayName.replace(/\s/g, '_')}_contact.vcf`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast('Contact Card downloaded!');
+        }
         
         document.addEventListener('DOMContentLoaded', handlePageLoad);
     </script>
 </body>
 </html>
-
