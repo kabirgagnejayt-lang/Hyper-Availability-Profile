@@ -390,7 +390,7 @@
             App.pages.forEach(pId => {
                 if (App.elements[pId]) App.elements[pId].style.display = 'none';
             });
-            if (App.elements[pageId]) App.elements[pId].style.display = 'block';
+            if (App.elements[pageId]) App.elements[pageId].style.display = 'block';
 
             document.querySelectorAll('.nav-btn').forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.page === pageId);
@@ -425,10 +425,17 @@
             const params = new URLSearchParams(window.location.search);
             const userIdFromUrl = params.get('user');
 
+            // Get references to the card containers for sharing/searching safely
+            const shareCard = document.getElementById('share-status-btn') ? document.getElementById('share-status-btn').closest('.card') : null;
+            const searchCard = document.getElementById('show-search-btn') ? document.getElementById('show-search-btn').closest('.card') : null;
+
             if (userIdFromUrl) {
                 App.elements.mainHeader.classList.add('hidden');
-                document.getElementById('share-status-btn').closest('.card').classList.add('hidden');
-                document.getElementById('show-search-btn').closest('.card').classList.add('hidden');
+                
+                // FIX: Safely hide elements on public view
+                if (shareCard) shareCard.classList.add('hidden');
+                if (searchCard) searchCard.classList.add('hidden');
+                
                 showPage('profilePage');
                 displayPublicProfile(userIdFromUrl);
             } else {
@@ -436,8 +443,11 @@
                 if (user) {
                     App.currentUser = user;
                     App.elements.mainHeader.classList.remove('hidden');
-                    document.getElementById('share-status-btn').closest('.card').classList.remove('hidden');
-                    document.getElementById('show-search-btn').closest('.card').classList.remove('hidden');
+                    
+                    // Show elements on logged-in view
+                    if (shareCard) shareCard.classList.remove('hidden');
+                    if (searchCard) searchCard.classList.remove('hidden');
+                    
                     setupUserSession();
                 } else {
                     App.elements.mainHeader.classList.add('hidden');
@@ -465,7 +475,7 @@
                 const updatedDataRes = await fetch(`${DATABASE_URL}/users/${App.currentUser.userId}.json`);
                 const updatedData = await updatedDataRes.json() || {};
                 
-                // CRITICAL FIX: Update local data store with fresh data
+                // CRITICAL FIX: Update local data store with fresh data for settings/rendering
                 App.currentProfileData = updatedData;
 
                 await checkTimetableAndApplyStatus(updatedData);
@@ -697,7 +707,6 @@
             const index = parseInt(e.currentTarget.dataset.index, 10);
             
             const data = App.currentProfileData || { timetable: [] };
-            // FIX: Corrected access to timetable array
             data.timetable = data.timetable.filter((_, i) => i !== index); 
             
             App.currentProfileData = data; 
@@ -797,10 +806,10 @@
                                         <div>
                                             <div style="font-size: 1.2rem; font-weight: 600;">${user.status || '❓'} ${user.displayName || 'Unnamed User'}</div>
                                             <p style="font-size: 0.9rem; margin-top: 4px;">${user.message || 'No message set.'}</p>
-                                        </div>
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path fill-rule="evenodd" d="M16.28 11.47a.75.75 0 0 1 0 1.06l-7.5 7.5a.75.75 0 0 1-1.06-1.06L14.69 12 7.72 5.03a.75.75 0 0 1 1.06-1.06l7.5 7.5Z" clip-rule="evenodd"></path></svg>
-                                    </a>
-                                </div>`;
+                                    </div>
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path fill-rule="evenodd" d="M16.28 11.47a.75.75 0 0 1 0 1.06l-7.5 7.5a.75.75 0 0 1-1.06-1.06L14.69 12 7.72 5.03a.75.75 0 0 1 1.06-1.06l7.5 7.5Z" clip-rule="evenodd"></path></svg>
+                                </a>
+                            </div>`;
                         }
                     }
                 }
@@ -816,7 +825,7 @@
             }
         }
 
-        // --- Authentication & Session (Only relevant section shown for brevity) ---
+        // --- Authentication & Session ---
         
         async function handleSignup(e) {
             e.preventDefault();
@@ -934,7 +943,6 @@
                 }
             }
             
-            // Get current PFP URL and timetable data from the local store (which is the latest copy)
             const currentPfpUrl = App.currentProfileData ? App.currentProfileData.pfpUrl : null;
             const currentTimetable = App.currentProfileData ? App.currentProfileData.timetable : [];
 
@@ -949,8 +957,8 @@
                 updatedAt: new Date().toISOString(),
                 links: customLinks,
                 endTime: endTime,
-                pfpUrl: currentPfpUrl, // Preserve existing PFP
-                timetable: currentTimetable // Use updated timetable from local store
+                pfpUrl: currentPfpUrl,
+                timetable: currentTimetable
             };
             
             const pfpFile = document.getElementById('pfp-upload').files[0];
@@ -960,7 +968,7 @@
                 const reader = new FileReader();
                 reader.onload = async function(e) {
                     dataToSave.pfpUrl = e.target.result;
-                    document.getElementById('pfp-upload').value = ''; // Clear input after reading
+                    document.getElementById('pfp-upload').value = ''; 
                     pfpPreviewEl.textContent = 'Image saved.';
                     await saveAndLogStatus(dataToSave);
                 };
@@ -1099,23 +1107,22 @@
             document.getElementById('login-form').addEventListener('submit', handleLogin);
             document.getElementById('logout-btn').addEventListener('click', handleLogout);
             document.getElementById('save-settings-btn').addEventListener('click', handleSaveSettings);
-            document.getElementById('share-status-btn').addEventListener('click', handleShareStatus);
             
-            // Search
-            document.getElementById('show-search-btn').addEventListener('click', () => showPage('searchPage'));
-            document.getElementById('run-search-btn').addEventListener('click', handleSearchUsers);
-            document.getElementById('user-search-input').addEventListener('keypress', (e) => {
+            // Note: Listeners for dynamically added elements are added in renderActionLinks/renderTimetableSettings
+            document.getElementById('share-status-btn')?.addEventListener('click', handleShareStatus);
+            document.getElementById('show-search-btn')?.addEventListener('click', () => showPage('searchPage'));
+            document.getElementById('run-search-btn')?.addEventListener('click', handleSearchUsers);
+            document.getElementById('user-search-input')?.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
                     e.preventDefault();
                     handleSearchUsers();
                 }
             });
 
-            // Timetable
-            document.getElementById('add-timetable-entry-btn').addEventListener('click', handleAddTimetableEntry);
+            document.getElementById('add-timetable-entry-btn')?.addEventListener('click', handleAddTimetableEntry);
 
 
-            document.getElementById('pfp-upload').addEventListener('change', (e) => {
+            document.getElementById('pfp-upload')?.addEventListener('change', (e) => {
                 const file = e.target.files[0];
                 const previewEl = document.getElementById('pfp-preview-text');
                 if (file) {
