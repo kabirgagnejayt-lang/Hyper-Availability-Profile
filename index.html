@@ -122,6 +122,14 @@
         /* Timetable */
         .timetable-entry-card { background: var(--input-bg); border-radius: 8px; padding: 12px; margin-bottom: 8px; }
 
+        /* Footer */
+        footer {
+            margin-top: 40px; text-align: center; color: var(--muted); font-size: 0.9rem;
+            padding: 20px 0; border-top: 1px solid var(--border-color);
+        }
+        footer a { color: var(--primary); text-decoration: none; margin: 0 5px; }
+        footer a:hover { text-decoration: underline; }
+
         /* --- Utilities --- */
         .hidden { display: none !important; }
         #error-message { color: #ef4444; text-align: center; min-height: 24px; font-weight: bold; margin-top: 15px; }
@@ -224,6 +232,12 @@
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M10.5 4.5a.75.75 0 0 0 0 1.5h4.51L7.24 13.76a.75.75 0 0 0 1.06 1.06L16.06 7.06v4.44a.75.75 0 0 0 1.5 0V4.5h-7.06Z"></path><path d="M5.25 3.75A1.5 1.5 0 0 0 3.75 5.25v13.5A1.5 1.5 0 0 0 5.25 20.25h13.5A1.5 1.5 0 0 0 20.25 18.75V12a.75.75 0 0 0-1.5 0v6.75a.25.25 0 0 1-.25.25H5.25a.25.25 0 0 1-.25-.25V5.25a.25.25 0 0 1 .25-.25H12a.75.75 0 0 0 0-1.5H5.25Z"></path></svg>
                     <span>Share Status</span>
                 </button>
+            </div>
+            
+            <div class="card hidden" id="create-hap-promo">
+                <h3 style="text-align: center;">Like this status page?</h3>
+                <p style="text-align: center;">Create your own real-time availability profile in seconds!</p>
+                <button class="btn" onclick="showPage('loginPage');" style="margin-top: 15px;">Get Started Now</button>
             </div>
         </div>
         
@@ -429,6 +443,14 @@
         </div>
     </div>
     
+    <footer>
+        <p>
+            &copy; 2025 <a href="https://www.youtube.com/@KabirInvents" target="_blank">Kabir Gagneja Invents</a> | 
+            <a href="https://play.google.com/store/apps/developer?id=Kabir+Gagneja+Invents" target="_blank">Google Play</a> | 
+            <a href="https://whatsapp.com/channel/0029VbB4DCr9Gv7Qj7NgCX2t" target="_blank">WhatsApp Channel</a>
+        </p>
+    </footer>
+
     <div id="toast"></div>
 
     <script>
@@ -441,13 +463,13 @@
                 errorDiv.style.display = 'block';
                 errorDiv.textContent = `CRITICAL ERROR: ${message} (Line ${lineno})`;
             }
-            return false; // Allow default error handling to occur (console log)
+            return false;
         };
 
         const DATABASE_URL = "https://happp-96438-default-rtdb.firebaseio.com/";
         let countdownInterval;
         let timetableCheckInterval;
-        let isPublicView = false;
+        let isPublicView = false; // Tracks if the user is viewing via ?user=ID
 
         const App = {
             pages: ['loginPage', 'profilePage', 'searchPage', 'friendsPage', 'analyticsPage', 'settingsPage'],
@@ -469,12 +491,14 @@
         function emailToId(email) { return btoa(email.toLowerCase()).replace(/=/g, ''); }
         function showToast(message) {
             const toast = App.elements.toast;
+            if (!toast) return;
             toast.textContent = message;
             toast.classList.add('show');
             setTimeout(() => toast.classList.remove('show'), 3000);
         }
         function getStatusLabel(emoji) {
-            const options = document.getElementById('status-emoji').options;
+            const options = document.getElementById('status-emoji')?.options;
+            if (!options) return 'Unknown';
             for (let i = 0; i < options.length; i++) {
                 if (options[i].value === emoji) {
                     return options[i].text.split(' ')[1].trim();
@@ -514,6 +538,9 @@
 
             const pfpElement = document.getElementById('profile-pfp');
             if (pfpElement) pfpElement.style.backgroundImage = data.pfpUrl ? `url(${data.pfpUrl})` : 'none';
+            
+            // Persist theme to localStorage
+            localStorage.setItem('hapTheme', theme);
         }
 
         // --- Core Application Logic ---
@@ -523,15 +550,20 @@
             App.elements.themeSelect = document.getElementById('themeSelect');
             App.elements.toast = document.getElementById('toast');
             
+            // Apply theme preference immediately from localStorage
+            const localTheme = localStorage.getItem('hapTheme');
+            if (localTheme) document.body.className = localTheme === 'dark' ? 'dark' : '';
+            
             const params = new URLSearchParams(window.location.search);
             const userIdFromUrl = params.get('user');
 
-            // Defensive checks for page elements that may not exist immediately
             const shareBtn = document.getElementById('share-status-btn');
             const searchBtn = document.getElementById('show-search-btn');
 
             const shareCard = shareBtn ? shareBtn.closest('.card') : null;
             const searchCard = searchBtn ? searchBtn.closest('.card') : null;
+            const promoCard = document.getElementById('create-hap-promo');
+
 
             if (userIdFromUrl) {
                 isPublicView = true;
@@ -542,8 +574,13 @@
                 
                 showPage('profilePage');
                 displayPublicProfile(userIdFromUrl);
+
+                // Show 'Create HAP' promotion if the user is not logged in
+                if (!localStorage.getItem('hapUser') && promoCard) promoCard.classList.remove('hidden');
+
             } else {
-                const user = JSON.parse(sessionStorage.getItem('hapUser'));
+                // LOCAL STORAGE MIGRATION: Use localStorage for persistent session
+                const user = JSON.parse(localStorage.getItem('hapUser'));
                 if (user) {
                     App.currentUser = user;
                     if (App.elements.mainHeader) App.elements.mainHeader.classList.remove('hidden');
@@ -594,11 +631,16 @@
             renderActionLinks(data);
             
             renderPersonalDetails(data);
+
+            // Hide promotion card if logged in
+            if (!isPublicView && document.getElementById('create-hap-promo')) {
+                document.getElementById('create-hap-promo').classList.add('hidden');
+            }
         }
 
         async function renderPersonalDetails(profileData) {
             const container = document.getElementById('personal-details-list');
-            if (!container) return; // Defensive check for public view
+            if (!container) return; 
             container.innerHTML = '';
             
             const profileOwnerId = profileData.userId;
@@ -645,19 +687,49 @@
         }
 
 
-        function renderActionLinks(data) {
+        async function renderActionLinks(profileData) {
             const container = document.getElementById('profile-action-links');
             if (!container) return;
             container.innerHTML = '';
             
-            if (data.schedulingLink) {
+            const profileOwnerId = profileData.userId;
+            const isOwner = App.currentUser && App.currentUser.userId === profileOwnerId;
+            let friendshipStatus = null; 
+
+            // Only check friendship if we are logged in AND viewing someone else's profile
+            if (App.currentUser && !isOwner) {
+                const friendStatusRes = await fetch(`${DATABASE_URL}/friends/${App.currentUser.userId}/${profileOwnerId}.json`);
+                friendshipStatus = await friendStatusRes.json();
+            }
+
+            // 1. Scheduling Link
+            if (profileData.schedulingLink) {
                 container.innerHTML += `
-                    <a href="${data.schedulingLink}" target="_blank" class="btn secondary" style="max-width: 250px;">
+                    <a href="${profileData.schedulingLink}" target="_blank" class="btn secondary" style="max-width: 250px;">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M12 7.5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0v-4.5A.75.75 0 0 1 12 7.5ZM12 18a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z"></path><path fill-rule="evenodd" d="M12 2.25c-5.405 0-9.75 4.345-9.75 9.75s4.345 9.75 9.75 9.75 9.75-4.345 9.75-9.75S17.405 2.25 12 2.25Zm0 1.5a8.25 8.25 0 1 0 0 16.5 8.25 8.25 0 0 0 0-16.5Z" clip-rule="evenodd"></path></svg>
                         <span>Book a Meeting</span>
                     </a>`;
             }
+            
+            // 2. Friend Button Logic (Only for non-owner, logged-in users)
+            if (App.currentUser && !isOwner) {
+                let friendBtnHTML;
+                if (friendshipStatus === 'accepted') {
+                    friendBtnHTML = `<button class="btn" style="max-width: 250px; background-color: #10b981;">✅ Friends</button>`;
+                } else if (friendshipStatus === 'pending') {
+                    friendBtnHTML = `<button class="btn" style="max-width: 250px; background-color: #f59e0b;" disabled>⏳ Request Sent</button>`;
+                } else {
+                    friendBtnHTML = `
+                        <button id="public-friend-request-btn" class="btn" style="max-width: 250px;">
+                            🤝 Send Friend Request
+                        </button>`;
+                }
+                container.innerHTML += friendBtnHTML;
+                document.getElementById('public-friend-request-btn')?.addEventListener('click', () => handleSendFriendRequestDirectly(profileOwnerId, container));
+            }
 
+
+            // 3. VCard Button
             const vCardButtonHTML = `
                 <button id="download-vcard-btn" class="btn secondary" style="max-width: 250px;">
                     ${App.svg.vcard}
@@ -669,8 +741,30 @@
             document.getElementById('download-vcard-btn')?.addEventListener('click', handleVCardDownload);
         }
 
+        // Helper function for the direct friend button on public profiles
+        async function handleSendFriendRequestDirectly(friendId, container) {
+            const userId = App.currentUser.userId;
+            const loginRes = await fetch(`${DATABASE_URL}/logins/${friendId}.json`);
+            const loginData = await loginRes.json();
+            
+            if (!loginData) {
+                showToast('Error: Target user not found.'); return;
+            }
+
+            // Send request (Set status to 'pending' on the *recipient's* side)
+            await fetch(`${DATABASE_URL}/friends/${friendId}/${userId}.json`, { method: 'PUT', body: JSON.stringify('pending') });
+            showToast(`Request sent to ${loginData.displayName}.`);
+            
+            // Re-render the action links to update the button status
+            const profileRes = await fetch(`${DATABASE_URL}/users/${friendId}.json`);
+            const profileData = await profileRes.json();
+            profileData.userId = friendId; // Add ID for render logic
+            renderActionLinks(profileData);
+        }
+
+
         function populateSettings(data) {
-            if (!document.getElementById('display-name')) return; // Check if on settings page
+            if (!document.getElementById('display-name')) return;
 
             document.getElementById('display-name').value = data.displayName || App.currentUser.displayName;
             document.getElementById('themeSelect').value = data.theme || 'light';
@@ -734,6 +828,7 @@
         }
         
         function renderCustomLinks(links, container) {
+            if (!container) return;
             container.innerHTML = '';
             if (!links || links.filter(l => l && l.url).length === 0) {
                 container.innerHTML = '<p class="muted">No links provided.</p>';
@@ -771,6 +866,7 @@
         
         function updateTimer(data, timerEl) {
             if (countdownInterval) clearInterval(countdownInterval);
+            if (!timerEl) return;
             timerEl.textContent = '';
             
             if (data.endTime) {
@@ -809,6 +905,569 @@
             });
             setupUserSession(); 
             showToast('Status automatically reset to Available.');
+        }
+
+        // --- Timetable Logic (Redundant section omitted for brevity) ---
+        function renderTimetableSettings(timetable = []) {
+            const container = document.getElementById('timetable-entries-container');
+            if (!container) return;
+            container.innerHTML = '';
+
+            if (!timetable || timetable.length === 0) {
+                container.innerHTML = '<p class="muted" id="no-timetable-message">No scheduled entries yet.</p>';
+                return;
+            }
+
+            timetable.forEach((entry, index) => {
+                const entryDiv = document.createElement('div');
+                entryDiv.className = 'timetable-entry-card';
+                
+                entryDiv.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <strong style="font-size: 1rem; color: var(--text);">
+                            ${entry.status} ${entry.message}
+                        </strong>
+                        <button data-index="${index}" class="remove-timetable-btn btn secondary" style="width: auto; padding: 5px 10px; font-size: 0.8rem;">
+                            Remove
+                        </button>
+                    </div>
+                    <p style="margin-top: 5px; color: var(--primary); font-size: 0.9rem;">
+                        ${DAYS_OF_WEEK[entry.day]} ${entry.start} - ${entry.end}
+                    </p>`;
+                
+                container.appendChild(entryDiv);
+            });
+            
+            document.querySelectorAll('.remove-timetable-btn').forEach(btn => {
+                btn.addEventListener('click', handleRemoveTimetableEntry);
+            });
+        }
+
+        function handleAddTimetableEntry() {
+            const day = prompt("Enter Day (0=Sun, 1=Mon, ..., 6=Sat):");
+            if (day === null || isNaN(day) || day < 0 || day > 6) return showToast("Invalid day (Must be 0-6).");
+            
+            const start = prompt("Enter Start Time (HH:MM, e.g., 09:00):");
+            if (!start || !/^\d{2}:\d{2}$/.test(start)) return showToast("Invalid start time format (HH:MM).");
+
+            const end = prompt("Enter End Time (HH:MM, e.g., 17:00):");
+            if (!end || !/^\d{2}:\d{2}$/.test(end)) return showToast("Invalid end time format (HH:MM).");
+
+            const status = document.getElementById('status-emoji').value; 
+            const message = document.getElementById('status-message').value.trim() || 'Scheduled Activity';
+
+            const newEntry = {
+                day: parseInt(day, 10),
+                start: start,
+                end: end,
+                status: status,
+                message: message
+            };
+            
+            const data = App.currentProfileData || { timetable: [] };
+            data.timetable = data.timetable || [];
+            data.timetable.push(newEntry);
+            
+            App.currentProfileData = data; 
+            renderTimetableSettings(data.timetable);
+            showToast("Timetable entry added (Click 'Save' to apply).");
+        }
+
+        function handleRemoveTimetableEntry(e) {
+            const index = parseInt(e.currentTarget.dataset.index, 10);
+            
+            const data = App.currentProfileData || { timetable: [] };
+            data.timetable = data.timetable.filter((_, i) => i !== index); 
+            
+            App.currentProfileData = data; 
+            renderTimetableSettings(data.timetable);
+            showToast("Timetable entry removed (Click 'Save' to apply).");
+        }
+
+        async function checkTimetableAndApplyStatus(data) {
+            if (!App.currentUser || !data || !data.timetable) return;
+            
+            if (data.endTime && new Date(data.endTime).getTime() > Date.now()) return; 
+
+            const now = new Date();
+            const currentDay = now.getDay(); 
+            const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            
+            let activeSchedule = null;
+
+            for (const entry of data.timetable) {
+                if (entry.day === currentDay && currentTime >= entry.start && currentTime < entry.end) {
+                    activeSchedule = entry;
+                    break;
+                }
+            }
+
+            if (activeSchedule) {
+                if (data.status !== activeSchedule.status || data.message !== activeSchedule.message) {
+                    const [endHour, endMinute] = activeSchedule.end.split(':').map(Number);
+                    
+                    const endTime = new Date(now);
+                    endTime.setHours(endHour, endMinute, 0, 0); 
+                    
+                    if (endTime.getTime() < Date.now()) { 
+                        endTime.setDate(endTime.getDate() + 1);
+                    }
+
+                    const updateData = {
+                        status: activeSchedule.status,
+                        message: activeSchedule.message,
+                        endTime: endTime.toISOString(), 
+                        autoResetStatus: true, 
+                        updatedAt: now.toISOString()
+                    };
+                    
+                    await fetch(`${DATABASE_URL}/users/${App.currentUser.userId}.json`, { 
+                        method: 'PATCH', 
+                        body: JSON.stringify(updateData) 
+                    });
+                    
+                    showToast(`Timetable activated: ${activeSchedule.status} ${activeSchedule.message}`);
+                    setupUserSession(); 
+                }
+            } else {
+                if (data.autoResetStatus && data.endTime) {
+                    const scheduledEndTime = new Date(data.endTime).getTime();
+                    if (Date.now() >= scheduledEndTime) {
+                        resetStatusToDefault(); 
+                    }
+                }
+            }
+        }
+
+
+        // --- Friends System Logic ---
+        
+        async function fetchAndRenderFriends() {
+            const userId = App.currentUser.userId;
+            const friendsRes = await fetch(`${DATABASE_URL}/friends/${userId}.json`);
+            const friendsData = await friendsRes.json() || {};
+            
+            const pendingList = document.getElementById('pending-requests-list');
+            const friendsList = document.getElementById('friends-list');
+            
+            if (!pendingList || !friendsList) return;
+
+            pendingList.innerHTML = '';
+            friendsList.innerHTML = '';
+            
+            let hasPending = false;
+            let hasFriends = false;
+
+            for (const fId in friendsData) {
+                const status = friendsData[fId];
+                
+                const loginRes = await fetch(`${DATABASE_URL}/logins/${fId}.json`);
+                const loginData = await loginRes.json();
+                const displayName = loginData ? loginData.displayName : 'Unknown User';
+
+                if (status === 'pending') {
+                    hasPending = true;
+                    pendingList.innerHTML += `
+                        <div class="request-item">
+                            <span>${displayName} wants to be friends.</span>
+                            <div>
+                                <button class="btn" style="width: auto; padding: 5px 10px;" onclick="handleFriendAction('${fId}', 'accept')">Accept</button>
+                                <button class="btn secondary" style="width: auto; padding: 5px 10px; margin-left: 5px;" onclick="handleFriendAction('${fId}', 'reject')">Reject</button>
+                            </div>
+                        </div>`;
+                } else if (status === 'accepted') {
+                    hasFriends = true;
+                    friendsList.innerHTML += `
+                        <div class="request-item">
+                            <span>${displayName}</span>
+                            <button class="btn secondary" style="width: auto; padding: 5px 10px;" onclick="handleFriendAction('${fId}', 'remove')">Remove</button>
+                        </div>`;
+                }
+            }
+            
+            if (!hasPending) pendingList.innerHTML = '<p class="muted">No pending requests.</p>';
+            if (!hasFriends) friendsList.innerHTML = '<p class="muted">You have no accepted friends.</p>';
+        }
+
+        async function handleFriendAction(friendId, action) {
+            const userId = App.currentUser.userId;
+            
+            if (action === 'accept') {
+                await fetch(`${DATABASE_URL}/friends/${userId}/${friendId}.json`, { method: 'PUT', body: JSON.stringify('accepted') });
+                await fetch(`${DATABASE_URL}/friends/${friendId}/${userId}.json`, { method: 'PUT', body: JSON.stringify('accepted') });
+                showToast(`Friend request from accepted!`);
+            } else if (action === 'reject' || action === 'remove') {
+                await fetch(`${DATABASE_URL}/friends/${userId}/${friendId}.json`, { method: 'DELETE' });
+                await fetch(`${DATABASE_URL}/friends/${friendId}/${userId}.json`, { method: 'DELETE' });
+                showToast(`Friend removed.`);
+            }
+            fetchAndRenderFriends();
+        }
+
+        async function handleSendFriendRequest() {
+            const email = document.getElementById('friend-email-input')?.value.trim();
+            const messageEl = document.getElementById('friend-request-message');
+            if (!messageEl) return;
+            messageEl.textContent = '';
+
+            if (!email) {
+                messageEl.textContent = 'Please enter an email address.'; return;
+            }
+            
+            const friendId = emailToId(email);
+            const userId = App.currentUser.userId;
+
+            if (friendId === userId) {
+                messageEl.textContent = 'You cannot friend yourself.'; return;
+            }
+
+            const loginRes = await fetch(`${DATABASE_URL}/logins/${friendId}.json`);
+            const loginData = await loginRes.json();
+            
+            if (!loginData) {
+                messageEl.textContent = 'User not found.'; return;
+            }
+            
+            const currentStatusRes = await fetch(`${DATABASE_URL}/friends/${userId}/${friendId}.json`);
+            const currentStatus = await currentStatusRes.json();
+            
+            if (currentStatus === 'accepted') {
+                messageEl.textContent = `${loginData.displayName} is already your friend.`; return;
+            }
+            if (currentStatus === 'pending') {
+                messageEl.textContent = `A request from ${loginData.displayName} is pending your acceptance.`; return;
+            }
+
+            await fetch(`${DATABASE_URL}/friends/${friendId}/${userId}.json`, { method: 'PUT', body: JSON.stringify('pending') });
+            messageEl.textContent = `Request sent to ${loginData.displayName}.`;
+        }
+
+
+        // --- Search ---
+        async function handleSearchUsers() {
+            const searchTerm = document.getElementById('user-search-input')?.value.trim().toLowerCase();
+            const resultsList = document.getElementById('search-results-list');
+            if (!resultsList) return;
+
+            resultsList.innerHTML = '<p class="muted">Searching...</p>';
+            
+            if (searchTerm.length < 2) {
+                resultsList.innerHTML = '<p class="muted">Enter at least 2 characters to search.</p>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${DATABASE_URL}/users.json`);
+                const allUsersData = await response.json(); 
+                
+                let foundResults = 0;
+                let resultsHTML = '';
+                
+                if (allUsersData) {
+                    for (const userId in allUsersData) {
+                        const user = allUsersData[userId];
+                        const displayName = (user.displayName || '').toLowerCase();
+                        
+                        if (displayName.includes(searchTerm)) {
+                            foundResults++;
+                            const publicUrl = `${window.location.origin}${window.location.pathname}?user=${userId}`;
+
+                            resultsHTML += `
+                                <div class="card" style="padding: 15px; margin-bottom: 10px;">
+                                    <a href="${publicUrl}" style="text-decoration: none; color: var(--text); display: flex; align-items: center; justify-content: space-between;">
+                                        <div>
+                                            <div style="font-size: 1.2rem; font-weight: 600;">${user.status || '❓'} ${user.displayName || 'Unnamed User'}</div>
+                                            <p style="font-size: 0.9rem; margin-top: 4px;">${user.message || 'No message set.'}</p>
+                                    </div>
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path fill-rule="evenodd" d="M16.28 11.47a.75.75 0 0 1 0 1.06l-7.5 7.5a.75.75 0 0 1-1.06-1.06L14.69 12 7.72 5.03a.75.75 0 0 1 1.06-1.06l7.5 7.5Z" clip-rule="evenodd"></path></svg>
+                                </a>
+                            </div>`;
+                        }
+                    }
+                }
+                
+                if (foundResults > 0) {
+                    resultsList.innerHTML = `<strong>${foundResults} user(s) found:</strong><div style="margin-top: 15px;">${resultsHTML}</div>`;
+                } else {
+                    resultsList.innerHTML = '<p class="muted">No users found matching your search term.</p>';
+                }
+
+            } catch (error) {
+                resultsList.innerHTML = '<p class="muted" style="color: #ef4444;">Error fetching user data for search.</p>';
+            }
+        }
+
+        // --- Authentication & Session ---
+        
+        async function handleSignup(e) {
+            e.preventDefault();
+            const email = document.getElementById('signup-email').value.trim();
+            const password = document.getElementById('signup-password').value;
+            const displayName = document.getElementById('signup-name').value.trim();
+            const errorMessage = document.getElementById('error-message');
+            errorMessage.textContent = '';
+            
+            if (!email || !password || !displayName) {
+                errorMessage.textContent = 'All fields are required.'; return;
+            }
+
+            const userId = emailToId(email);
+            const response = await fetch(`${DATABASE_URL}/logins/${userId}.json`);
+            const existingLogin = await response.json();
+
+            if (existingLogin) {
+                errorMessage.textContent = 'An account with this email already exists.'; return;
+            }
+
+            await fetch(`${DATABASE_URL}/logins/${userId}.json`, { method: 'PUT', body: JSON.stringify({ email, password, displayName }) });
+            
+            const initialProfile = {
+                displayName: displayName,
+                theme: 'light',
+                profileAccentColor: '#0ea5e9',
+                status: '🟢',
+                message: 'Ready for the day!',
+                links: [],
+                endTime: null,
+                pfpUrl: null,
+                schedulingLink: null,
+                autoResetStatus: false,
+                timetable: [],
+                phone: '',
+                country: '',
+                school: '',
+                privacy: { email: 'public', phone: 'friends', school: 'public' },
+                updatedAt: new Date().toISOString()
+            };
+            await fetch(`${DATABASE_URL}/users/${userId}.json`, { method: 'PUT', body: JSON.stringify(initialProfile) });
+            
+            await fetch(`${DATABASE_URL}/history/${userId}.json`, { 
+                method: 'POST', 
+                body: JSON.stringify({ 
+                    status: initialProfile.status, 
+                    message: initialProfile.message,
+                    endTime: initialProfile.endTime,
+                    timestamp: initialProfile.updatedAt
+                })
+            });
+
+            App.currentUser = { email, displayName, userId };
+            // LOCAL STORAGE MIGRATION: Use localStorage for persistent session
+            localStorage.setItem('hapUser', JSON.stringify(App.currentUser));
+            if (App.elements.mainHeader) App.elements.mainHeader.classList.remove('hidden');
+            setupUserSession();
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value;
+            const errorMessage = document.getElementById('error-message');
+            errorMessage.textContent = '';
+            
+            if (!email || !password) {
+                errorMessage.textContent = 'Email and password cannot be empty.'; return;
+            }
+
+            const userId = emailToId(email);
+            const response = await fetch(`${DATABASE_URL}/logins/${userId}.json`);
+            const data = await response.json();
+
+            if (data && data.password === password) {
+                App.currentUser = { email, displayName: data.displayName, userId };
+                // LOCAL STORAGE MIGRATION: Use localStorage for persistent session
+                localStorage.setItem('hapUser', JSON.stringify(App.currentUser));
+                if (App.elements.mainHeader) App.elements.mainHeader.classList.remove('hidden');
+                setupUserSession();
+            } else {
+                errorMessage.textContent = 'Invalid email or password.';
+            }
+        }
+        
+        function handleLogout() {
+            // LOCAL STORAGE MIGRATION: Use localStorage for persistent session
+            localStorage.removeItem('hapUser');
+            window.location.href = window.location.origin + window.location.pathname;
+        }
+
+        // --- Settings & Save ---
+        async function handleSaveSettings() {
+            if (!App.currentUser) return;
+            
+            const customLinks = [];
+            for (let i = 0; i < 5; i++) {
+                const label = document.getElementById(`link-label-${i}`)?.value.trim();
+                const url = document.getElementById(`link-url-${i}`)?.value.trim();
+                if (label && url) customLinks.push({ label, url });
+            }
+
+            const timeType = document.getElementById('status-time-type')?.value;
+            let endTime = null;
+
+            if (timeType === 'duration') {
+                const duration = parseInt(document.getElementById('status-duration')?.value, 10);
+                if (duration > 0) {
+                    endTime = new Date(Date.now() + duration * 60 * 1000).toISOString();
+                }
+            } else if (timeType === 'until') {
+                const timeString = document.getElementById('status-until')?.value;
+                if (timeString) {
+                    const [hours, minutes] = timeString.split(':').map(Number);
+                    const d = new Date();
+                    d.setHours(hours, minutes, 0, 0);
+                    if (d.getTime() < Date.now()) {
+                        d.setDate(d.getDate() + 1);
+                    }
+                    endTime = d.toISOString();
+                }
+            }
+            
+            const currentPfpUrl = App.currentProfileData ? App.currentProfileData.pfpUrl : null;
+            const currentTimetable = App.currentProfileData ? App.currentProfileData.timetable : [];
+
+            const dataToSave = {
+                displayName: document.getElementById('display-name')?.value.trim(),
+                theme: document.getElementById('themeSelect')?.value,
+                profileAccentColor: document.getElementById('accent-color')?.value,
+                schedulingLink: document.getElementById('scheduling-link')?.value.trim(),
+                status: document.getElementById('status-emoji')?.value,
+                message: document.getElementById('status-message')?.value.trim(),
+                autoResetStatus: document.getElementById('auto-reset')?.checked,
+                updatedAt: new Date().toISOString(),
+                links: customLinks,
+                endTime: endTime,
+                pfpUrl: currentPfpUrl,
+                timetable: currentTimetable,
+                phone: document.getElementById('phone-number')?.value.trim(),
+                country: document.getElementById('country')?.value.trim(),
+                school: document.getElementById('school')?.value.trim(),
+                privacy: {
+                    email: document.getElementById('privacy-email')?.value,
+                    phone: document.getElementById('privacy-phone')?.value,
+                    school: document.getElementById('privacy-school')?.value,
+                }
+            };
+            
+            const pfpFile = document.getElementById('pfp-upload')?.files[0];
+            const pfpPreviewEl = document.getElementById('pfp-preview-text');
+
+            if (pfpFile) {
+                const reader = new FileReader();
+                reader.onload = async function(e) {
+                    dataToSave.pfpUrl = e.target.result;
+                    if (document.getElementById('pfp-upload')) document.getElementById('pfp-upload').value = ''; 
+                    if (pfpPreviewEl) pfpPreviewEl.textContent = 'Image saved.';
+                    await saveAndLogStatus(dataToSave);
+                };
+                reader.readAsDataURL(pfpFile);
+            } else {
+                await saveAndLogStatus(dataToSave);
+            }
+        }
+        
+        async function saveAndLogStatus(dataToSave) {
+            await fetch(`${DATABASE_URL}/users/${App.currentUser.userId}.json`, { method: 'PUT', body: JSON.stringify(dataToSave) });
+            
+            await fetch(`${DATABASE_URL}/history/${App.currentUser.userId}.json`, { 
+                method: 'POST', 
+                body: JSON.stringify({ 
+                    status: dataToSave.status, 
+                    message: dataToSave.message,
+                    endTime: dataToSave.endTime,
+                    timestamp: dataToSave.updatedAt
+                })
+            });
+
+            App.currentProfileData = dataToSave; 
+            applyVisuals(dataToSave);
+            showToast('Settings Saved & Status Updated!');
+            showPage('profilePage');
+            renderProfile(dataToSave);
+        }
+
+        // --- VCard & Share ---
+        function handleVCardDownload() {
+            const user = App.currentUser;
+            if (!user) { showToast('Must be logged in to generate contact card.'); return; }
+
+            const vcard = [
+                'BEGIN:VCARD',
+                'VERSION:3.0',
+                `FN:${user.displayName}`,
+                `EMAIL;TYPE=internet,work:${user.email}`,
+                `UID:${user.userId}`,
+                'END:VCARD'
+            ].join('\n');
+
+            const blob = new Blob([vcard], { type: 'text/vcard;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${user.displayName.replace(/\s/g, '_')}_contact.vcf`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast('Contact Card downloaded!');
+        }
+
+        async function handleShareStatus() {
+            if (!App.currentUser) return;
+            const shareUrl = `${window.location.origin}${window.location.pathname}?user=${App.currentUser.userId}`;
+            const shareData = {
+                title: `${App.currentUser.displayName}'s HAP Status`,
+                text: "Check out my current availability and status!",
+                url: shareUrl,
+            };
+
+            try {
+                if (navigator.share) {
+                    await navigator.share(shareData);
+                } else {
+                    navigator.clipboard.writeText(shareUrl).then(() => {
+                        showToast('Profile link copied to clipboard!');
+                    }).catch(clipErr => {
+                        showToast('Could not copy link.', 'error');
+                    });
+                }
+            } catch (err) {
+                navigator.clipboard.writeText(shareUrl).then(() => {
+                    showToast('Profile link copied to clipboard!');
+                }).catch(clipErr => {
+                    showToast('Could not copy link.', 'error');
+                });
+            }
+        }
+
+        // --- Analytics ---
+        async function fetchAndRenderAnalytics() {
+            const historyLogEl = document.getElementById('history-log');
+            if (!historyLogEl) return;
+            historyLogEl.innerHTML = '<p class="muted">Fetching history...</p>';
+
+            try {
+                const userHistoryRes = await fetch(`${DATABASE_URL}/history/${App.currentUser.userId}.json`);
+                const historyData = await userHistoryRes.json();
+                
+                if (historyData) {
+                    const history = Object.values(historyData).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                    historyLogEl.innerHTML = '';
+                    history.slice(0, 10).forEach(item => {
+                        historyLogEl.innerHTML += `
+                            <div class="history-item">
+                                <span class="history-status">${item.status} ${item.message || '(No message)'}</span>
+                                <p class="history-time">${new Date(item.timestamp).toLocaleString()}</p>
+                            </div>`;
+                    });
+                } else {
+                    historyLogEl.innerHTML = '<p class="muted">No status history found.</p>';
+                }
+            } catch (e) {
+                historyLogEl.innerHTML = '<p class="muted">Error loading history.</p>';
+            }
+            
+            if (document.getElementById('status-summary')) document.getElementById('status-summary').innerHTML = '<p class="muted">Summary calculation logic not fully implemented.</p>';
+            if (document.getElementById('analytics-status-bar')) document.getElementById('analytics-status-bar').innerHTML = '';
         }
 
         // --- Timetable Logic ---
@@ -1009,8 +1668,9 @@
         }
 
         async function handleSendFriendRequest() {
-            const email = document.getElementById('friend-email-input').value.trim();
+            const email = document.getElementById('friend-email-input')?.value.trim();
             const messageEl = document.getElementById('friend-request-message');
+            if (!messageEl) return;
             messageEl.textContent = '';
 
             if (!email) {
@@ -1043,463 +1703,6 @@
 
             await fetch(`${DATABASE_URL}/friends/${friendId}/${userId}.json`, { method: 'PUT', body: JSON.stringify('pending') });
             messageEl.textContent = `Request sent to ${loginData.displayName}.`;
-        }
-
-
-        // --- Search ---
-        async function handleSearchUsers() {
-            const searchTerm = document.getElementById('user-search-input').value.trim().toLowerCase();
-            const resultsList = document.getElementById('search-results-list');
-            if (!resultsList) return;
-
-            resultsList.innerHTML = '<p class="muted">Searching...</p>';
-            
-            if (searchTerm.length < 2) {
-                resultsList.innerHTML = '<p class="muted">Enter at least 2 characters to search.</p>';
-                return;
-            }
-
-            try {
-                const response = await fetch(`${DATABASE_URL}/users.json`);
-                const allUsersData = await response.json(); 
-                
-                let foundResults = 0;
-                let resultsHTML = '';
-                
-                if (allUsersData) {
-                    for (const userId in allUsersData) {
-                        const user = allUsersData[userId];
-                        const displayName = (user.displayName || '').toLowerCase();
-                        
-                        if (displayName.includes(searchTerm)) {
-                            foundResults++;
-                            const publicUrl = `${window.location.origin}${window.location.pathname}?user=${userId}`;
-
-                            resultsHTML += `
-                                <div class="card" style="padding: 15px; margin-bottom: 10px;">
-                                    <a href="${publicUrl}" style="text-decoration: none; color: var(--text); display: flex; align-items: center; justify-content: space-between;">
-                                        <div>
-                                            <div style="font-size: 1.2rem; font-weight: 600;">${user.status || '❓'} ${user.displayName || 'Unnamed User'}</div>
-                                            <p style="font-size: 0.9rem; margin-top: 4px;">${user.message || 'No message set.'}</p>
-                                    </div>
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path fill-rule="evenodd" d="M16.28 11.47a.75.75 0 0 1 0 1.06l-7.5 7.5a.75.75 0 0 1-1.06-1.06L14.69 12 7.72 5.03a.75.75 0 0 1 1.06-1.06l7.5 7.5Z" clip-rule="evenodd"></path></svg>
-                                </a>
-                            </div>`;
-                        }
-                    }
-                }
-                
-                if (foundResults > 0) {
-                    resultsList.innerHTML = `<strong>${foundResults} user(s) found:</strong><div style="margin-top: 15px;">${resultsHTML}</div>`;
-                } else {
-                    resultsList.innerHTML = '<p class="muted">No users found matching your search term.</p>';
-                }
-
-            } catch (error) {
-                resultsList.innerHTML = '<p class="muted" style="color: #ef4444;">Error fetching user data for search.</p>';
-            }
-        }
-
-        // --- Authentication & Session ---
-        
-        async function handleSignup(e) {
-            e.preventDefault();
-            const email = document.getElementById('signup-email').value.trim();
-            const password = document.getElementById('signup-password').value;
-            const displayName = document.getElementById('signup-name').value.trim();
-            const errorMessage = document.getElementById('error-message');
-            errorMessage.textContent = '';
-            
-            if (!email || !password || !displayName) {
-                errorMessage.textContent = 'All fields are required.'; return;
-            }
-
-            const userId = emailToId(email);
-            const response = await fetch(`${DATABASE_URL}/logins/${userId}.json`);
-            const existingLogin = await response.json();
-
-            if (existingLogin) {
-                errorMessage.textContent = 'An account with this email already exists.'; return;
-            }
-
-            await fetch(`${DATABASE_URL}/logins/${userId}.json`, { method: 'PUT', body: JSON.stringify({ email, password, displayName }) });
-            
-            const initialProfile = {
-                displayName: displayName,
-                theme: 'light',
-                profileAccentColor: '#0ea5e9',
-                status: '🟢',
-                message: 'Ready for the day!',
-                links: [],
-                endTime: null,
-                pfpUrl: null,
-                schedulingLink: null,
-                autoResetStatus: false,
-                timetable: [],
-                phone: '',
-                country: '',
-                school: '',
-                privacy: { email: 'public', phone: 'friends', school: 'public' },
-                updatedAt: new Date().toISOString()
-            };
-            await fetch(`${DATABASE_URL}/users/${userId}.json`, { method: 'PUT', body: JSON.stringify(initialProfile) });
-            
-            await fetch(`${DATABASE_URL}/history/${userId}.json`, { 
-                method: 'POST', 
-                body: JSON.stringify({ 
-                    status: initialProfile.status, 
-                    message: initialProfile.message,
-                    endTime: initialProfile.endTime,
-                    timestamp: initialProfile.updatedAt
-                })
-            });
-
-            App.currentUser = { email, displayName, userId };
-            sessionStorage.setItem('hapUser', JSON.stringify(App.currentUser));
-            if (App.elements.mainHeader) App.elements.mainHeader.classList.remove('hidden');
-            setupUserSession();
-        }
-
-        async function handleLogin(e) {
-            e.preventDefault();
-            const email = document.getElementById('login-email').value.trim();
-            const password = document.getElementById('login-password').value;
-            const errorMessage = document.getElementById('error-message');
-            errorMessage.textContent = '';
-            
-            if (!email || !password) {
-                errorMessage.textContent = 'Email and password cannot be empty.'; return;
-            }
-
-            const userId = emailToId(email);
-            const response = await fetch(`${DATABASE_URL}/logins/${userId}.json`);
-            const data = await response.json();
-
-            if (data && data.password === password) {
-                App.currentUser = { email, displayName: data.displayName, userId };
-                sessionStorage.setItem('hapUser', JSON.stringify(App.currentUser));
-                if (App.elements.mainHeader) App.elements.mainHeader.classList.remove('hidden');
-                setupUserSession();
-            } else {
-                errorMessage.textContent = 'Invalid email or password.';
-            }
-        }
-        
-        function handleLogout() {
-            sessionStorage.removeItem('hapUser');
-            window.location.href = window.location.origin + window.location.pathname;
-        }
-
-        // --- Settings & Save ---
-        async function handleSaveSettings() {
-            if (!App.currentUser) return;
-            
-            const customLinks = [];
-            for (let i = 0; i < 5; i++) {
-                const label = document.getElementById(`link-label-${i}`).value.trim();
-                const url = document.getElementById(`link-url-${i}`).value.trim();
-                if (label && url) customLinks.push({ label, url });
-            }
-
-            const timeType = document.getElementById('status-time-type').value;
-            let endTime = null;
-
-            if (timeType === 'duration') {
-                const duration = parseInt(document.getElementById('status-duration').value, 10);
-                if (duration > 0) {
-                    endTime = new Date(Date.now() + duration * 60 * 1000).toISOString();
-                }
-            } else if (timeType === 'until') {
-                const timeString = document.getElementById('status-until').value;
-                if (timeString) {
-                    const [hours, minutes] = timeString.split(':').map(Number);
-                    const d = new Date();
-                    d.setHours(hours, minutes, 0, 0);
-                    if (d.getTime() < Date.now()) {
-                        d.setDate(d.getDate() + 1);
-                    }
-                    endTime = d.toISOString();
-                }
-            }
-            
-            const currentPfpUrl = App.currentProfileData ? App.currentProfileData.pfpUrl : null;
-            const currentTimetable = App.currentProfileData ? App.currentProfileData.timetable : [];
-
-            const dataToSave = {
-                displayName: document.getElementById('display-name').value.trim(),
-                theme: document.getElementById('themeSelect').value,
-                profileAccentColor: document.getElementById('accent-color').value,
-                schedulingLink: document.getElementById('scheduling-link').value.trim(),
-                status: document.getElementById('status-emoji').value,
-                message: document.getElementById('status-message').value.trim(),
-                autoResetStatus: document.getElementById('auto-reset').checked,
-                updatedAt: new Date().toISOString(),
-                links: customLinks,
-                endTime: endTime,
-                pfpUrl: currentPfpUrl,
-                timetable: currentTimetable,
-                phone: document.getElementById('phone-number').value.trim(),
-                country: document.getElementById('country').value.trim(),
-                school: document.getElementById('school').value.trim(),
-                privacy: {
-                    email: document.getElementById('privacy-email').value,
-                    phone: document.getElementById('privacy-phone').value,
-                    school: document.getElementById('privacy-school').value,
-                }
-            };
-            
-            const pfpFile = document.getElementById('pfp-upload').files[0];
-            const pfpPreviewEl = document.getElementById('pfp-preview-text');
-
-            if (pfpFile) {
-                const reader = new FileReader();
-                reader.onload = async function(e) {
-                    dataToSave.pfpUrl = e.target.result;
-                    document.getElementById('pfp-upload').value = ''; 
-                    pfpPreviewEl.textContent = 'Image saved.';
-                    await saveAndLogStatus(dataToSave);
-                };
-                reader.readAsDataURL(pfpFile);
-            } else {
-                await saveAndLogStatus(dataToSave);
-            }
-        }
-        
-        async function saveAndLogStatus(dataToSave) {
-            await fetch(`${DATABASE_URL}/users/${App.currentUser.userId}.json`, { method: 'PUT', body: JSON.stringify(dataToSave) });
-            
-            await fetch(`${DATABASE_URL}/history/${App.currentUser.userId}.json`, { 
-                method: 'POST', 
-                body: JSON.stringify({ 
-                    status: dataToSave.status, 
-                    message: dataToSave.message,
-                    endTime: dataToSave.endTime,
-                    timestamp: dataToSave.updatedAt
-                })
-            });
-
-            App.currentProfileData = dataToSave; 
-            applyVisuals(dataToSave);
-            showToast('Settings Saved & Status Updated!');
-            showPage('profilePage');
-            renderProfile(dataToSave);
-        }
-
-        // --- VCard & Share ---
-        function handleVCardDownload() {
-            const user = App.currentUser;
-            if (!user) { showToast('Must be logged in to generate contact card.'); return; }
-
-            const vcard = [
-                'BEGIN:VCARD',
-                'VERSION:3.0',
-                `FN:${user.displayName}`,
-                `EMAIL;TYPE=internet,work:${user.email}`,
-                `UID:${user.userId}`,
-                'END:VCARD'
-            ].join('\n');
-
-            const blob = new Blob([vcard], { type: 'text/vcard;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${user.displayName.replace(/\s/g, '_')}_contact.vcf`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            showToast('Contact Card downloaded!');
-        }
-
-        async function handleShareStatus() {
-            if (!App.currentUser) return;
-            const shareUrl = `${window.location.origin}${window.location.pathname}?user=${App.currentUser.userId}`;
-            const shareData = {
-                title: `${App.currentUser.displayName}'s HAP Status`,
-                text: "Check out my current availability and status!",
-                url: shareUrl,
-            };
-
-            try {
-                if (navigator.share) {
-                    await navigator.share(shareData);
-                } else {
-                    navigator.clipboard.writeText(shareUrl).then(() => {
-                        showToast('Profile link copied to clipboard!');
-                    }).catch(clipErr => {
-                        showToast('Could not copy link.', 'error');
-                    });
-                }
-            } catch (err) {
-                navigator.clipboard.writeText(shareUrl).then(() => {
-                    showToast('Profile link copied to clipboard!');
-                }).catch(clipErr => {
-                    showToast('Could not copy link.', 'error');
-                });
-            }
-        }
-
-        // --- Analytics ---
-        async function fetchAndRenderAnalytics() {
-            const historyLogEl = document.getElementById('history-log');
-            if (!historyLogEl) return;
-            historyLogEl.innerHTML = '<p class="muted">Fetching history...</p>';
-
-            try {
-                const userHistoryRes = await fetch(`${DATABASE_URL}/history/${App.currentUser.userId}.json`);
-                const historyData = await userHistoryRes.json();
-                
-                if (historyData) {
-                    const history = Object.values(historyData).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-                    historyLogEl.innerHTML = '';
-                    history.slice(0, 10).forEach(item => {
-                        historyLogEl.innerHTML += `
-                            <div class="history-item">
-                                <span class="history-status">${item.status} ${item.message || '(No message)'}</span>
-                                <p class="history-time">${new Date(item.timestamp).toLocaleString()}</p>
-                            </div>`;
-                    });
-                } else {
-                    historyLogEl.innerHTML = '<p class="muted">No status history found.</p>';
-                }
-            } catch (e) {
-                historyLogEl.innerHTML = '<p class="muted">Error loading history.</p>';
-            }
-            
-            if (document.getElementById('status-summary')) document.getElementById('status-summary').innerHTML = '<p class="muted">Summary calculation logic not fully implemented.</p>';
-            if (document.getElementById('analytics-status-bar')) document.getElementById('analytics-status-bar').innerHTML = '';
-        }
-
-        // --- Timetable Logic ---
-        function renderTimetableSettings(timetable = []) {
-            const container = document.getElementById('timetable-entries-container');
-            if (!container) return;
-            container.innerHTML = '';
-
-            if (!timetable || timetable.length === 0) {
-                container.innerHTML = '<p class="muted" id="no-timetable-message">No scheduled entries yet.</p>';
-                return;
-            }
-
-            timetable.forEach((entry, index) => {
-                const entryDiv = document.createElement('div');
-                entryDiv.className = 'timetable-entry-card';
-                
-                entryDiv.innerHTML = `
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <strong style="font-size: 1rem; color: var(--text);">
-                            ${entry.status} ${entry.message}
-                        </strong>
-                        <button data-index="${index}" class="remove-timetable-btn btn secondary" style="width: auto; padding: 5px 10px; font-size: 0.8rem;">
-                            Remove
-                        </button>
-                    </div>
-                    <p style="margin-top: 5px; color: var(--primary); font-size: 0.9rem;">
-                        ${DAYS_OF_WEEK[entry.day]} ${entry.start} - ${entry.end}
-                    </p>`;
-                
-                container.appendChild(entryDiv);
-            });
-            
-            document.querySelectorAll('.remove-timetable-btn').forEach(btn => {
-                btn.addEventListener('click', handleRemoveTimetableEntry);
-            });
-        }
-
-        function handleAddTimetableEntry() {
-            const day = prompt("Enter Day (0=Sun, 1=Mon, ..., 6=Sat):");
-            if (day === null || isNaN(day) || day < 0 || day > 6) return showToast("Invalid day (Must be 0-6).");
-            
-            const start = prompt("Enter Start Time (HH:MM, e.g., 09:00):");
-            if (!start || !/^\d{2}:\d{2}$/.test(start)) return showToast("Invalid start time format (HH:MM).");
-
-            const end = prompt("Enter End Time (HH:MM, e.g., 17:00):");
-            if (!end || !/^\d{2}:\d{2}$/.test(end)) return showToast("Invalid end time format (HH:MM).");
-
-            const status = document.getElementById('status-emoji').value; 
-            const message = document.getElementById('status-message').value.trim() || 'Scheduled Activity';
-
-            const newEntry = {
-                day: parseInt(day, 10),
-                start: start,
-                end: end,
-                status: status,
-                message: message
-            };
-            
-            const data = App.currentProfileData || { timetable: [] };
-            data.timetable = data.timetable || [];
-            data.timetable.push(newEntry);
-            
-            App.currentProfileData = data; 
-            renderTimetableSettings(data.timetable);
-            showToast("Timetable entry added (Click 'Save' to apply).");
-        }
-
-        function handleRemoveTimetableEntry(e) {
-            const index = parseInt(e.currentTarget.dataset.index, 10);
-            
-            const data = App.currentProfileData || { timetable: [] };
-            data.timetable = data.timetable.filter((_, i) => i !== index); 
-            
-            App.currentProfileData = data; 
-            renderTimetableSettings(data.timetable);
-            showToast("Timetable entry removed (Click 'Save' to apply).");
-        }
-
-        async function checkTimetableAndApplyStatus(data) {
-            if (!App.currentUser || !data || !data.timetable) return;
-            
-            if (data.endTime && new Date(data.endTime).getTime() > Date.now()) return; 
-
-            const now = new Date();
-            const currentDay = now.getDay(); 
-            const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-            
-            let activeSchedule = null;
-
-            for (const entry of data.timetable) {
-                if (entry.day === currentDay && currentTime >= entry.start && currentTime < entry.end) {
-                    activeSchedule = entry;
-                    break;
-                }
-            }
-
-            if (activeSchedule) {
-                if (data.status !== activeSchedule.status || data.message !== activeSchedule.message) {
-                    const [endHour, endMinute] = activeSchedule.end.split(':').map(Number);
-                    
-                    const endTime = new Date(now);
-                    endTime.setHours(endHour, endMinute, 0, 0); 
-                    
-                    if (endTime.getTime() < Date.now()) { 
-                        endTime.setDate(endTime.getDate() + 1);
-                    }
-
-                    const updateData = {
-                        status: activeSchedule.status,
-                        message: activeSchedule.message,
-                        endTime: endTime.toISOString(), 
-                        autoResetStatus: true, 
-                        updatedAt: now.toISOString()
-                    };
-                    
-                    await fetch(`${DATABASE_URL}/users/${App.currentUser.userId}.json`, { 
-                        method: 'PATCH', 
-                        body: JSON.stringify(updateData) 
-                    });
-                    
-                    showToast(`Timetable activated: ${activeSchedule.status} ${activeSchedule.message}`);
-                    setupUserSession(); 
-                }
-            } else {
-                if (data.autoResetStatus && data.endTime) {
-                    const scheduledEndTime = new Date(data.endTime).getTime();
-                    if (Date.now() >= scheduledEndTime) {
-                        resetStatusToDefault(); 
-                    }
-                }
-            }
         }
 
 
@@ -1612,7 +1815,8 @@
             });
 
             App.currentUser = { email, displayName, userId };
-            sessionStorage.setItem('hapUser', JSON.stringify(App.currentUser));
+            // LOCAL STORAGE MIGRATION
+            localStorage.setItem('hapUser', JSON.stringify(App.currentUser));
             if (App.elements.mainHeader) App.elements.mainHeader.classList.remove('hidden');
             setupUserSession();
         }
@@ -1634,7 +1838,8 @@
 
             if (data && data.password === password) {
                 App.currentUser = { email, displayName: data.displayName, userId };
-                sessionStorage.setItem('hapUser', JSON.stringify(App.currentUser));
+                // LOCAL STORAGE MIGRATION
+                localStorage.setItem('hapUser', JSON.stringify(App.currentUser));
                 if (App.elements.mainHeader) App.elements.mainHeader.classList.remove('hidden');
                 setupUserSession();
             } else {
@@ -1643,7 +1848,8 @@
         }
         
         function handleLogout() {
-            sessionStorage.removeItem('hapUser');
+            // LOCAL STORAGE MIGRATION
+            localStorage.removeItem('hapUser');
             window.location.href = window.location.origin + window.location.pathname;
         }
 
@@ -1653,21 +1859,21 @@
             
             const customLinks = [];
             for (let i = 0; i < 5; i++) {
-                const label = document.getElementById(`link-label-${i}`).value.trim();
-                const url = document.getElementById(`link-url-${i}`).value.trim();
+                const label = document.getElementById(`link-label-${i}`)?.value.trim();
+                const url = document.getElementById(`link-url-${i}`)?.value.trim();
                 if (label && url) customLinks.push({ label, url });
             }
 
-            const timeType = document.getElementById('status-time-type').value;
+            const timeType = document.getElementById('status-time-type')?.value;
             let endTime = null;
 
             if (timeType === 'duration') {
-                const duration = parseInt(document.getElementById('status-duration').value, 10);
+                const duration = parseInt(document.getElementById('status-duration')?.value, 10);
                 if (duration > 0) {
                     endTime = new Date(Date.now() + duration * 60 * 1000).toISOString();
                 }
             } else if (timeType === 'until') {
-                const timeString = document.getElementById('status-until').value;
+                const timeString = document.getElementById('status-until')?.value;
                 if (timeString) {
                     const [hours, minutes] = timeString.split(':').map(Number);
                     const d = new Date();
@@ -1683,37 +1889,37 @@
             const currentTimetable = App.currentProfileData ? App.currentProfileData.timetable : [];
 
             const dataToSave = {
-                displayName: document.getElementById('display-name').value.trim(),
-                theme: document.getElementById('themeSelect').value,
-                profileAccentColor: document.getElementById('accent-color').value,
-                schedulingLink: document.getElementById('scheduling-link').value.trim(),
-                status: document.getElementById('status-emoji').value,
-                message: document.getElementById('status-message').value.trim(),
-                autoResetStatus: document.getElementById('auto-reset').checked,
+                displayName: document.getElementById('display-name')?.value.trim(),
+                theme: document.getElementById('themeSelect')?.value,
+                profileAccentColor: document.getElementById('accent-color')?.value,
+                schedulingLink: document.getElementById('scheduling-link')?.value.trim(),
+                status: document.getElementById('status-emoji')?.value,
+                message: document.getElementById('status-message')?.value.trim(),
+                autoResetStatus: document.getElementById('auto-reset')?.checked,
                 updatedAt: new Date().toISOString(),
                 links: customLinks,
                 endTime: endTime,
                 pfpUrl: currentPfpUrl,
                 timetable: currentTimetable,
-                phone: document.getElementById('phone-number').value.trim(),
-                country: document.getElementById('country').value.trim(),
-                school: document.getElementById('school').value.trim(),
+                phone: document.getElementById('phone-number')?.value.trim(),
+                country: document.getElementById('country')?.value.trim(),
+                school: document.getElementById('school')?.value.trim(),
                 privacy: {
-                    email: document.getElementById('privacy-email').value,
-                    phone: document.getElementById('privacy-phone').value,
-                    school: document.getElementById('privacy-school').value,
+                    email: document.getElementById('privacy-email')?.value,
+                    phone: document.getElementById('privacy-phone')?.value,
+                    school: document.getElementById('privacy-school')?.value,
                 }
             };
             
-            const pfpFile = document.getElementById('pfp-upload').files[0];
+            const pfpFile = document.getElementById('pfp-upload')?.files[0];
             const pfpPreviewEl = document.getElementById('pfp-preview-text');
 
             if (pfpFile) {
                 const reader = new FileReader();
                 reader.onload = async function(e) {
                     dataToSave.pfpUrl = e.target.result;
-                    document.getElementById('pfp-upload').value = ''; 
-                    pfpPreviewEl.textContent = 'Image saved.';
+                    if (document.getElementById('pfp-upload')) document.getElementById('pfp-upload').value = ''; 
+                    if (pfpPreviewEl) pfpPreviewEl.textContent = 'Image saved.';
                     await saveAndLogStatus(dataToSave);
                 };
                 reader.readAsDataURL(pfpFile);
@@ -1957,6 +2163,109 @@
                     }
                 }
             }
+        }
+
+
+        // --- Friends System Logic ---
+        
+        async function fetchAndRenderFriends() {
+            const userId = App.currentUser.userId;
+            const friendsRes = await fetch(`${DATABASE_URL}/friends/${userId}.json`);
+            const friendsData = await friendsRes.json() || {};
+            
+            const pendingList = document.getElementById('pending-requests-list');
+            const friendsList = document.getElementById('friends-list');
+            
+            if (!pendingList || !friendsList) return;
+
+            pendingList.innerHTML = '';
+            friendsList.innerHTML = '';
+            
+            let hasPending = false;
+            let hasFriends = false;
+
+            for (const fId in friendsData) {
+                const status = friendsData[fId];
+                
+                const loginRes = await fetch(`${DATABASE_URL}/logins/${fId}.json`);
+                const loginData = await loginRes.json();
+                const displayName = loginData ? loginData.displayName : 'Unknown User';
+
+                if (status === 'pending') {
+                    hasPending = true;
+                    pendingList.innerHTML += `
+                        <div class="request-item">
+                            <span>${displayName} wants to be friends.</span>
+                            <div>
+                                <button class="btn" style="width: auto; padding: 5px 10px;" onclick="handleFriendAction('${fId}', 'accept')">Accept</button>
+                                <button class="btn secondary" style="width: auto; padding: 5px 10px; margin-left: 5px;" onclick="handleFriendAction('${fId}', 'reject')">Reject</button>
+                            </div>
+                        </div>`;
+                } else if (status === 'accepted') {
+                    hasFriends = true;
+                    friendsList.innerHTML += `
+                        <div class="request-item">
+                            <span>${displayName}</span>
+                            <button class="btn secondary" style="width: auto; padding: 5px 10px;" onclick="handleFriendAction('${fId}', 'remove')">Remove</button>
+                        </div>`;
+                }
+            }
+            
+            if (!hasPending) pendingList.innerHTML = '<p class="muted">No pending requests.</p>';
+            if (!hasFriends) friendsList.innerHTML = '<p class="muted">You have no accepted friends.</p>';
+        }
+
+        async function handleFriendAction(friendId, action) {
+            const userId = App.currentUser.userId;
+            
+            if (action === 'accept') {
+                await fetch(`${DATABASE_URL}/friends/${userId}/${friendId}.json`, { method: 'PUT', body: JSON.stringify('accepted') });
+                await fetch(`${DATABASE_URL}/friends/${friendId}/${userId}.json`, { method: 'PUT', body: JSON.stringify('accepted') });
+                showToast(`Friend request from accepted!`);
+            } else if (action === 'reject' || action === 'remove') {
+                await fetch(`${DATABASE_URL}/friends/${userId}/${friendId}.json`, { method: 'DELETE' });
+                await fetch(`${DATABASE_URL}/friends/${friendId}/${userId}.json`, { method: 'DELETE' });
+                showToast(`Friend removed.`);
+            }
+            fetchAndRenderFriends();
+        }
+
+        async function handleSendFriendRequest() {
+            const email = document.getElementById('friend-email-input')?.value.trim();
+            const messageEl = document.getElementById('friend-request-message');
+            if (!messageEl) return;
+            messageEl.textContent = '';
+
+            if (!email) {
+                messageEl.textContent = 'Please enter an email address.'; return;
+            }
+            
+            const friendId = emailToId(email);
+            const userId = App.currentUser.userId;
+
+            if (friendId === userId) {
+                messageEl.textContent = 'You cannot friend yourself.'; return;
+            }
+
+            const loginRes = await fetch(`${DATABASE_URL}/logins/${friendId}.json`);
+            const loginData = await loginRes.json();
+            
+            if (!loginData) {
+                messageEl.textContent = 'User not found.'; return;
+            }
+            
+            const currentStatusRes = await fetch(`${DATABASE_URL}/friends/${userId}/${friendId}.json`);
+            const currentStatus = await currentStatusRes.json();
+            
+            if (currentStatus === 'accepted') {
+                messageEl.textContent = `${loginData.displayName} is already your friend.`; return;
+            }
+            if (currentStatus === 'pending') {
+                messageEl.textContent = `A request from ${loginData.displayName} is pending your acceptance.`; return;
+            }
+
+            await fetch(`${DATABASE_URL}/friends/${friendId}/${userId}.json`, { method: 'PUT', body: JSON.stringify('pending') });
+            messageEl.textContent = `Request sent to ${loginData.displayName}.`;
         }
 
 
