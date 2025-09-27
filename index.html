@@ -518,7 +518,7 @@
         };
 
         const DATABASE_URL = "https://happp-96438-default-rtdb.firebaseio.com/";
-        const ANALYTICS_PATH = '/analytics'; // New path for view counts
+        const ANALYTICS_PATH = '/analytics'; // Path for view and referral counts
         
         let countdownInterval;
         let timetableCheckInterval;
@@ -822,26 +822,25 @@
         // NEW: View Tracking Logic
         async function trackProfileView(profileId) {
             const today = new Date().toISOString().substring(0, 10);
-            const viewRefUrl = `${DATABASE_URL}${ANALYTICS_PATH}/${profileId}/views_daily/${today}.json`;
             
+            // 1. Increment Daily Count (Uses PUT for simplicity, assumes low traffic or robust rules)
+            const dailyRefUrl = `${DATABASE_URL}${ANALYTICS_PATH}/${profileId}/views_daily/${today}.json`;
             try {
-                // Use a mock transaction (PATCH is safest approximation in simple fetch requests)
-                // In a real app, you would use a Cloud Function or Firebase SDK's transaction method for atomic increment.
-                // Here, we fetch, increment, and put back, which is susceptible to race conditions but functional for demonstration.
-                const currentViewsRes = await fetch(viewRefUrl);
-                let currentViews = await currentViewsRes.json();
-                
-                if (typeof currentViews !== 'number') {
-                    currentViews = 0;
-                }
-
-                await fetch(viewRefUrl, {
-                    method: 'PUT',
-                    body: JSON.stringify(currentViews + 1)
-                });
-
+                let currentDailyViews = (await fetch(dailyRefUrl).then(res => res.json())) || 0;
+                if (typeof currentDailyViews !== 'number') currentDailyViews = 0;
+                await fetch(dailyRefUrl, { method: 'PUT', body: JSON.stringify(currentDailyViews + 1) });
             } catch(e) {
-                console.error("Failed to track view:", e);
+                console.error("Failed to track daily view:", e);
+            }
+
+            // 2. Increment All-Time Total (Requires separate node for easy access)
+            const totalRefUrl = `${DATABASE_URL}${ANALYTICS_PATH}/${profileId}/total_views.json`;
+            try {
+                let currentTotalViews = (await fetch(totalRefUrl).then(res => res.json())) || 0;
+                if (typeof currentTotalViews !== 'number') currentTotalViews = 0;
+                await fetch(totalRefUrl, { method: 'PUT', body: JSON.stringify(currentTotalViews + 1) });
+            } catch(e) {
+                console.error("Failed to track all-time view:", e);
             }
         }
 
@@ -1035,7 +1034,7 @@
                     userData.email = loginData.email; 
                     App.currentProfileData = userData; 
                     applyVisuals(userData);
-                    renderProfile(userData); // This triggers trackProfileView
+                    renderProfile(userData); 
                 }
                 else document.getElementById('profile-name').textContent = 'User Not Found';
             };
@@ -1245,6 +1244,10 @@
             if (existingLogin) {
                 errorMessage.textContent = 'An account with this email already exists.'; return;
             }
+            
+            // Check for referral ID in URL parameters
+            const params = new URLSearchParams(window.location.search);
+            const referrerId = params.get('ref');
 
             await fetch(`${DATABASE_URL}/logins/${userId}.json`, { method: 'PUT', body: JSON.stringify({ email, password, displayName }) });
             
@@ -1279,6 +1282,7 @@
                     country: 'public',
                     timezone: 'public'
                 },
+                referrerId: referrerId || null, // Store the referrer ID
                 updatedAt: new Date().toISOString()
             };
             await fetch(`${DATABASE_URL}/users/${userId}.json`, { method: 'PUT', body: JSON.stringify(initialProfile) });
@@ -1293,10 +1297,23 @@
                 })
             });
 
+            // NEW: Increment referrer's count if one exists
+            if (referrerId) {
+                const referredCountRef = `${DATABASE_URL}${ANALYTICS_PATH}/${referrerId}/referred_count.json`;
+                try {
+                    let currentCount = (await fetch(referredCountRef).then(res => res.json())) || 0;
+                    if (typeof currentCount !== 'number') currentCount = 0;
+                    await fetch(referredCountRef, { method: 'PUT', body: JSON.stringify(currentCount + 1) });
+                } catch (e) {
+                    console.error("Failed to increment referrer count:", e);
+                }
+            }
+
+
             App.currentUser = { email, displayName, userId };
             localStorage.setItem('hapUser', JSON.stringify(App.currentUser));
             if (App.elements.mainHeader) App.elements.mainHeader.classList.remove('hidden');
-            navigateTo('profilePage');
+            navigateToInternal('profilePage'); // Use internal navigation to clear the ?ref=ID from URL
         }
 
         async function handleLogin(e) {
@@ -1519,10 +1536,11 @@
 
         async function handleShareStatus() {
             if (!App.currentUser) return;
-            const shareUrl = `${window.location.origin}${window.location.pathname}?user=${App.currentUser.userId}`;
+            // NEW: Added ref=ID query parameter for referral tracking
+            const shareUrl = `${window.location.origin}${window.location.pathname}?user=${App.currentUser.userId}&ref=${App.currentUser.userId}`;
             const shareData = {
                 title: `${App.currentUser.displayName}'s HAP Status`,
-                text: "Check out my current availability and status!",
+                text: "Check out my current availability and status and sign up using my link!",
                 url: shareUrl,
             };
 
@@ -1531,14 +1549,14 @@
                     await navigator.share(shareData);
                 } else {
                     navigator.clipboard.writeText(shareUrl).then(() => {
-                        showToast('Profile link copied to clipboard!');
+                        showToast('Profile and referral link copied to clipboard!');
                     }).catch(clipErr => {
                         showToast('Could not copy link.', 'error');
                     });
                 }
             } catch (err) {
                 navigator.clipboard.writeText(shareUrl).then(() => {
-                    showToast('Profile link copied to clipboard!');
+                    showToast('Profile and referral link copied to clipboard!');
                 }).catch(clipErr => {
                     showToast('Could not copy link.', 'error');
                 });
@@ -1546,9 +1564,9 @@
         }
 
 
-        // --- Analytics (Omitted for brevity, logic remains the same) ---
+        // --- Analytics ---
         
-        // NEW: Function to get views for a specific number of days ending yesterday/today
+        // Function to get views for a specific number of days ending yesterday/today
         function getAnalyticsDateRange(days) {
             const dates = [];
             const endDate = new Date(); // Use current date
@@ -1570,38 +1588,43 @@
             if (historyLogEl) historyLogEl.innerHTML = '<p class="muted">Fetching history...</p>';
 
             try {
-                // 1. Fetch View Counts
-                const viewsRes = await fetch(`${DATABASE_URL}${ANALYTICS_PATH}/${userId}/views_daily.json`);
-                const dailyViews = await viewsRes.json() || {};
+                // 1. Fetch ALL Analytics Data
+                const analyticsRes = await fetch(`${DATABASE_URL}${ANALYTICS_PATH}/${userId}.json`);
+                const allAnalyticsData = await analyticsRes.json() || {};
+                const dailyViews = allAnalyticsData.views_daily || {};
+                const totalViews = allAnalyticsData.total_views || 0;
+                const referredCount = allAnalyticsData.referred_count || 0;
                 
                 const dayRanges = [
-                    { label: "Today", days: 1, calculate: true },
-                    { label: "Last 3 Days", days: 3, calculate: true },
-                    { label: "Last 7 Days", days: 7, calculate: true },
-                    { label: "Last 14 Days", days: 14, calculate: true },
-                    { label: "Last 28 Days", days: 28, calculate: true }
+                    { label: "Today", days: 1 },
+                    { label: "Last 3 Days", days: 3 },
+                    { label: "Last 7 Days", days: 7 },
+                    { label: "Last 14 Days", days: 14 },
+                    { label: "Last 28 Days", days: 28 },
                 ];
                 
+                const analyticsMetrics = [];
                 const todayDate = new Date().toISOString().substring(0, 10);
-                
-                const analyticsData = dayRanges.map(range => {
-                    let totalViews = 0;
+
+                // Calculate Range Metrics
+                dayRanges.forEach(range => {
+                    let totalViewsRange = 0;
                     const datesToInclude = getAnalyticsDateRange(range.days);
 
                     datesToInclude.forEach(date => {
-                        totalViews += (dailyViews[date] || 0);
+                        totalViewsRange += (dailyViews[date] || 0);
                     });
 
-                    // Adjust "Today" count to accurately reflect only today's data if needed
-                    if (range.label === "Today") {
-                         totalViews = dailyViews[todayDate] || 0;
-                    }
-                    
-                    return { label: range.label, value: totalViews };
+                    analyticsMetrics.push({ label: range.label, value: totalViewsRange });
                 });
+                
+                // Add All-Time and Referral Metrics
+                analyticsMetrics.push({ label: "All-Time Views", value: totalViews });
+                analyticsMetrics.push({ label: "Referred Accounts", value: referredCount });
+
 
                 if (analyticsGridEl) {
-                    analyticsGridEl.innerHTML = analyticsData.map(metric => `
+                    analyticsGridEl.innerHTML = analyticsMetrics.map(metric => `
                         <div class="analytics-metric">
                             <div class="metric-value">${metric.value.toLocaleString()}</div>
                             <div class="metric-label">${metric.label}</div>
@@ -1610,7 +1633,7 @@
                 }
 
 
-                // 2. Fetch Status History Log
+                // 2. Fetch Status History Log (Same as before)
                 const userHistoryRes = await fetch(`${DATABASE_URL}/history/${App.currentUser.userId}.json`);
                 const historyData = await userHistoryRes.json();
                 
