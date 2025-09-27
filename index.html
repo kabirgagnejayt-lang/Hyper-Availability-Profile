@@ -274,14 +274,6 @@
             margin-top: 50px; 
             border-radius: var(--radius);
         }
-        .banned-public-notice {
-            background: #fef2f2;
-            color: #ef4444;
-            padding: 15px;
-            border-radius: var(--radius);
-            margin-bottom: 20px;
-            font-weight: 600;
-        }
     </style>
 </head>
 <body>
@@ -341,7 +333,6 @@
                 <h1>🚨 Account Restricted 🚨</h1>
                 <p id="ban-reason">Your account has been restricted.</p>
                 <p id="ban-end-time"></p>
-                <p style="font-size: 0.9rem; margin-top: 20px;">If this was a mistake, please contact support.</p>
                 <button id="banned-logout-btn" class="btn secondary" style="margin-top: 30px;">Logout</button>
                 <button id="banned-delete-btn" class="btn" style="margin-top: 10px; background: #ef4444;">Delete Account Permanently</button>
             </div>
@@ -349,19 +340,18 @@
 
         <div id="profilePage" class="page">
             <div class="card profile-header">
-                <div id="public-ban-notice" class="banned-public-notice hidden"></div>
-                <div id="profile-content">
-                    <div id="profile-pfp"></div> 
-                    <div class="profile-emoji" id="profile-emoji">❓</div>
-                    <h1 class="profile-name" id="profile-name">Loading...</h1>
-                    <p class="profile-message" id="profile-message">Fetching status...</p>
-                    <div class="profile-timer" id="profile-timer"></div>
-                    <p class="local-time-display" id="local-time-info" style="font-size: 1rem; margin-top: 10px; font-weight: 500;"></p>
-                    <p class="local-time-display" id="proximity-status" style="font-size: 1rem; margin-top: 5px; font-weight: 600; color: var(--primary);"></p>
-                </div>
+                <div id="profile-pfp"></div> 
+                <div class="profile-emoji" id="profile-emoji">❓</div>
+                <h1 class="profile-name" id="profile-name">Loading...</h1>
+                <p class="profile-message" id="profile-message">Fetching status...</p>
+                <div class="profile-timer" id="profile-timer"></div>
+                <!-- ADDED LOCAL TIME DISPLAY -->
+                <p class="local-time-display" id="local-time-info" style="font-size: 1rem; margin-top: 10px; font-weight: 500;"></p>
+                <!-- NEW: Proximity Status -->
+                <p class="local-time-display" id="proximity-status" style="font-size: 1rem; margin-top: 5px; font-weight: 600; color: var(--primary);"></p>
             </div>
             
-            <div class="card" id="contact-info-card">
+            <div class="card">
                 <h2>Contact & Info</h2>
                 <div id="personal-details-list">
                     <p class="muted">Loading personal info...</p>
@@ -369,13 +359,14 @@
             </div>
 
             <div class="card action-links-container" id="profile-action-links">
-                </div>
+                <!-- This container is where the 'Get Contact Card' button is dynamically injected -->
+            </div>
 
-            <div class="card" id="custom-links-card">
+            <div class="card">
                 <h2>Custom Links</h2>
                 <div id="profile-links"><p class="muted">No links provided.</p></div>
             </div>
-            <div class="card" id="share-status-card">
+            <div class="card">
                 <button id="share-status-btn" class="btn">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M10.5 4.5a.75.75 0 0 0 0 1.5h4.51L7.24 13.76a.75.75 0 0 0 1.06 1.06L16.06 7.06v4.44a.75.75 0 0 0 1.5 0V4.5h-7.06Z"></path><path d="M5.25 3.75A1.5 1.5 0 0 0 3.75 5.25v13.5A1.5 1.5 0 0 0 5.25 20.25h13.5A1.5 1.5 0 0 0 20.25 18.75V12a.75.75 0 0 0-1.5 0v6.75a.25.25 0 0 1-.25.25H5.25a.25.25 0 0 1-.25-.25V5.25a.25.25 0 0 1 .25-.25H12a.75.75 0 0 0 0-1.5H5.25Z"></path></svg>
                     <span>Share Status (Get Referral Link)</span>
@@ -390,7 +381,8 @@
                 </div>
             </div>
             
-            <div class="card" id="feedback-card">
+            <!-- NEW: User Feedback Card -->
+            <div class="card">
                 <h2>Send Feedback to Admin 📢</h2>
                 <div class="form-group">
                     <textarea id="user-feedback-input" placeholder="Tell us how we can improve HAP or report an issue (Max 200 chars)" maxlength="200"></textarea>
@@ -403,12 +395,14 @@
             <div class="card">
                 <h1>Admin Control Panel</h1>
                 
+                <!-- Admin Sub-Navigation -->
                 <div class="admin-tabs">
                     <div class="admin-tab active" data-admin-tab="overview">Overview</div>
                     <div class="admin-tab" data-admin-tab="users">User Management</div>
                     <div class="admin-tab" data-admin-tab="feedback">User Feedback</div>
                 </div>
 
+                <!-- 1. Overview Tab -->
                 <div id="admin-overview" class="admin-content-tab">
                     <h3>System Analytics Snapshot</h3>
                     <p class="muted">Key growth and usage metrics.</p>
@@ -417,6 +411,7 @@
                     </div>
                 </div>
 
+                <!-- 2. User Management Tab -->
                 <div id="admin-users" class="admin-content-tab hidden">
                     <h3>Search & Moderate Users</h3>
                     <div class="form-group">
@@ -430,6 +425,7 @@
                     </div>
                 </div>
 
+                <!-- 3. Feedback Tab -->
                 <div id="admin-feedback" class="admin-content-tab hidden">
                     <h3>User Feedback Inbox</h3>
                     <div id="admin-feedback-list">
@@ -564,12 +560,15 @@
                     </select>
                 </div>
                 
+                <!-- NEW: Separated Timezone Selection -->
                 <div class="form-group">
                     <label for="timezone-selector">Timezone Selection (Your Local Time)</label>
                     <select id="timezone-selector">
                         <option value="auto">Auto-Detect (Browser)</option>
-                        </select>
+                        <!-- Options filled by JS -->
+                    </select>
                 </div>
+                <!-- NEW: Timezone Visibility -->
                 <div class="privacy-group">
                     <label for="privacy-timezone">Local Time Visibility</label>
                     <select id="privacy-timezone">
@@ -653,6 +652,7 @@
                 </div>
             </div>
 
+            <!-- NEW: Location-Based Status Settings -->
             <div class="card">
                 <h2>Live Location Status 📍</h2>
                 <p class="muted" id="current-location-status">Location services are not active. Grant permission and press 'Add' to save a location.</p>
@@ -690,7 +690,8 @@
         </div>
         
         <div id="analyticsPage" class="page">
-             <div class="card">
+             <!-- NEW: Search Panel -->
+            <div class="card">
                 <h2>Search Public HAP Profiles</h2>
                 <div class="form-group" style="margin-bottom: 0;">
                     <input type="text" id="user-search-input" placeholder="Enter name or email to search">
@@ -711,6 +712,7 @@
                     <p class="muted" style="grid-column: 1 / -1; text-align: center;">Loading view data...</p>
                 </div>
             </div>
+            <!-- Status History Timeline -->
             <div class="card">
                 <h2>Status History Timeline (Last 10)</h2>
                 <div id="history-log">
@@ -746,7 +748,7 @@
         const DATABASE_URL = "https://happp-96438-default-rtdb.firebaseio.com/";
         const ANALYTICS_PATH = '/analytics'; 
         const FEEDBACK_PATH = '/feedback';
-        const LOCATION_RANGE_KM = 0.5; 
+        const LOCATION_RANGE_KM = 0.5;
         
         // Comprehensive list of Timezone UTC offsets (in minutes) for the selector
         const TIMEZONE_MAP = {
@@ -797,7 +799,7 @@
             currentUser: null,
             currentProfileData: null, 
             svg: {
-                link: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 5 0 0 0-7.07-7.07l-1.72 1.72"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72"></path></svg>`,
+                link: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 5 0 0 0 7.54.54l3-3a5 5 5 0 0 0-7.07-7.07l-1.72 1.72"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72"></path></svg>`,
                 vcard: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M18 1.5a2.25 2.25 0 0 1 2.25 2.25v16.5A2.25 2.25 0 0 1 18 22.5H6a2.25 2.25 0 0 1-2.25-2.25V3.75A2.25 2.25 0 0 1 6 1.5h12ZM6.75 6A.75.75 0 0 0 6 6.75a.75.75 0 0 0 .75.75h10.5a.75.75 0 0 0 .75-.75.75.75 0 0 0-.75-.75H6.75Z"></path><path d="M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z"></path><path d="M6 16.5a.75.75 0 0 0-.75.75v3.25a.75.75 0 0 0 1.5 0v-3.25a.75.75 0 0 0-.75-.75ZM18 16.5a.75.75 0 0 0-.75.75v3.25a.75.75 0 0 0 1.5 0v-3.25a.75.75 0 0 0-.75-.75Z"></path></svg>`
             },
             statusColors: { 
@@ -833,6 +835,7 @@
             if (timezoneId === 'auto') {
                 return new Date().getTimezoneOffset() * -1;
             }
+            // Find the offset by matching the ID string (which is the numeric offset)
             return parseInt(timezoneId) || (new Date().getTimezoneOffset() * -1);
         }
         
@@ -843,13 +846,7 @@
             if (isNaN(numericOffset)) return "Unknown";
 
             const foundEntry = Object.entries(TIMEZONE_MAP).find(([, offset]) => offset === numericOffset);
-            
-            const sign = numericOffset >= 0 ? '+' : '';
-            const hours = String(Math.floor(Math.abs(numericOffset) / 60)).padStart(2, '0');
-            const minutes = String(Math.abs(numericOffset) % 60).padStart(2, '0');
-            const utcString = `UTC${sign}${hours}:${minutes}`;
-
-            return foundEntry ? foundEntry[0] : utcString;
+            return foundEntry ? foundEntry[0] : `Custom (UTC${numericOffset >= 0 ? '+' : ''}${numericOffset / 60})`;
         }
 
         function isNightTime(localHour) {
@@ -916,9 +913,8 @@
 
                  if (App.currentUser.banStatus) {
                     const status = App.currentUser.banStatus;
-                    const isBanned = status.status === 'permanent' || (status.status === 'temporary' && new Date(status.endTime).getTime() > Date.now());
-
-                    if (isBanned) {
+                    if (status.status === 'permanent' || (status.status === 'temporary' && new Date(status.endTime).getTime() > Date.now())) {
+                        // Redirect to Banned Page if banned
                         if (window.location.hash.substring(1) !== 'bannedPage') {
                             renderBannedPage(status);
                             return; 
@@ -934,14 +930,11 @@
                 isPublicView = true;
                 if (App.elements.mainHeader) App.elements.mainHeader.classList.add('hidden');
                 
-                const shareCard = document.getElementById('share-status-card');
+                const shareCard = document.getElementById('share-status-btn')?.closest('.card');
                 if (shareCard) shareCard.classList.add('hidden');
-                
-                const feedbackCard = document.getElementById('feedback-card');
-                if (feedbackCard) feedbackCard.classList.add('hidden');
 
                 App.pages.forEach(pId => {
-                    if (App.elements[pId] && pId !== 'profilePage' && pId !== 'bannedPage') App.elements[pId].style.display = 'none';
+                    if (App.elements[pId] && pId !== 'profilePage') App.elements[pId].style.display = 'none';
                 });
                 if (App.elements.profilePage) App.elements.profilePage.style.display = 'block';
 
@@ -978,6 +971,7 @@
             }
 
             if (targetPageId === 'adminPage' && !App.currentUser?.isAdmin) {
+                // Deny non-admin users access
                 targetPageId = App.currentUser ? 'profilePage' : 'loginPage';
                 if (App.currentUser) showToast("Access Denied: Admin privileges required.");
             }
@@ -1012,10 +1006,12 @@
         }
         
         function renderBannedPage(banStatus) {
+            // Stop location tracking and clear intervals
             stopLocationTracking();
             if (timetableCheckInterval) clearInterval(timetableCheckInterval);
             if (countdownInterval) clearInterval(countdownInterval);
 
+            // Hide all pages and show only bannedPage
             App.pages.forEach(pId => {
                 if (App.elements[pId]) App.elements[pId].style.display = 'none';
             });
@@ -1034,6 +1030,7 @@
                 banEndTimeEl.textContent = `This is a permanent ban.`;
             }
 
+            // Ensure listeners are only set once
             document.getElementById('banned-logout-btn')?.removeEventListener('click', handleLogout);
             document.getElementById('banned-logout-btn')?.addEventListener('click', handleLogout);
             
@@ -1056,7 +1053,7 @@
 
         function startLocationTracking() {
             if (!App.currentUser) return;
-            if (App.currentUser.banStatus) return; 
+            if (App.currentUser.banStatus) return; // Do not track banned users
 
             if (locationWatcherId) navigator.geolocation.clearWatch(locationWatcherId);
             
@@ -1236,6 +1233,7 @@
             const params = new URLSearchParams(window.location.search);
             const referrerId = params.get('ref');
 
+            // NEW: Global Signup Counter Increment
             const signupDate = new Date().toISOString().substring(0, 10);
             const signupRefUrl = `${DATABASE_URL}${ANALYTICS_PATH}/global/signups_daily/${signupDate}.json`;
             try {
@@ -1246,6 +1244,7 @@
                  console.error("Failed to increment global signup count:", e);
             }
 
+            // Create login record (Default isAdmin: false, no banStatus)
             await fetch(`${DATABASE_URL}/logins/${userId}.json`, { 
                 method: 'PUT', 
                 body: JSON.stringify({ 
@@ -1355,6 +1354,7 @@
         function handleLogout() {
             stopLocationTracking();
             localStorage.removeItem('hapUser');
+            // Clear all current user data
             App.currentUser = null;
             App.currentProfileData = null; 
 
@@ -1370,6 +1370,7 @@
             if (confirmDelete === 'DELETE') {
                 const userId = App.currentUser.userId;
                 
+                // Delete all user related data nodes
                 await fetch(`${DATABASE_URL}/logins/${userId}.json`, { method: 'DELETE' });
                 await fetch(`${DATABASE_URL}/users/${userId}.json`, { method: 'DELETE' });
                 await fetch(`${DATABASE_URL}/history/${userId}.json`, { method: 'DELETE' });
@@ -1382,7 +1383,7 @@
             }
         }
 
-        // --- Settings & Save / Update Status Logic ---
+        // --- Settings & Save / Update Status Logic (Modified to call updateStatus helper) ---
         async function handleSaveSettings() {
             if (!App.currentUser) return;
             
@@ -1418,14 +1419,11 @@
             const clientUtcOffsetMinutes = new Date().getTimezoneOffset() * -1; 
 
             const dataToSave = {
+                // User Data Fields
                 displayName: document.getElementById('display-name')?.value.trim(),
                 theme: document.getElementById('themeSelect')?.value,
                 profileAccentColor: document.getElementById('accent-color')?.value,
                 schedulingLink: document.getElementById('scheduling-link')?.value.trim(),
-                displayNameFont: document.getElementById('display-font')?.value,
-                dynamicTitleTemplate: document.getElementById('dynamic-title-template')?.value,
-                linkTextColor: document.getElementById('link-text-color')?.value,
-                profileBgValue: document.getElementById('profile-bg-value')?.value.trim(),
                 bio: document.getElementById('bio')?.value.trim().substring(0, 100), 
                 birthday: document.getElementById('birthday')?.value.trim(),
                 gender: document.getElementById('gender')?.value,
@@ -1433,6 +1431,24 @@
                 phone: document.getElementById('phone-number')?.value.trim(),
                 country: document.getElementById('country')?.value.trim(),
                 school: document.getElementById('school')?.value.trim(),
+                
+                // Customization
+                displayNameFont: document.getElementById('display-font')?.value,
+                dynamicTitleTemplate: document.getElementById('dynamic-title-template')?.value,
+                linkTextColor: document.getElementById('link-text-color')?.value,
+                profileBgValue: document.getElementById('profile-bg-value')?.value.trim(),
+
+                // Status Fields
+                status: document.getElementById('status-emoji')?.value,
+                message: document.getElementById('status-message')?.value.trim(),
+                endTime: endTime,
+                autoResetStatus: document.getElementById('auto-reset')?.checked,
+                
+                // Location & Timetable (Keep existing data)
+                timetable: data.timetable || [],
+                savedLocations: data.savedLocations || [],
+                
+                // Timezone Settings
                 timeZoneOffset: clientUtcOffsetMinutes,
                 timezoneOverride: document.getElementById('timezone-selector')?.value,
                 privacy: {
@@ -1448,8 +1464,6 @@
                 },
                 updatedAt: new Date().toISOString(),
                 links: customLinks,
-                timetable: data.timetable || [],
-                savedLocations: data.savedLocations || [],
                 pfpUrl: data.pfpUrl
             };
             
@@ -1463,7 +1477,10 @@
                     if (document.getElementById('pfp-upload')) document.getElementById('pfp-upload').value = ''; 
                     if (pfpPreviewEl) pfpPreviewEl.textContent = 'Image saved.';
                     
+                    // Separate call to update user details in /users
                     await fetch(`${DATABASE_URL}/users/${App.currentUser.userId}.json`, { method: 'PUT', body: JSON.stringify(dataToSave) });
+                    
+                    // Separate call to log the status update
                     await updateStatus(dataToSave);
                 };
                 reader.readAsDataURL(pfpFile);
@@ -1497,67 +1514,66 @@
             gridEl.innerHTML = '<p class="muted" style="grid-column: 1 / -1; text-align: center;">Calculating global data...</p>';
 
             try {
+                // Fetch all data necessary
                 const allUsersRes = await fetch(`${DATABASE_URL}/users.json`);
                 const allUsers = await allUsersRes.json() || {};
+                const loginsRes = await fetch(`${DATABASE_URL}/logins.json`);
+                const allLogins = await loginsRes.json() || {};
                 const globalAnalyticsRes = await fetch(`${DATABASE_URL}${ANALYTICS_PATH}/global.json`);
                 const globalAnalytics = await globalAnalyticsRes.json() || {};
 
                 const totalUsers = Object.keys(allUsers).length;
                 const dailySignups = globalAnalytics.signups_daily || {};
-                const dailyLinkClicks = globalAnalytics.link_clicks_daily || {};
 
+                // Calculate online users (simple heuristic: logged in user updated status/profile recently)
                 const now = Date.now();
-                const activeThresholdMs = 3600000;
+                const activeThresholdMs = 3600000; // 1 hour
                 const onlineUsers = Object.values(allUsers).filter(user => new Date(user.updatedAt).getTime() > (now - activeThresholdMs)).length;
 
+                // Signup metrics calculation
                 const signupRanges = [
                     { label: "Signups Today", days: 1 },
                     { label: "Signups Last 7 Days", days: 7 },
                     { label: "Total Accounts", days: 0 }
                 ];
                 
-                const clickRanges = [
-                    { label: "Links Clicked Today", days: 1 },
-                    { label: "Links Clicked 7 Days", days: 7 }
-                ];
-
-                const metrics = [];
-                
-                metrics.push({ label: "Total Users", value: totalUsers });
-                metrics.push({ label: "Online (Past 1H)", value: onlineUsers });
-
-                const datesForRanges = getAnalyticsDateRange(28);
+                const signupMetrics = [];
+                const todayDate = new Date().toISOString().substring(0, 10);
 
                 signupRanges.forEach(range => {
                     let total = 0;
-                    if (range.days === 0) {
-                        total = totalUsers;
+                    if (range.days > 0) {
+                        const datesToInclude = getAnalyticsDateRange(range.days);
+                        datesToInclude.forEach(date => {
+                            total += (dailySignups[date] || 0);
+                        });
                     } else {
-                        const dates = datesForRanges.slice(0, range.days);
-                        dates.forEach(date => total += (dailySignups[date] || 0));
+                        total = totalUsers;
                     }
-                    metrics.push({ label: range.label, value: total });
+                    signupMetrics.push({ label: range.label, value: total });
                 });
                 
-                clickRanges.forEach(range => {
-                    let totalClicks = 0;
-                    const dates = datesForRanges.slice(0, range.days);
-                    dates.forEach(date => {
-                        const dateClicks = dailyLinkClicks[date];
-                        if (dateClicks) {
-                            // Sum clicks across all link indices for that day
-                            Object.values(dateClicks).forEach(count => totalClicks += count);
-                        }
-                    });
-                    metrics.push({ label: range.label, value: totalClicks });
-                });
-                
-                gridEl.innerHTML = metrics.map(metric => `
-                    <div class="analytics-metric">
-                        <div class="metric-value">${metric.value.toLocaleString()}</div>
-                        <div class="metric-label">${metric.label}</div>
+                // Render metrics
+                gridEl.innerHTML = `
+                    <div class="analytics-metric" style="background: #e0f2f1;">
+                        <div class="metric-value">${totalUsers.toLocaleString()}</div>
+                        <div class="metric-label">Total Users</div>
                     </div>
-                `).join('');
+                    <div class="analytics-metric" style="background: #e0f2f1;">
+                        <div class="metric-value">${onlineUsers.toLocaleString()}</div>
+                        <div class="metric-label">Online (Past 1H)</div>
+                    </div>
+                    ${signupMetrics.map(metric => `
+                        <div class="analytics-metric">
+                            <div class="metric-value">${metric.value.toLocaleString()}</div>
+                            <div class="metric-label">${metric.label}</div>
+                        </div>
+                    `).join('')}
+                    <!-- Placeholder for Clicks / Popularity - requires more complex data structure not fully implemented -->
+                    <p class="muted" style="grid-column: 1 / -1; margin-top: 10px;">
+                        Note: Top Profiles and detailed link click analysis requires further server-side processing.
+                    </p>
+                `;
 
             } catch (e) {
                 console.error("Admin overview failed:", e);
@@ -1593,7 +1609,7 @@
             }
 
             listEl.innerHTML = userArray.map(user => {
-                const isBanned = user.banStatus && (user.banStatus.status === 'permanent' || (user.banStatus.status === 'temporary' && new Date(user.banStatus.endTime).getTime() > Date.now()));
+                const isBanned = user.banStatus && (user.banStatus.status === 'permanent' || new Date(user.banStatus.endTime).getTime() > Date.now());
                 const banLabel = isBanned ? (user.banStatus.status === 'permanent' ? '🛑 PERM BANNED' : '⚠️ TEMP BANNED') : '';
                 const banColor = isBanned ? '#ef4444' : '#10b981';
 
@@ -1607,81 +1623,13 @@
                             <button class="btn secondary" style="width: auto;" onclick="navigateToPublicProfileAdmin('${user.userId}')">View HAP</button>
                             ${isBanned 
                                 ? `<button class="btn" style="width: auto; background: #3b82f6;" onclick="handleBanUser('${user.userId}', 'unban')">Unban</button>`
-                                : `<button class="btn" style="width: auto; background: #f59e0b;" onclick="promptBanUser('${user.userId}', '${user.displayName}')">Ban</button>`
+                                : `<button class="btn" style="width: auto; background: #f59e0b;" onclick="promptBanUser('${user.userId}')">Ban</button>`
                             }
                             <button class="btn" style="width: auto; background: #ef4444;" onclick="handleAdminDeleteUser('${user.userId}')">Delete</button>
                         </div>
                     </div>
                 `;
             }).join('');
-        }
-
-        function promptBanUser(userId, displayName) {
-             const banContainer = document.getElementById('admin-users');
-             const existingModal = document.getElementById('ban-form-modal');
-             if (existingModal) existingModal.remove();
-
-             banContainer.insertAdjacentHTML('afterbegin', `
-                <div id="ban-form-modal" class="card" style="margin-top: -20px; border: 2px solid #ef4444;">
-                    <h3>Ban User: ${displayName}</h3>
-                    <div class="form-group">
-                        <label for="ban-type">Ban Type</label>
-                        <select id="ban-type">
-                            <option value="temporary">Temporary Ban</option>
-                            <option value="permanent">Permanent Ban</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="ban-reason-input">Reason (Required)</label>
-                        <input type="text" id="ban-reason-input" placeholder="e.g., Spamming, Violation of Policy" required>
-                    </div>
-                    <div class="form-group" id="ban-end-time-group">
-                        <label for="ban-duration">Ban Duration (Days)</label>
-                        <input type="number" id="ban-duration" value="7" min="1" required>
-                    </div>
-                    <button class="btn" style="background: #ef4444;" onclick="executeBan('${userId}')">Confirm Ban</button>
-                    <button class="btn secondary" style="margin-top: 10px;" onclick="document.getElementById('ban-form-modal').remove()">Cancel</button>
-                </div>
-             `);
-
-             document.getElementById('ban-type').addEventListener('change', (e) => {
-                 document.getElementById('ban-end-time-group').classList.toggle('hidden', e.target.value === 'permanent');
-             });
-        }
-        
-        async function executeBan(userId) {
-            const modal = document.getElementById('ban-form-modal');
-            const banType = document.getElementById('ban-type').value;
-            const reason = document.getElementById('ban-reason-input').value.trim();
-            const durationDays = parseInt(document.getElementById('ban-duration')?.value, 10);
-
-            if (!reason) {
-                return showToast("Ban reason is required.");
-            }
-
-            let endTime = null;
-            if (banType === 'temporary') {
-                if (isNaN(durationDays) || durationDays <= 0) return showToast("Invalid duration.");
-                endTime = new Date(Date.now() + durationDays * 24 * 3600000).toISOString();
-            }
-
-            await handleBanUser(userId, banType, reason, endTime);
-            modal.remove();
-        }
-
-        async function handleBanUser(userId, status, reason = null, endTime = null) {
-            let banStatus = null;
-            if (status !== 'unban') {
-                banStatus = { status, reason, endTime, bannedAt: new Date().toISOString() };
-            }
-
-            await fetch(`${DATABASE_URL}/logins/${userId}/banStatus.json`, {
-                method: banStatus ? 'PUT' : 'DELETE',
-                body: banStatus ? JSON.stringify(banStatus) : undefined
-            });
-            allUsersCache = null;
-            showToast(`User ${userId} status updated to ${status}.`);
-            fetchAndRenderUserManagement();
         }
 
         async function fetchAndRenderFeedback() {
@@ -1707,9 +1655,60 @@
                         <button class="btn" style="width: auto; padding: 5px 10px; background: #10b981;" onclick="handleResolveFeedback('${f.feedbackId}')">Resolve</button>
                     </div>
                     <p style="margin: 5px 0;">"${f.message}"</p>
-                    <p style="font-size: 0.75rem; color: var(--muted);">Received: ${new Date(f.timestamp).toLocaleString()} | User ID: ${f.userId}</p>
+                    <p style="font-size: 0.75rem; color: var(--muted);">Received: ${new Date(f.timestamp).toLocaleString()}</p>
                 </div>
             `).join('');
+        }
+        
+        // Admin action helpers
+        function navigateToPublicProfileAdmin(userId) {
+            window.location.href = `${window.location.origin}${window.location.pathname}?user=${userId}`;
+        }
+
+        async function handleAdminDeleteUser(userId) {
+            const confirmDelete = prompt(`Type CONFIRM to delete ALL data for user ID: ${userId}.`);
+            if (confirmDelete === 'CONFIRM') {
+                await fetch(`${DATABASE_URL}/logins/${userId}.json`, { method: 'DELETE' });
+                await fetch(`${DATABASE_URL}/users/${userId}.json`, { method: 'DELETE' });
+                await fetch(`${DATABASE_URL}/history/${userId}.json`, { method: 'DELETE' });
+                await fetch(`${DATABASE_URL}${ANALYTICS_PATH}/${userId}.json`, { method: 'DELETE' });
+                allUsersCache = null; 
+                showToast(`User ${userId} deleted.`);
+                fetchAndRenderUserManagement(); 
+            }
+        }
+
+        function promptBanUser(userId) {
+            const banType = prompt("Ban type: 'perm' or 'temp'?");
+            if (!banType) return;
+            const reason = prompt("Reason for ban:");
+            if (!reason) return;
+
+            if (banType === 'perm') {
+                 handleBanUser(userId, 'permanent', reason);
+            } else if (banType === 'temp') {
+                const durationHours = parseInt(prompt("Temporary ban duration (hours):"), 10);
+                if (isNaN(durationHours) || durationHours <= 0) return showToast("Invalid duration.");
+                const endTime = new Date(Date.now() + durationHours * 3600000).toISOString();
+                handleBanUser(userId, 'temporary', reason, endTime);
+            } else {
+                showToast("Invalid ban type.");
+            }
+        }
+
+        async function handleBanUser(userId, status, reason, endTime = null) {
+            let banStatus = null;
+            if (status !== 'unban') {
+                banStatus = { status, reason, endTime };
+            }
+
+            await fetch(`${DATABASE_URL}/logins/${userId}/banStatus.json`, {
+                method: banStatus ? 'PUT' : 'DELETE',
+                body: banStatus ? JSON.stringify(banStatus) : undefined
+            });
+            allUsersCache = null;
+            showToast(`User ${userId} status updated to ${status}.`);
+            fetchAndRenderUserManagement();
         }
         
         async function handleResolveFeedback(feedbackId) {
@@ -1754,15 +1753,12 @@
             const selector = document.getElementById('timezone-selector');
             if (!selector) return;
 
+            // Add 'Auto-Detect' option first
             selector.innerHTML = `<option value="auto">Auto-Detect (Browser)</option>`;
             
-            const uniqueOffsets = {};
-            Object.entries(TIMEZONE_MAP).forEach(([label, offset]) => {
-                uniqueOffsets[offset] = label;
-            });
-
-            Object.entries(uniqueOffsets).sort(([, a], [, b]) => getTzOffsetMinutes(a) - getTzOffsetMinutes(b)).forEach(([offset, label]) => {
-                 selector.innerHTML += `<option value="${offset}">${label}</option>`;
+            Object.entries(TIMEZONE_MAP).sort(([, a], [, b]) => a - b).forEach(([label, offset]) => {
+                const value = offset.toString();
+                selector.innerHTML += `<option value="${value}">${label}</option>`;
             });
         }
         
@@ -1783,6 +1779,7 @@
                 if (navBtn) navigateTo(navBtn.dataset.page);
             });
             
+            // Admin Panel Tab Switching
             document.querySelector('#adminPage .admin-tabs')?.addEventListener('click', e => {
                 const tab = e.target.closest('.admin-tab');
                 if (tab) {
@@ -1813,6 +1810,7 @@
                 }
             });
             
+            // Admin User Search
             document.getElementById('admin-user-search-btn')?.addEventListener('click', fetchAndRenderUserManagement);
             document.getElementById('admin-user-search-input')?.addEventListener('keypress', (e) => {
                  if (e.key === 'Enter') {
@@ -1821,6 +1819,7 @@
                 }
             });
 
+            // User Feedback
             document.getElementById('send-feedback-btn')?.addEventListener('click', handleSendFeedback);
             
             document.getElementById('pfp-upload')?.addEventListener('change', (e) => {
