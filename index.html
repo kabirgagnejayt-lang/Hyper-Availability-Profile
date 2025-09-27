@@ -453,19 +453,51 @@
                         <option value="private">Private</option>
                     </select>
                 </div>
+                
+                <div class="form-group">
+                    <label for="timezone-selector">Timezone Selection (Your Local Time)</label>
+                    <select id="timezone-selector">
+                        <option value="auto">Auto-Detect (Browser)</option>
+                        <option value="-720">UTC-12:00 (Eniwetok)</option>
+                        <option value="-660">UTC-11:00 (Midway Island)</option>
+                        <option value="-600">UTC-10:00 (Hawaii)</option>
+                        <option value="-540">UTC-09:00 (Alaska)</option>
+                        <option value="-480">UTC-08:00 (PST / Pacific)</option>
+                        <option value="-420">UTC-07:00 (MST / Mountain)</option>
+                        <option value="-360">UTC-06:00 (CST / Central)</option>
+                        <option value="-300">UTC-05:00 (EST / Eastern)</option>
+                        <option value="-240">UTC-04:00 (Atlantic)</option>
+                        <option value="-210">UTC-03:30 (Newfoundland)</option>
+                        <option value="-180">UTC-03:00 (Brazil/Buenos Aires)</option>
+                        <option value="-120">UTC-02:00 (Mid-Atlantic)</option>
+                        <option value="-60">UTC-01:00 (Azores)</option>
+                        <option value="0">UTC+00:00 (GMT / London)</option>
+                        <option value="60">UTC+01:00 (CET / Paris)</option>
+                        <option value="120">UTC+02:00 (South Africa/Cairo)</option>
+                        <option value="180">UTC+03:00 (Moscow/Nairobi)</option>
+                        <option value="210">UTC+03:30 (Tehran)</option>
+                        <option value="240">UTC+04:00 (Abu Dhabi)</option>
+                        <option value="270">UTC+04:30 (Kabul)</option>
+                        <option value="300">UTC+05:00 (Karachi)</option>
+                        <option value="330">UTC+05:30 (IST / New Delhi)</option>
+                        <option value="345">UTC+05:45 (Kathmandu)</option>
+                        <option value="360">UTC+06:00 (Almaty/Dhaka)</option>
+                        <option value="390">UTC+06:30 (Yangon)</option>
+                        <option value="420">UTC+07:00 (Bangkok/Hanoi)</option>
+                        <option value="480">UTC+08:00 (SGT / Beijing)</option>
+                        <option value="540">UTC+09:00 (Tokyo/Seoul)</option>
+                        <option value="570">UTC+09:30 (Darwin)</option>
+                        <option value="600">UTC+10:00 (AEST / Sydney)</option>
+                        <option value="660">UTC+11:00 (Solomon Is.)</option>
+                        <option value="720">UTC+12:00 (Fiji/Auckland)</option>
+                        <option value="780">UTC+13:00 (Tonga)</option>
+                    </select>
+                </div>
                 <div class="privacy-group">
-                    <label for="privacy-timezone">Timezone/Local Time Visibility</label>
+                    <label for="privacy-timezone">Local Time Visibility</label>
                     <select id="privacy-timezone">
-                        <option value="auto">Auto-Detect (Client's)</option>
-                        <option value="public">Public (Auto-Detect)</option>
+                        <option value="public">Public</option>
                         <option value="private">Private</option>
-                        <option value="PST">PST (UTC-8)</option>
-                        <option value="EST">EST (UTC-5)</option>
-                        <option value="GMT">GMT (UTC+0)</option>
-                        <option value="CET">CET (UTC+1)</option>
-                        <option value="IST">IST (UTC+5:30)</option>
-                        <option value="SGT">SGT (UTC+8)</option>
-                        <option value="AEST">AEST (UTC+10)</option>
                     </select>
                 </div>
             </div>
@@ -637,33 +669,55 @@
         const ANALYTICS_PATH = '/analytics'; 
         const LOCATION_RANGE_KM = 0.5; // 500 meters range for location status
         
-        // Timezone offsets for the selector
-        const TIMEZONE_OFFSETS = {
-            'PST': -480, // UTC-8
-            'EST': -300, // UTC-5
-            'GMT': 0,    // UTC+0
-            'CET': 60,   // UTC+1
-            'IST': 330,  // UTC+5:30
-            'SGT': 480,  // UTC+8 (Singapore)
-            'AEST': 600, // UTC+10 (Sydney)
-            // 'auto' handled separately
-            'public': 'public', // Used for visibility level
-            'private': 'private', // Used for visibility level
-            'auto-detect': 'auto' // Used for visibility level
+        // Comprehensive list of Timezone UTC offsets (in minutes) for the selector
+        const TIMEZONE_MAP = {
+            'auto': new Date().getTimezoneOffset() * -1, // Client's current offset
+            'UTC-12:00 (Eniwetok)': -720,
+            'UTC-11:00 (Midway Island)': -660,
+            'UTC-10:00 (Hawaii)': -600,
+            'UTC-09:00 (Alaska)': -540,
+            'UTC-08:00 (Pacific/PST)': -480,
+            'UTC-07:00 (Mountain/MST)': -420,
+            'UTC-06:00 (Central/CST)': -360,
+            'UTC-05:00 (Eastern/EST)': -300,
+            'UTC-04:00 (Atlantic)': -240,
+            'UTC-03:30 (Newfoundland)': -210,
+            'UTC-03:00 (Buenos Aires)': -180,
+            'UTC-02:00 (Mid-Atlantic)': -120,
+            'UTC-01:00 (Azores)': -60,
+            'UTC+00:00 (GMT/London)': 0,
+            'UTC+01:00 (CET/Paris)': 60,
+            'UTC+02:00 (Cairo/SAST)': 120,
+            'UTC+03:00 (Moscow/Nairobi)': 180,
+            'UTC+03:30 (Tehran)': 210,
+            'UTC+04:00 (Abu Dhabi)': 240,
+            'UTC+04:30 (Kabul)': 270,
+            'UTC+05:00 (Karachi)': 300,
+            'UTC+05:30 (IST/New Delhi)': 330,
+            'UTC+05:45 (Kathmandu)': 345,
+            'UTC+06:00 (Almaty/Dhaka)': 360,
+            'UTC+06:30 (Yangon)': 390,
+            'UTC+07:00 (Bangkok/Hanoi)': 420,
+            'UTC+08:00 (SGT/Beijing)': 480,
+            'UTC+09:00 (Tokyo/Seoul)': 540,
+            'UTC+09:30 (Darwin)': 570,
+            'UTC+10:00 (AEST/Sydney)': 600,
+            'UTC+11:00 (Solomon Is.)': 660,
+            'UTC+12:00 (Fiji/Auckland)': 720,
+            'UTC+13:00 (Tonga)': 780,
         };
 
         let countdownInterval;
         let timetableCheckInterval;
         let isPublicView = false;
         let locationWatcherId = null;
-        let allUsersCache = null; // Cache for search function
+        let allUsersCache = null;
 
         const App = {
             pages: ['loginPage', 'profilePage', 'analyticsPage', 'settingsPage'],
             elements: {},
             currentUser: null,
             currentProfileData: null, 
-            // Removed LINK_ICONS object
             svg: {
                 link: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72"></path></svg>`,
                 vcard: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M18 1.5a2.25 2.25 0 0 1 2.25 2.25v16.5A2.25 2.25 0 0 1 18 22.5H6a2.25 2.25 0 0 1-2.25-2.25V3.75A2.25 2.25 0 0 1 6 1.5h12ZM6.75 6A.75.75 0 0 0 6 6.75a.75.75 0 0 0 .75.75h10.5a.75.75 0 0 0 .75-.75.75.75 0 0 0-.75-.75H6.75Z"></path><path d="M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z"></path><path d="M6 16.5a.75.75 0 0 0-.75.75v3.25a.75.75 0 0 0 1.5 0v-3.25a.75.75 0 0 0-.75-.75ZM18 16.5a.75.75 0 0 0-.75.75v3.25a.75.75 0 0 0 1.5 0v-3.25a.75.75 0 0 0-.75-.75Z"></path></svg>`
@@ -698,11 +752,12 @@
 
         // --- Timezone and Day/Night Utilities ---
         function getTzOffsetMinutes(timezoneId) {
-            if (TIMEZONE_OFFSETS[timezoneId] !== undefined) {
-                return TIMEZONE_OFFSETS[timezoneId];
+            if (timezoneId === 'auto') {
+                return new Date().getTimezoneOffset() * -1;
             }
-            // Default to client's local offset if 'auto' or unknown
-            return new Date().getTimezoneOffset() * -1;
+            // Find the offset by value
+            const key = Object.keys(TIMEZONE_MAP).find(k => TIMEZONE_MAP[k] === parseInt(timezoneId));
+            return TIMEZONE_MAP[key] || TIMEZONE_MAP['auto'];
         }
 
         function isNightTime(localHour) {
@@ -717,7 +772,8 @@
             return targetDate.getHours();
         }
 
-        function getLocalTimeAndZone(offsetMinutes) {
+        function getLocalTimeAndZone(timezoneId) {
+            const offsetMinutes = getTzOffsetMinutes(timezoneId);
             const now = new Date();
             const localTime = new Date(now.getTime() + (now.getTimezoneOffset() * 60000) + (offsetMinutes * 60000));
             
@@ -730,16 +786,21 @@
             const minutes = String(absOffset % 60).padStart(2, '0');
             const offsetStr = `UTC${sign}${hours}:${minutes}`;
 
-            return { time: timeStr, offset: offsetStr, hour: localTime.getHours() };
+            return { time: timeStr, offset: offsetStr, hour: localTime.getHours(), label: timezoneId };
         }
         // --- End Timezone Utilities ---
 
-        // --- Core Router Functions (Modified to use navigateToInternal) ---
+        // --- Core Router Functions (Modified to fix the public data bug) ---
         
         function navigateToInternal(pageId) {
             const cleanUrl = window.location.origin + window.location.pathname;
-            window.history.pushState({}, '', cleanUrl); // Remove ?user=... from the URL
-            window.location.hash = pageId; // Set the new hash
+            window.history.pushState({}, '', cleanUrl); 
+            window.location.hash = pageId; 
+            
+            // FIX: Force reload of user session data when returning from public view
+            if (App.currentUser) {
+                setupUserSession(); 
+            }
         }
 
         function navigateTo(pageId) {
@@ -803,7 +864,7 @@
             }
             
             if (targetPageId === 'settingsPage' && App.currentUser) {
-                renderSavedLocations(); // Refresh location list in settings
+                renderSavedLocations(); 
             }
 
             App.pages.forEach(pId => {
@@ -827,12 +888,9 @@
             }
         }
         
-        // --- End Router Logic ---
-
-
         // --- Location Tracking Utilities ---
         function getDistanceKm(lat1, lon1, lat2, lon2) {
-            const R = 6371; // Radius of Earth in kilometers
+            const R = 6371; 
             const dLat = (lat2 - lat1) * (Math.PI / 180);
             const dLon = (lon2 - lon1) * (Math.PI / 180);
             const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
@@ -845,7 +903,6 @@
             if (!App.currentUser) return;
             if (locationWatcherId) navigator.geolocation.clearWatch(locationWatcherId);
             
-            // Periodically check location every 60 seconds
             locationWatcherId = navigator.geolocation.watchPosition(
                 (position) => {
                     checkProximity(position.coords.latitude, position.coords.longitude);
@@ -883,11 +940,10 @@
             }
 
             const proximityEl = document.getElementById('proximity-status');
-            if (!App.currentUser) return; // Only apply for the current user/owner
+            if (!App.currentUser) return; 
 
             if (closestLocation) {
                 if (App.currentProfileData.status !== closestLocation.status || App.currentProfileData.message !== closestLocation.message) {
-                     // Auto-apply new status
                      await updateStatus({
                         status: closestLocation.status,
                         message: `📍 At ${closestLocation.name}`,
@@ -901,7 +957,6 @@
                 }
             } else {
                 if (proximityEl) proximityEl.textContent = '';
-                // Optional: reset status if moving away from a tracked location (requires more complex state to avoid constant toggling)
             }
         }
         
@@ -1071,6 +1126,7 @@
         async function setupUserSession() {
             if (timetableCheckInterval) clearInterval(timetableCheckInterval);
 
+            // FIX: Ensure we fetch the logged-in user's data after a public view session
             const response = await fetch(`${DATABASE_URL}/users/${App.currentUser.userId}.json`);
             const data = await response.json() || {};
             App.currentProfileData = data; 
@@ -1079,7 +1135,6 @@
             renderProfile(data);
             populateSettings(data);
             
-            // Start location tracking
             if (data.savedLocations && data.savedLocations.length > 0) {
                 startLocationTracking();
             } else {
@@ -1130,15 +1185,15 @@
             // Local Time Display respecting Timezone Override
             const tzId = data.timezoneOverride || 'auto';
             const offset = getTzOffsetMinutes(tzId);
-            const localTimeData = getLocalTimeAndZone(offset);
+            const localTimeData = getLocalTimeAndZone(tzId);
             const privacyLevel = data.privacy?.timezone;
             
-            const isTimeVisible = isPublicView ? (privacyLevel === 'public' || privacyLevel === 'auto') : true; 
+            const isTimeVisible = isPublicView ? (privacyLevel === 'public') : true; 
             
             const timeInfoEl = document.getElementById('local-time-info');
             if (timeInfoEl) {
                  if (isTimeVisible) {
-                    const zoneLabel = tzId !== 'auto' ? `(${tzId})` : '';
+                    const zoneLabel = tzId !== 'auto' ? `(${localTimeData.label.split('(')[1].replace(')', '')})` : '';
                     timeInfoEl.textContent = `${localTimeData.offset} ${zoneLabel} (${localTimeData.time})`;
                     timeInfoEl.style.opacity = 1;
                     timeInfoEl.title = '';
@@ -1149,7 +1204,6 @@
                 }
             }
             
-            // Track view count if public view
             if (isPublicView && (!App.currentUser || App.currentUser.userId !== data.userId)) {
                 trackProfileView(data.userId);
             }
@@ -1268,16 +1322,16 @@
         function suggestStatusBasedOnTime() {
             const now = new Date();
             const hour = now.getHours();
-            const day = now.getDay(); // 0 is Sunday
+            const day = now.getDay(); 
 
             let emoji = '🟢';
             let message = 'Available for a chat.';
 
-            if (day === 0 || day === 6) { // Weekend
+            if (day === 0 || day === 6) { 
                 emoji = '🏖️';
                 if (hour >= 10 && hour < 18) message = 'Enjoying the weekend!';
                 else if (hour >= 20 || hour < 6) { emoji = '😴'; message = 'Offline. Weekend wind-down.'; }
-            } else { // Weekday
+            } else { 
                 if (hour >= 6 && hour < 9) {
                     emoji = '🚗'; message = 'Commuting or starting up.';
                 } else if (hour >= 9 && hour < 12) {
@@ -1331,7 +1385,27 @@
             document.getElementById('privacy-phone').value = data.privacy?.phone || 'public';
             document.getElementById('privacy-school').value = data.privacy?.school || 'public';
             document.getElementById('privacy-country').value = data.privacy?.country || 'public';
-            document.getElementById('privacy-timezone').value = data.privacy?.timezone || 'auto';
+            
+            // Timezone Selector (Value is the offset in minutes)
+            const timezoneSelector = document.getElementById('timezone-selector');
+            timezoneSelector.innerHTML = ''; // Clear existing
+            
+            // Add 'Auto-Detect' option first
+            timezoneSelector.innerHTML += `<option value="auto">Auto-Detect (Client's Browser)</option>`;
+            
+            const selectedTzOffset = data.timezoneOverride || 'auto';
+            
+            Object.entries(TIMEZONE_MAP).sort(([, a], [, b]) => a - b).forEach(([label, offset]) => {
+                 // Skip 'auto' which is already added
+                if (label !== 'auto') {
+                    const value = offset.toString();
+                    const isSelected = value === selectedTzOffset.toString();
+                    timezoneSelector.innerHTML += `<option value="${value}" ${isSelected ? 'selected' : ''}>${label}</option>`;
+                }
+            });
+            
+            // Timezone Visibility
+            document.getElementById('privacy-timezone').value = data.privacy?.timezone || 'public';
 
 
             document.getElementById('accent-color').value = data.profileAccentColor || '#0ea5e9';
@@ -1364,7 +1438,7 @@
             
             toggleTimeInputs(timeTypeSelect.value);
 
-            // Removed icon selection from link inputs
+            // Link Inputs (Simplified, without icons)
             const linksContainer = document.getElementById('custom-links-container');
             linksContainer.innerHTML = '';
             for (let i = 0; i < 5; i++) {
@@ -1389,7 +1463,6 @@
             }
             links.forEach(link => {
                 if (link && link.label && link.url) {
-                    // Simplified link rendering to use only the default link icon
                     container.innerHTML += `
                         <a href="${link.url}" target="_blank" class="custom-link">
                             ${App.svg.link} <span>${link.label}</span>
@@ -1451,11 +1524,9 @@
         
         async function updateStatus(statusData) {
              if (!App.currentUser) return;
-             // Ensure this update doesn't override manual status end time if it's still running
              if (App.currentProfileData.endTime && new Date(App.currentProfileData.endTime).getTime() > Date.now()) {
-                // If manual timer is running, only allow if the new status is different
                 if (statusData.status === App.currentProfileData.status && statusData.message === App.currentProfileData.message) {
-                    return; // No change needed
+                    return; 
                 }
              }
 
@@ -1472,7 +1543,6 @@
                 body: JSON.stringify(dataToSave) 
              });
              
-             // Update history and session immediately
              await fetch(`${DATABASE_URL}/history/${App.currentUser.userId}.json`, { 
                 method: 'POST', 
                 body: JSON.stringify(dataToSave) 
@@ -1578,7 +1648,6 @@
         async function checkTimetableAndApplyStatus(data) {
             if (!App.currentUser || !data || !data.timetable) return;
             
-            // Do not override if a manual status is currently active (timer running)
             if (data.endTime && new Date(data.endTime).getTime() > Date.now()) return; 
 
             const now = new Date();
@@ -1679,7 +1748,7 @@
                 gender: '',
                 hobbies: '',
                 timeZoneOffset: new Date().getTimezoneOffset() * -1, 
-                timezoneOverride: 'auto', // New default
+                timezoneOverride: 'auto', // Default: Auto-Detect
                 privacy: { 
                     email: 'public', 
                     phone: 'public', 
@@ -1689,7 +1758,7 @@
                     gender: 'public',
                     hobbies: 'public',
                     country: 'public',
-                    timezone: 'public'
+                    timezone: 'public' // Default: Public
                 },
                 referrerId: referrerId || null, 
                 updatedAt: new Date().toISOString()
@@ -1767,7 +1836,6 @@
             for (let i = 0; i < 5; i++) {
                 const label = document.getElementById(`link-label-${i}`)?.value.trim();
                 const url = document.getElementById(`link-url-${i}`)?.value.trim();
-                // Removed icon selection logic
                 if (label && url) customLinks.push({ label, url });
             }
 
@@ -1811,8 +1879,9 @@
                 endTime: endTime,
                 pfpUrl: currentPfpUrl,
                 timetable: currentTimetable,
-                savedLocations: currentLocations, // Persist saved locations
-                // New Customization Fields
+                savedLocations: currentLocations, 
+                
+                // Customization Fields
                 displayNameFont: document.getElementById('display-font')?.value,
                 dynamicTitleTemplate: document.getElementById('dynamic-title-template')?.value,
                 linkTextColor: document.getElementById('link-text-color')?.value,
@@ -1826,7 +1895,9 @@
                 country: document.getElementById('country')?.value.trim(),
                 school: document.getElementById('school')?.value.trim(),
                 timeZoneOffset: clientUtcOffsetMinutes,
-                timezoneOverride: document.getElementById('privacy-timezone')?.value, // NEW: Timezone Override Setting
+                
+                // NEW: Separated Timezone settings
+                timezoneOverride: document.getElementById('timezone-selector')?.value,
                 privacy: {
                     email: document.getElementById('privacy-email')?.value,
                     phone: document.getElementById('privacy-phone')?.value,
@@ -1836,7 +1907,7 @@
                     gender: document.getElementById('privacy-gender')?.value,
                     hobbies: document.getElementById('privacy-hobbies')?.value,
                     country: document.getElementById('privacy-country')?.value,
-                    timezone: document.getElementById('privacy-timezone')?.value // Using this for visibility as well
+                    timezone: document.getElementById('privacy-timezone')?.value // This is ONLY the visibility setting
                 }
             };
             
@@ -1973,7 +2044,7 @@
         }
 
 
-        // --- Analytics and Search Logic ---
+        // --- Analytics and Search Logic (Unchanged) ---
         
         function getAnalyticsDateRange(days) {
             const dates = [];
@@ -2155,12 +2226,10 @@
             document.getElementById('save-settings-btn')?.addEventListener('click', handleSaveSettings);
             document.getElementById('share-status-btn')?.addEventListener('click', handleShareStatus);
             document.getElementById('add-timetable-entry-btn')?.addEventListener('click', handleAddTimetableEntry);
-            document.getElementById('suggest-status-btn')?.addEventListener('click', suggestStatusBasedOnTime); // Status Suggestion
+            document.getElementById('suggest-status-btn')?.addEventListener('click', suggestStatusBasedOnTime);
             
-            // Location Listeners
             document.getElementById('add-location-btn')?.addEventListener('click', handleAddLocationEntry);
             
-            // Search Listener
             document.getElementById('run-search-btn')?.addEventListener('click', handleSearchUsers);
             document.getElementById('user-search-input')?.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
