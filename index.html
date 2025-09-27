@@ -125,6 +125,35 @@
         /* Timetable */
         .timetable-entry-card { background: var(--input-bg); border-radius: 8px; padding: 12px; margin-bottom: 8px; }
 
+        /* Analytics Specific Styles */
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .analytics-metric {
+            background: var(--input-bg);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 0 0 5px 0;
+        }
+
+        .metric-label {
+            font-size: 0.9rem;
+            color: var(--muted);
+            font-weight: 500;
+        }
+
         /* Footer */
         footer {
             margin-top: 40px; text-align: center; color: var(--muted); font-size: 0.9rem;
@@ -161,6 +190,10 @@
             <button class="nav-btn" data-page="profilePage">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5a5.5 5.5 0 0 1 3.096 10.047 9.005 9.005 0 0 1 5.9 8.181.75.75 0 0 1-1.498.07 7.502 7.502 0 0 0-15 0 .75.75 0 0 1-1.498-.07A9.005 9.005 0 0 1 9 12.55a5.5 5.5 0 0 1 3-10.05ZM12 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z"></path></svg>
                 <span>Profile</span>
+            </button>
+            <button class="nav-btn" data-page="analyticsPage">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M10.5 4.5a.75.75 0 0 0-1.5 0V7.5a.75.75 0 0 0 1.5 0V4.5ZM17.25 5.25a.75.75 0 0 0-1.5 0V9a.75.75 0 0 0 1.5 0V5.25ZM14.25 7.5a.75.75 0 0 0-1.5 0v10.5a.75.75 0 0 0 1.5 0V7.5ZM21 9a.75.75 0 0 0-1.5 0v7.5a.75.75 0 0 0 1.5 0V9ZM3.75 12a.75.75 0 0 0-1.5 0v4.5a.75.75 0 0 0 1.5 0V12Z"></path><path fill-rule="evenodd" d="M3 3a1.5 1.5 0 0 0-1.5 1.5V19.5A1.5 1.5 0 0 0 3 21h18a1.5 1.5 0 0 0 1.5-1.5V4.5A1.5 1.5 0 0 0 21 3H3ZM5.25 19.5h13.5V4.5H5.25v15Z" clip-rule="evenodd"></path></svg>
+                <span>Analytics</span>
             </button>
             <button class="nav-btn" data-page="settingsPage">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M11.64 3.023a.75.75 0 0 1 .72 0l1.517.65a.75.75 0 0 0 .841-.252l1.11-1.48A.75.75 0 0 1 17 2.25a.75.75 0 0 1 .633.368l1.11 1.48a.75.75 0 0 0 .84.253l1.518-.65a.75.75 0 0 1 .72 0l1.016.436a.75.75 0 0 1 .45 1.033l-.74 1.385a.75.75 0 0 0 .14.925l1.28.96a.75.75 0 0 1 0 1.302l-1.28.96a.75.75 0 0 0-.14.925l.74 1.385a.75.75 0 0 1-.45 1.033l-1.017.436a.75.75 0 0 1-.72 0l-1.517-.65a.75.75 0 0 0-.84.252l-1.11 1.48A.75.75 0 0 1 17 21.75a.75.75 0 0 1-.633-.368l-1.11-1.48a.75.75 0 0 0-.84-.253l-1.518.65a.75.75 0 0 1-.72 0l-1.016-.436a.75.75 0 0 1-.45-1.033l.74-1.385a.75.75 0 0 0-.14-.925l-1.28-.96a.75.75 0 0 1 0-1.302l1.28-.96a.75.75 0 0 0 .14-.925l-.74-1.385a.75.75 0 0 1 .45-1.033l1.017-.436ZM12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"></path></svg>
@@ -446,12 +479,11 @@
         
         <div id="analyticsPage" class="page">
             <div class="card">
-                <h2>Availability Trends 📈 (Last 7 Days)</h2>
-                <p>Calculated percentage of time spent in each status.</p>
-                <div id="status-summary">
-                    <p class="muted">Summary calculation logic not fully implemented.</p>
+                <h2>Profile View Analytics 📈</h2>
+                <p class="muted">Total profile views by all visitors over different time periods.</p>
+                <div class="analytics-grid" id="view-analytics-grid">
+                    <p class="muted" style="grid-column: 1 / -1; text-align: center;">Loading view data...</p>
                 </div>
-                <div class="analytics-status-bar" id="analytics-status-bar"></div>
             </div>
             <div class="card">
                 <h2>Status History Log (Last 10)</h2>
@@ -486,6 +518,8 @@
         };
 
         const DATABASE_URL = "https://happp-96438-default-rtdb.firebaseio.com/";
+        const ANALYTICS_PATH = '/analytics'; // New path for view counts
+        
         let countdownInterval;
         let timetableCheckInterval;
         let isPublicView = false; // Tracks if the user is viewing via ?user=ID
@@ -577,8 +611,9 @@
             const params = new URLSearchParams(window.location.search);
             const userIdFromUrl = params.get('user');
             const promoCard = document.getElementById('create-hap-promo');
-            const promoActionBtn = document.getElementById('promo-action-btn'); // Get the single button
-
+            const promoActionBtn = document.getElementById('promo-action-btn'); 
+            
+            let targetPageId;
 
             if (userIdFromUrl) {
                 isPublicView = true;
@@ -597,23 +632,20 @@
                 // 2. Fetch and render the public profile (This is the only thing we do)
                 displayPublicProfile(userIdFromUrl);
                 
-                // 3. Set up the single promo action button (FIXED LOGIC)
+                // 3. Set up the single promo action button 
                 if (promoCard && promoActionBtn) {
                     promoCard.classList.remove('hidden');
                     const isAuth = !!localStorage.getItem('hapUser');
                     
                     if (isAuth) {
                         promoActionBtn.textContent = 'Go to My Dashboard';
-                        promoActionBtn.className = 'btn secondary'; // secondary style for existing user
-                        // Use navigateToInternal to clear ?user=ID and go to profilePage
+                        promoActionBtn.className = 'btn secondary'; 
                         promoActionBtn.onclick = () => navigateToInternal('profilePage'); 
                     } else {
                         promoActionBtn.textContent = 'Get Started Now';
-                        promoActionBtn.className = 'btn'; // primary style for new user
-                        // Use navigateToInternal to clear ?user=ID, go to loginPage, and switch to signup tab
+                        promoActionBtn.className = 'btn'; 
                         promoActionBtn.onclick = () => { 
                             navigateToInternal('loginPage'); 
-                            // Manually ensure the signup tab is active if navigating to login
                             document.querySelector('.auth-tabs [data-tab="signup"]')?.click();
                         }; 
                     }
@@ -625,10 +657,15 @@
             isPublicView = false;
             
             const hash = window.location.hash.substring(1);
-            let targetPageId = App.pages.includes(hash) ? hash : null;
+            targetPageId = App.pages.includes(hash) ? hash : null;
 
             if (!targetPageId) {
                 targetPageId = App.currentUser ? 'profilePage' : 'loginPage';
+            }
+
+            // Handle Analytics Page lifecycle
+            if (targetPageId === 'analyticsPage' && App.currentUser) {
+                fetchAndRenderAnalytics();
             }
             
             // Show/Hide page containers
@@ -774,6 +811,37 @@
                     timeInfoEl.style.opacity = 0.6;
                     timeInfoEl.title = 'Timezone information is restricted.';
                 }
+            }
+            
+            // NEW: Track view count if this is a public view and not the owner
+            if (isPublicView && (!App.currentUser || App.currentUser.userId !== data.userId)) {
+                trackProfileView(data.userId);
+            }
+        }
+
+        // NEW: View Tracking Logic
+        async function trackProfileView(profileId) {
+            const today = new Date().toISOString().substring(0, 10);
+            const viewRefUrl = `${DATABASE_URL}${ANALYTICS_PATH}/${profileId}/views_daily/${today}.json`;
+            
+            try {
+                // Use a mock transaction (PATCH is safest approximation in simple fetch requests)
+                // In a real app, you would use a Cloud Function or Firebase SDK's transaction method for atomic increment.
+                // Here, we fetch, increment, and put back, which is susceptible to race conditions but functional for demonstration.
+                const currentViewsRes = await fetch(viewRefUrl);
+                let currentViews = await currentViewsRes.json();
+                
+                if (typeof currentViews !== 'number') {
+                    currentViews = 0;
+                }
+
+                await fetch(viewRefUrl, {
+                    method: 'PUT',
+                    body: JSON.stringify(currentViews + 1)
+                });
+
+            } catch(e) {
+                console.error("Failed to track view:", e);
             }
         }
 
@@ -967,7 +1035,7 @@
                     userData.email = loginData.email; 
                     App.currentProfileData = userData; 
                     applyVisuals(userData);
-                    renderProfile(userData);
+                    renderProfile(userData); // This triggers trackProfileView
                 }
                 else document.getElementById('profile-name').textContent = 'User Not Found';
             };
@@ -1479,34 +1547,93 @@
 
 
         // --- Analytics (Omitted for brevity, logic remains the same) ---
+        
+        // NEW: Function to get views for a specific number of days ending yesterday/today
+        function getAnalyticsDateRange(days) {
+            const dates = [];
+            const endDate = new Date(); // Use current date
+            for (let i = 0; i < days; i++) {
+                const d = new Date(endDate);
+                d.setDate(endDate.getDate() - i);
+                dates.push(d.toISOString().substring(0, 10));
+            }
+            return dates;
+        }
+
         async function fetchAndRenderAnalytics() {
+            if (!App.currentUser) return;
+            const userId = App.currentUser.userId;
+            const analyticsGridEl = document.getElementById('view-analytics-grid');
             const historyLogEl = document.getElementById('history-log');
-            if (!historyLogEl) return;
-            historyLogEl.innerHTML = '<p class="muted">Fetching history...</p>';
+
+            if (analyticsGridEl) analyticsGridEl.innerHTML = '<p class="muted" style="grid-column: 1 / -1; text-align: center;">Fetching view data...</p>';
+            if (historyLogEl) historyLogEl.innerHTML = '<p class="muted">Fetching history...</p>';
 
             try {
+                // 1. Fetch View Counts
+                const viewsRes = await fetch(`${DATABASE_URL}${ANALYTICS_PATH}/${userId}/views_daily.json`);
+                const dailyViews = await viewsRes.json() || {};
+                
+                const dayRanges = [
+                    { label: "Today", days: 1, calculate: true },
+                    { label: "Last 3 Days", days: 3, calculate: true },
+                    { label: "Last 7 Days", days: 7, calculate: true },
+                    { label: "Last 14 Days", days: 14, calculate: true },
+                    { label: "Last 28 Days", days: 28, calculate: true }
+                ];
+                
+                const todayDate = new Date().toISOString().substring(0, 10);
+                
+                const analyticsData = dayRanges.map(range => {
+                    let totalViews = 0;
+                    const datesToInclude = getAnalyticsDateRange(range.days);
+
+                    datesToInclude.forEach(date => {
+                        totalViews += (dailyViews[date] || 0);
+                    });
+
+                    // Adjust "Today" count to accurately reflect only today's data if needed
+                    if (range.label === "Today") {
+                         totalViews = dailyViews[todayDate] || 0;
+                    }
+                    
+                    return { label: range.label, value: totalViews };
+                });
+
+                if (analyticsGridEl) {
+                    analyticsGridEl.innerHTML = analyticsData.map(metric => `
+                        <div class="analytics-metric">
+                            <div class="metric-value">${metric.value.toLocaleString()}</div>
+                            <div class="metric-label">${metric.label}</div>
+                        </div>
+                    `).join('');
+                }
+
+
+                // 2. Fetch Status History Log
                 const userHistoryRes = await fetch(`${DATABASE_URL}/history/${App.currentUser.userId}.json`);
                 const historyData = await userHistoryRes.json();
                 
-                if (historyData) {
-                    const history = Object.values(historyData).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-                    historyLogEl.innerHTML = '';
-                    history.slice(0, 10).forEach(item => {
-                        historyLogEl.innerHTML += `
-                            <div class="history-item">
-                                <span class="history-status">${item.status} ${item.message || '(No message)'}</span>
-                                <p class="history-time">${new Date(item.timestamp).toLocaleString()}</p>
-                            </div>`;
-                    });
-                } else {
-                    historyLogEl.innerHTML = '<p class="muted">No status history found.</p>';
+                if (historyLogEl) {
+                    if (historyData) {
+                        const history = Object.values(historyData).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                        historyLogEl.innerHTML = '';
+                        history.slice(0, 10).forEach(item => {
+                            historyLogEl.innerHTML += `
+                                <div class="history-item">
+                                    <span class="history-status">${item.status} ${item.message || '(No message)'}</span>
+                                    <p class="history-time">${new Date(item.timestamp).toLocaleString()}</p>
+                                </div>`;
+                        });
+                    } else {
+                        historyLogEl.innerHTML = '<p class="muted">No status history found.</p>';
+                    }
                 }
             } catch (e) {
-                historyLogEl.innerHTML = '<p class="muted">Error loading history.</p>';
+                console.error("Analytics fetch error:", e);
+                if (analyticsGridEl) analyticsGridEl.innerHTML = '<p class="muted" style="grid-column: 1 / -1; color: #ef4444; text-align: center;">Error loading view data.</p>';
+                if (historyLogEl) historyLogEl.innerHTML = '<p class="muted">Error loading history.</p>';
             }
-            
-            if (document.getElementById('status-summary')) document.getElementById('status-summary').innerHTML = '<p class="muted">Summary calculation logic not fully implemented.</p>';
-            if (document.getElementById('analytics-status-bar')) document.getElementById('analytics-status-bar').innerHTML = '';
         }
 
         // --- Event Listeners and Utilities ---
