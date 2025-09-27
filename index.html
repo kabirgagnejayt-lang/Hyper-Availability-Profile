@@ -797,7 +797,7 @@
             currentUser: null,
             currentProfileData: null, 
             svg: {
-                link: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 5 0 0 0 7.54.54l3-3a5 5 5 0 0 0-7.07-7.07l-1.72 1.72"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72"></path></svg>`,
+                link: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 5 0 0 0-7.07-7.07l-1.72 1.72"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72"></path></svg>`,
                 vcard: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M18 1.5a2.25 2.25 0 0 1 2.25 2.25v16.5A2.25 2.25 0 0 1 18 22.5H6a2.25 2.25 0 0 1-2.25-2.25V3.75A2.25 2.25 0 0 1 6 1.5h12ZM6.75 6A.75.75 0 0 0 6 6.75a.75.75 0 0 0 .75.75h10.5a.75.75 0 0 0 .75-.75.75.75 0 0 0-.75-.75H6.75Z"></path><path d="M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z"></path><path d="M6 16.5a.75.75 0 0 0-.75.75v3.25a.75.75 0 0 0 1.5 0v-3.25a.75.75 0 0 0-.75-.75ZM18 16.5a.75.75 0 0 0-.75.75v3.25a.75.75 0 0 0 1.5 0v-3.25a.75.75 0 0 0-.75-.75Z"></path></svg>`
             },
             statusColors: { 
@@ -844,13 +844,11 @@
 
             const foundEntry = Object.entries(TIMEZONE_MAP).find(([, offset]) => offset === numericOffset);
             
-            // Format the UTC string from minutes
             const sign = numericOffset >= 0 ? '+' : '';
             const hours = String(Math.floor(Math.abs(numericOffset) / 60)).padStart(2, '0');
             const minutes = String(Math.abs(numericOffset) % 60).padStart(2, '0');
             const utcString = `UTC${sign}${hours}:${minutes}`;
 
-            // Return descriptive label if found, otherwise return the UTC string
             return foundEntry ? foundEntry[0] : utcString;
         }
 
@@ -921,7 +919,6 @@
                     const isBanned = status.status === 'permanent' || (status.status === 'temporary' && new Date(status.endTime).getTime() > Date.now());
 
                     if (isBanned) {
-                        // Redirect to Banned Page if banned
                         if (window.location.hash.substring(1) !== 'bannedPage') {
                             renderBannedPage(status);
                             return; 
@@ -937,8 +934,11 @@
                 isPublicView = true;
                 if (App.elements.mainHeader) App.elements.mainHeader.classList.add('hidden');
                 
-                const shareCard = document.getElementById('share-status-btn')?.closest('.card');
+                const shareCard = document.getElementById('share-status-card');
                 if (shareCard) shareCard.classList.add('hidden');
+                
+                const feedbackCard = document.getElementById('feedback-card');
+                if (feedbackCard) feedbackCard.classList.add('hidden');
 
                 App.pages.forEach(pId => {
                     if (App.elements[pId] && pId !== 'profilePage' && pId !== 'bannedPage') App.elements[pId].style.display = 'none';
@@ -1499,8 +1499,6 @@
             try {
                 const allUsersRes = await fetch(`${DATABASE_URL}/users.json`);
                 const allUsers = await allUsersRes.json() || {};
-                const loginsRes = await fetch(`${DATABASE_URL}/logins.json`);
-                const allLogins = await loginsRes.json() || {};
                 const globalAnalyticsRes = await fetch(`${DATABASE_URL}${ANALYTICS_PATH}/global.json`);
                 const globalAnalytics = await globalAnalyticsRes.json() || {};
 
@@ -1547,13 +1545,13 @@
                     dates.forEach(date => {
                         const dateClicks = dailyLinkClicks[date];
                         if (dateClicks) {
+                            // Sum clicks across all link indices for that day
                             Object.values(dateClicks).forEach(count => totalClicks += count);
                         }
                     });
                     metrics.push({ label: range.label, value: totalClicks });
                 });
                 
-
                 gridEl.innerHTML = metrics.map(metric => `
                     <div class="analytics-metric">
                         <div class="metric-value">${metric.value.toLocaleString()}</div>
@@ -1620,6 +1618,9 @@
 
         function promptBanUser(userId, displayName) {
              const banContainer = document.getElementById('admin-users');
+             const existingModal = document.getElementById('ban-form-modal');
+             if (existingModal) existingModal.remove();
+
              banContainer.insertAdjacentHTML('afterbegin', `
                 <div id="ban-form-modal" class="card" style="margin-top: -20px; border: 2px solid #ef4444;">
                     <h3>Ban User: ${displayName}</h3>
@@ -1753,16 +1754,13 @@
             const selector = document.getElementById('timezone-selector');
             if (!selector) return;
 
-            // Add 'Auto-Detect' option first
             selector.innerHTML = `<option value="auto">Auto-Detect (Browser)</option>`;
             
-            // Populate based on minutes offset, ensuring unique options
             const uniqueOffsets = {};
             Object.entries(TIMEZONE_MAP).forEach(([label, offset]) => {
                 uniqueOffsets[offset] = label;
             });
 
-            // Sort by offset value
             Object.entries(uniqueOffsets).sort(([, a], [, b]) => getTzOffsetMinutes(a) - getTzOffsetMinutes(b)).forEach(([offset, label]) => {
                  selector.innerHTML += `<option value="${offset}">${label}</option>`;
             });
@@ -1785,7 +1783,6 @@
                 if (navBtn) navigateTo(navBtn.dataset.page);
             });
             
-            // Admin Panel Tab Switching
             document.querySelector('#adminPage .admin-tabs')?.addEventListener('click', e => {
                 const tab = e.target.closest('.admin-tab');
                 if (tab) {
@@ -1816,7 +1813,6 @@
                 }
             });
             
-            // Admin User Search
             document.getElementById('admin-user-search-btn')?.addEventListener('click', fetchAndRenderUserManagement);
             document.getElementById('admin-user-search-input')?.addEventListener('keypress', (e) => {
                  if (e.key === 'Enter') {
@@ -1825,7 +1821,6 @@
                 }
             });
 
-            // User Feedback
             document.getElementById('send-feedback-btn')?.addEventListener('click', handleSendFeedback);
             
             document.getElementById('pfp-upload')?.addEventListener('change', (e) => {
