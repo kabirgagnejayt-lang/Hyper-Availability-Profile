@@ -296,6 +296,7 @@
                 <p class="profile-message" id="profile-message">Fetching status...</p>
                 <div class="profile-timer" id="profile-timer"></div>
                 <p class="local-time-display" id="local-time-info" style="font-size: 1rem; margin-top: 10px; font-weight: 500;"></p>
+                <p class="travel-time-display" id="destination-time-info" style="font-size: 1rem; margin-top: 10px; font-weight: 500; color: var(--primary-dark);"></p>
                 <p class="local-time-display" id="proximity-status" style="font-size: 1rem; margin-top: 5px; font-weight: 600; color: var(--primary);"></p>
             </div>
             
@@ -313,6 +314,21 @@
                 <h2>Custom Links</h2>
                 <div id="profile-links"><p class="muted">No links provided.</p></div>
             </div>
+            
+            <div class="card">
+                <h2>Share Profile QR Code</h2>
+                <div style="text-align: center;">
+                    <div id="qrcode-container" style="display: inline-block; padding: 15px; background: var(--card); border-radius: 8px; border: 1px solid var(--border-color);">
+                        <p id="qrcode-placeholder" class="muted">Click button below to generate QR.</p>
+                    </div>
+                </div>
+                <button id="generate-qrcode-btn" class="btn secondary" style="margin-top: 15px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path fill-rule="evenodd" d="M3.75 6.75a2.25 2.25 0 0 0 2.25 2.25h1.5a.75.75 0 0 1 0 1.5H6a3.75 3.75 0 0 1-3.75-3.75V5.25A.75.75 0 0 1 3 4.5h1.5A2.25 2.25 0 0 0 6.75 6h1.5A.75.75 0 0 1 9 7.5H6.75Zm9.75 3a.75.75 0 0 1 .75-.75h1.5a2.25 2.25 0 0 0 2.25-2.25V5.25a.75.75 0 0 1 1.5 0v1.5a3.75 3.75 0 0 1-3.75 3.75h-1.5a.75.75 0 0 1-.75-.75Zm-5.25 6a.75.75 0 0 1 0 1.5H6a3.75 3.75 0 0 1-3.75-3.75v-1.5a.75.75 0 0 1 1.5 0v1.5a2.25 2.25 0 0 0 2.25 2.25h1.5Zm9.75-3a.75.75 0 0 1 0 1.5h-1.5a2.25 2.25 0 0 0-2.25 2.25v1.5a.75.75 0 0 1-1.5 0v-1.5A3.75 3.75 0 0 1 18.75 14.25h1.5a.75.75 0 0 1 0 1.5h-1.5a2.25 2.25 0 0 0 2.25 2.25v1.5a.75.75 0 0 1-1.5 0v-1.5a3.75 3.75 0 0 1-3.75-3.75h-1.5a.75.75 0 0 1-.75-.75h-1.5a.75.75 0 0 1 0-1.5h1.5a.75.75 0 0 1 .75.75h1.5a.75.75 0 0 1 0 1.5h-1.5a.75.75 0 0 1 0 1.5h1.5a.75.75 0 0 1 0 1.5h-1.5a.75.75 0 0 1 0 1.5h1.5a.75.75 0 0 1 0 1.5h-1.5a2.25 2.25 0 0 0-2.25 2.25v1.5a.75.75 0 0 1-1.5 0v-1.5A3.75 3.75 0 0 1 6 20.25h-1.5a.75.75 0 0 1 0-1.5h1.5a2.25 2.25 0 0 0 2.25-2.25v-1.5a.75.75 0 0 1 1.5 0v1.5a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1 0-1.5h-1.5a.75.75 0 0 1 0-1.5h1.5a.75.75 0 0 1 0-1.5H6.75ZM6.75 6h1.5a.75.75 0 0 1 0 1.5H6.75ZM6 20.25a.75.75 0 0 1 0-1.5h1.5a2.25 2.25 0 0 0 2.25-2.25v-1.5a.75.75 0 0 1 1.5 0v1.5a3.75 3.75 0 0 1-3.75 3.75H6Zm1.5-10.5h1.5a.75.75 0 0 1 0 1.5h-1.5a.75.75 0 0 1 0-1.5Z" clip-rule="evenodd"></path></svg>
+                    <span>Generate Profile QR Code</span>
+                </button>
+            </div>
+
+
             <div class="card">
                 <button id="share-status-btn" class="btn">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M10.5 4.5a.75.75 0 0 0 0 1.5h4.51L7.24 13.76a.75.75 0 0 0 1.06 1.06L16.06 7.06v4.44a.75.75 0 0 0 1.5 0V4.5h-7.06Z"></path><path d="M5.25 3.75A1.5 1.5 0 0 0 3.75 5.25v13.5A1.5 1.5 0 0 0 5.25 20.25h13.5A1.5 1.5 0 0 0 20.25 18.75V12a.75.75 0 0 0-1.5 0v6.75a.25.25 0 0 1-.25.25H5.25a.25.25 0 0 1-.25-.25V5.25a.25.25 0 0 1 .25-.25H12a.75.75 0 0 0 0-1.5H5.25Z"></path></svg>
@@ -458,40 +474,7 @@
                     <label for="timezone-selector">Timezone Selection (Your Local Time)</label>
                     <select id="timezone-selector">
                         <option value="auto">Auto-Detect (Browser)</option>
-                        <option value="-720">UTC-12:00 (Eniwetok)</option>
-                        <option value="-660">UTC-11:00 (Midway Island)</option>
-                        <option value="-600">UTC-10:00 (Hawaii)</option>
-                        <option value="-540">UTC-09:00 (Alaska)</option>
-                        <option value="-480">UTC-08:00 (PST / Pacific)</option>
-                        <option value="-420">UTC-07:00 (MST / Mountain)</option>
-                        <option value="-360">UTC-06:00 (CST / Central)</option>
-                        <option value="-300">UTC-05:00 (EST / Eastern)</option>
-                        <option value="-240">UTC-04:00 (Atlantic)</option>
-                        <option value="-210">UTC-03:30 (Newfoundland)</option>
-                        <option value="-180">UTC-03:00 (Brazil/Buenos Aires)</option>
-                        <option value="-120">UTC-02:00 (Mid-Atlantic)</option>
-                        <option value="-60">UTC-01:00 (Azores)</option>
-                        <option value="0">UTC+00:00 (GMT / London)</option>
-                        <option value="60">UTC+01:00 (CET / Paris)</option>
-                        <option value="120">UTC+02:00 (South Africa/Cairo)</option>
-                        <option value="180">UTC+03:00 (Moscow/Nairobi)</option>
-                        <option value="210">UTC+03:30 (Tehran)</option>
-                        <option value="240">UTC+04:00 (Abu Dhabi)</option>
-                        <option value="270">UTC+04:30 (Kabul)</option>
-                        <option value="300">UTC+05:00 (Karachi)</option>
-                        <option value="330">UTC+05:30 (IST / New Delhi)</option>
-                        <option value="345">UTC+05:45 (Kathmandu)</option>
-                        <option value="360">UTC+06:00 (Almaty/Dhaka)</option>
-                        <option value="390">UTC+06:30 (Yangon)</option>
-                        <option value="420">UTC+07:00 (Bangkok/Hanoi)</option>
-                        <option value="480">UTC+08:00 (SGT / Beijing)</option>
-                        <option value="540">UTC+09:00 (Tokyo/Seoul)</option>
-                        <option value="570">UTC+09:30 (Darwin)</option>
-                        <option value="600">UTC+10:00 (AEST / Sydney)</option>
-                        <option value="660">UTC+11:00 (Solomon Is.)</option>
-                        <option value="720">UTC+12:00 (Fiji/Auckland)</option>
-                        <option value="780">UTC+13:00 (Tonga)</option>
-                    </select>
+                        </select>
                 </div>
                 <div class="privacy-group">
                     <label for="privacy-timezone">Local Time Visibility</label>
@@ -530,6 +513,18 @@
             <div class="card">
                 <h2>Update Status</h2>
                 <div class="form-group">
+                    <label>Quick Status Presets</label>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button type="button" class="btn secondary preset-btn" data-emoji="☕" data-message="On a quick break." data-duration="15">15m Break ☕</button>
+                        <button type="button" class="btn secondary preset-btn" data-emoji="💻" data-message="In a Meeting." data-duration="60">1h Meeting 💻</button>
+                        <button type="button" class="btn secondary preset-btn" data-emoji="🧠" data-message="Deep Work Session." data-duration="120">2h Focus 🧠</button>
+                        <button type="button" class="btn secondary preset-btn" data-emoji="🍽️" data-message="Lunch Break." data-duration="30">30m Lunch 🍽️</button>
+                        <button type="button" class="btn secondary preset-btn" data-emoji="🟢" data-message="Available until EOD." data-duration="480">Available (8h) 🟢</button>
+                    </div>
+                    <p style="font-size: 0.85rem; color: var(--muted); margin-top: 10px;">Clicking a preset instantly updates your status and saves your settings.</p>
+                </div>
+
+                <div class="form-group">
                     <label for="status-emoji">Current Status</label>
                     <select id="status-emoji">
                         <option value="🟢">🟢 Available</option>
@@ -544,14 +539,24 @@
                         <option value="🍽️">🍽️ Meal Time</option>
                         <option value="🏋️">🏋️ Working Out</option>
                         <option value="🎮">🎮 Gaming</option>
-                    </select>
+                        <option value="✈️">✈️ Traveling</option> </select>
                 </div>
                 <div class="form-group">
                     <label for="status-message">Message</label>
                     <input type="text" id="status-message" placeholder="e.g., Drafting 2026 Strategy">
                     <button class="btn secondary" id="suggest-status-btn" style="margin-top: 10px; width: auto; font-size: 0.9rem; padding: 8px 12px;">Get Status Suggestion 💡</button>
                 </div>
-                
+
+                <div class="form-group">
+                    <label for="travel-destination">✈️ Destination (Optional)</label>
+                    <input type="text" id="travel-destination" placeholder="e.g., Tokyo, Japan">
+                </div>
+                <div class="form-group">
+                    <label for="destination-timezone">✈️ Destination Timezone</label>
+                    <select id="destination-timezone">
+                        <option value="">(Not Set)</option>
+                        </select>
+                </div>
                 <div class="form-group">
                     <label for="status-time-type">Set Availability</label>
                     <select id="status-time-type">
@@ -709,6 +714,7 @@
 
         let countdownInterval;
         let timetableCheckInterval;
+        let travelInterval; // New interval for travel status
         let isPublicView = false;
         let locationWatcherId = null;
         let allUsersCache = null;
@@ -723,7 +729,7 @@
                 vcard: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M18 1.5a2.25 2.25 0 0 1 2.25 2.25v16.5A2.25 2.25 0 0 1 18 22.5H6a2.25 2.25 0 0 1-2.25-2.25V3.75A2.25 2.25 0 0 1 6 1.5h12ZM6.75 6A.75.75 0 0 0 6 6.75a.75.75 0 0 0 .75.75h10.5a.75.75 0 0 0 .75-.75.75.75 0 0 0-.75-.75H6.75Z"></path><path d="M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z"></path><path d="M6 16.5a.75.75 0 0 0-.75.75v3.25a.75.75 0 0 0 1.5 0v-3.25a.75.75 0 0 0-.75-.75ZM18 16.5a.75.75 0 0 0-.75.75v3.25a.75.75 0 0 0 1.5 0v-3.25a.75.75 0 0 0-.75-.75Z"></path></svg>`
             },
             statusColors: { 
-                '🟢': '#10b981', '💻': '#3b82f6', '🧠': '#3b82f6', '🚗': '#f59e0b', '☕': '#ef4444', '🔴': '#ef4444', '📚': '#8b5cf6', '🏖️': '#06b6d4', '😴': '#1e293b', '🍽️': '#f97316', '🏋️': '#4ade80', '🎮': '#ec4899', '❓': '#64748b'
+                '🟢': '#10b981', '💻': '#3b82f6', '🧠': '#3b82f6', '🚗': '#f59e0b', '☕': '#ef4444', '🔴': '#ef4444', '📚': '#8b5cf6', '🏖️': '#06b6d4', '😴': '#1e293b', '🍽️': '#f97316', '🏋️': '#4ade80', '🎮': '#ec4899', '✈️': '#0ea5e9', '❓': '#64748b'
             }
         };
         
@@ -750,14 +756,20 @@
             return age >= 0 ? age : null;
         }
 
+        // Function to convert HH:MM time string to minutes past midnight
+        function timeToMinutes(timeStr) {
+            const [hours, minutes] = timeStr.split(':').map(Number);
+            return hours * 60 + minutes;
+        }
+
         // --- Timezone and Day/Night Utilities ---
         function getTzOffsetMinutes(timezoneId) {
             if (timezoneId === 'auto') {
                 return new Date().getTimezoneOffset() * -1;
             }
             // Find the offset by value
-            const key = Object.keys(TIMEZONE_MAP).find(k => TIMEZONE_MAP[k] === parseInt(timezoneId));
-            return TIMEZONE_MAP[key] || TIMEZONE_MAP['auto'];
+            const offsetValue = parseInt(timezoneId, 10);
+            return Object.values(TIMEZONE_MAP).includes(offsetValue) ? offsetValue : TIMEZONE_MAP['auto'];
         }
 
         function isNightTime(localHour) {
@@ -785,8 +797,13 @@
             const hours = String(Math.floor(absOffset / 60)).padStart(2, '0');
             const minutes = String(absOffset % 60).padStart(2, '0');
             const offsetStr = `UTC${sign}${hours}:${minutes}`;
+            
+            // Get the label/name of the timezone for display (e.g., SGT, EST)
+            const labelKey = Object.keys(TIMEZONE_MAP).find(key => TIMEZONE_MAP[key] === offsetMinutes);
+            const zoneLabel = labelKey ? labelKey.split('(')[1]?.replace(')', '') : '';
 
-            return { time: timeStr, offset: offsetStr, hour: localTime.getHours(), label: timezoneId };
+
+            return { time: timeStr, offset: offsetStr, hour: localTime.getHours(), label: zoneLabel };
         }
         // --- End Timezone Utilities ---
 
@@ -797,7 +814,6 @@
             window.history.pushState({}, '', cleanUrl); 
             window.location.hash = pageId; 
             
-            // FIX: Force reload of user session data when returning from public view
             if (App.currentUser) {
                 setupUserSession(); 
             }
@@ -808,6 +824,10 @@
         }
 
         function hashChangeRouter() {
+            // Clear any active intervals when switching pages
+            if (countdownInterval) clearInterval(countdownInterval);
+            if (travelInterval) clearInterval(travelInterval);
+            
             const params = new URLSearchParams(window.location.search);
             const userIdFromUrl = params.get('user');
             const promoCard = document.getElementById('create-hap-promo');
@@ -819,8 +839,9 @@
                 isPublicView = true;
                 if (App.elements.mainHeader) App.elements.mainHeader.classList.add('hidden');
                 
-                const shareCard = document.getElementById('share-status-btn')?.closest('.card');
-                if (shareCard) shareCard.classList.add('hidden');
+                // Hide user-only cards on public view
+                document.getElementById('share-status-btn')?.closest('.card').classList.add('hidden');
+                document.getElementById('generate-qrcode-btn')?.closest('.card').classList.add('hidden');
 
                 App.pages.forEach(pId => {
                     if (App.elements[pId] && pId !== 'profilePage') App.elements[pId].style.display = 'none';
@@ -852,6 +873,10 @@
             // --- Standard Internal Routing ---
             isPublicView = false;
             
+            const shareCard = document.getElementById('share-status-btn')?.closest('.card');
+            if (shareCard) shareCard.classList.remove('hidden');
+            document.getElementById('generate-qrcode-btn')?.closest('.card').classList.remove('hidden'); // Show QR
+
             const hash = window.location.hash.substring(1);
             targetPageId = App.pages.includes(hash) ? hash : null;
 
@@ -888,7 +913,7 @@
             }
         }
         
-        // --- Location Tracking Utilities ---
+        // --- Location Tracking Utilities (Unchanged) ---
         function getDistanceKm(lat1, lon1, lat2, lon2) {
             const R = 6371; 
             const dLat = (lat2 - lat1) * (Math.PI / 180);
@@ -1125,6 +1150,8 @@
 
         async function setupUserSession() {
             if (timetableCheckInterval) clearInterval(timetableCheckInterval);
+            if (travelInterval) clearInterval(travelInterval); // Clear travel interval
+            if (countdownInterval) clearInterval(countdownInterval);
 
             // FIX: Ensure we fetch the logged-in user's data after a public view session
             const response = await fetch(`${DATABASE_URL}/users/${App.currentUser.userId}.json`);
@@ -1193,7 +1220,7 @@
             const timeInfoEl = document.getElementById('local-time-info');
             if (timeInfoEl) {
                  if (isTimeVisible) {
-                    const zoneLabel = tzId !== 'auto' ? `(${localTimeData.label.split('(')[1].replace(')', '')})` : '';
+                    const zoneLabel = localTimeData.label ? `(${localTimeData.label})` : '';
                     timeInfoEl.textContent = `${localTimeData.offset} ${zoneLabel} (${localTimeData.time})`;
                     timeInfoEl.style.opacity = 1;
                     timeInfoEl.title = '';
@@ -1204,12 +1231,47 @@
                 }
             }
             
+            // NEW: Destination Time Display
+            updateDestinationTime(data);
+
             if (isPublicView && (!App.currentUser || App.currentUser.userId !== data.userId)) {
                 trackProfileView(data.userId);
             }
         }
+        
+        // NEW: Update Destination Time Function
+        function updateDestinationTime(data) {
+            const timeInfoEl = document.getElementById('destination-time-info');
+            if (timeInfoEl) timeInfoEl.textContent = ''; // Clear by default
+            if (travelInterval) clearInterval(travelInterval);
 
-        // NEW: View Tracking Logic
+            if (data.status !== '✈️' || !data.travelDestination || !data.destinationTimezone) return;
+
+            const tzId = data.destinationTimezone;
+            const localTimeData = getLocalTimeAndZone(tzId);
+
+            const renderTime = () => {
+                 const currentData = App.currentProfileData; // Get latest for timer
+                 if (currentData.status !== '✈️' || !currentData.travelDestination || !currentData.destinationTimezone) {
+                    if (timeInfoEl) timeInfoEl.textContent = '';
+                    clearInterval(travelInterval);
+                    return;
+                }
+                const newTimeData = getLocalTimeAndZone(currentData.destinationTimezone);
+
+                if (timeInfoEl) {
+                    timeInfoEl.innerHTML = `
+                        ✈️ ${currentData.travelDestination} Local Time: 
+                        <span style="font-weight: 700;">${newTimeData.time}</span> (${newTimeData.offset})
+                    `;
+                }
+            };
+            
+            renderTime(); // Initial render
+            travelInterval = setInterval(renderTime, 1000); // Continuous update
+        }
+
+        // NEW: View Tracking Logic (Unchanged)
         async function trackProfileView(profileId) {
             const today = new Date().toISOString().substring(0, 10);
             
@@ -1318,7 +1380,7 @@
             document.getElementById('download-vcard-btn')?.addEventListener('click', handleVCardDownload);
         }
 
-        // Status Suggestion Logic
+        // Status Suggestion Logic (Unchanged)
         function suggestStatusBasedOnTime() {
             const now = new Date();
             const hour = now.getHours();
@@ -1388,25 +1450,37 @@
             
             // Timezone Selector (Value is the offset in minutes)
             const timezoneSelector = document.getElementById('timezone-selector');
-            timezoneSelector.innerHTML = ''; // Clear existing
+            const destTzSelector = document.getElementById('destination-timezone'); // NEW
             
-            // Add 'Auto-Detect' option first
-            timezoneSelector.innerHTML += `<option value="auto">Auto-Detect (Client's Browser)</option>`;
+            [timezoneSelector, destTzSelector].forEach(selector => {
+                if (!selector) return;
+                selector.innerHTML = ''; // Clear existing
             
-            const selectedTzOffset = data.timezoneOverride || 'auto';
-            
-            Object.entries(TIMEZONE_MAP).sort(([, a], [, b]) => a - b).forEach(([label, offset]) => {
-                 // Skip 'auto' which is already added
-                if (label !== 'auto') {
-                    const value = offset.toString();
-                    const isSelected = value === selectedTzOffset.toString();
-                    timezoneSelector.innerHTML += `<option value="${value}" ${isSelected ? 'selected' : ''}>${label}</option>`;
+                if (selector.id === 'timezone-selector') {
+                    selector.innerHTML += `<option value="auto">Auto-Detect (Client's Browser)</option>`;
+                } else {
+                    selector.innerHTML += `<option value="">(Not Set)</option>`;
                 }
+                
+                const selectedTzOffset = data.timezoneOverride || 'auto';
+                const selectedDestTz = data.destinationTimezone || '';
+
+                Object.entries(TIMEZONE_MAP).sort(([, a], [, b]) => a - b).forEach(([label, offset]) => {
+                    if (label !== 'auto') {
+                        const value = offset.toString();
+                        let isSelected = false;
+                        if (selector.id === 'timezone-selector') {
+                            isSelected = value === selectedTzOffset.toString();
+                        } else { // destination-timezone
+                            isSelected = value === selectedDestTz.toString();
+                        }
+                        selector.innerHTML += `<option value="${value}" ${isSelected ? 'selected' : ''}>${label}</option>`;
+                    }
+                });
             });
             
             // Timezone Visibility
             document.getElementById('privacy-timezone').value = data.privacy?.timezone || 'public';
-
 
             document.getElementById('accent-color').value = data.profileAccentColor || '#0ea5e9';
             document.getElementById('scheduling-link').value = data.schedulingLink || '';
@@ -1415,6 +1489,9 @@
             document.getElementById('status-message').value = data.message || '';
             document.getElementById('auto-reset').checked = !!data.autoResetStatus;
             
+            // NEW: Travel Status Fields
+            document.getElementById('travel-destination').value = data.travelDestination || '';
+
             const durationInput = document.getElementById('status-duration');
             const untilInput = document.getElementById('status-until');
             const timeTypeSelect = document.getElementById('status-time-type');
@@ -1536,22 +1613,22 @@
                 endTime: statusData.endTime || null, 
                 autoResetStatus: statusData.autoResetStatus || false, 
                 updatedAt: new Date().toISOString()
-             };
+              };
              
-             await fetch(`${DATABASE_URL}/users/${App.currentUser.userId}.json`, { 
+              await fetch(`${DATABASE_URL}/users/${App.currentUser.userId}.json`, { 
                 method: 'PATCH', 
                 body: JSON.stringify(dataToSave) 
-             });
-             
-             await fetch(`${DATABASE_URL}/history/${App.currentUser.userId}.json`, { 
+              });
+              
+              await fetch(`${DATABASE_URL}/history/${App.currentUser.userId}.json`, { 
                 method: 'POST', 
                 body: JSON.stringify(dataToSave) 
-             });
+              });
 
-             const updatedDataRes = await fetch(`${DATABASE_URL}/users/${App.currentUser.userId}.json`);
-             App.currentProfileData = await updatedDataRes.json() || {};
-             renderProfile(App.currentProfileData);
-             populateSettings(App.currentProfileData);
+              const updatedDataRes = await fetch(`${DATABASE_URL}/users/${App.currentUser.userId}.json`);
+              App.currentProfileData = await updatedDataRes.json() || {};
+              renderProfile(App.currentProfileData);
+              populateSettings(App.currentProfileData);
         }
         
         async function resetStatusToDefault() {
@@ -1566,7 +1643,7 @@
             showToast('Status automatically reset to Available.');
         }
 
-        // --- Timetable Logic (Unchanged) ---
+        // --- Timetable Logic (Updated with Conflict Check) ---
         function renderTimetableSettings(timetable = []) {
             const container = document.getElementById('timetable-entries-container');
             if (!container) return;
@@ -1605,20 +1682,25 @@
         function handleAddTimetableEntry() {
             const day = prompt("Enter Day (0=Sun, 1=Mon, ..., 6=Sat):");
             if (day === null || isNaN(day) || day < 0 || day > 6) return showToast("Invalid day (Must be 0-6).");
+            const dayInt = parseInt(day, 10);
             
             const start = prompt("Enter Start Time (HH:MM, 24hr format, e.g., 09:00):");
             if (!start || !/^\d{2}:\d{2}$/.test(start)) return showToast("Invalid start time format (HH:MM).");
+            const startMinutes = timeToMinutes(start);
 
             const end = prompt("Enter End Time (HH:MM, 24hr format, e.g., 17:00):");
             if (!end || !/^\d{2}:\d{2}$/.test(end)) return showToast("Invalid end time format (HH:MM).");
+            const endMinutes = timeToMinutes(end);
 
+            if (endMinutes <= startMinutes) return showToast("End time must be after start time.");
+            
             const status = prompt("Enter Status Emoji for this schedule (e.g., 📚, 🧠, 🟢):");
             if (!status || status.trim() === '') return showToast("Timetable status emoji cannot be empty.");
             
             const message = prompt("Enter Status Message for this time (e.g., Lunch Break, Class Time):") || 'Scheduled Activity';
 
             const newEntry = {
-                day: parseInt(day, 10),
+                day: dayInt,
                 start: start,
                 end: end,
                 status: status.trim(), 
@@ -1627,6 +1709,28 @@
             
             const data = App.currentProfileData || { timetable: [] };
             data.timetable = data.timetable || [];
+
+            // --- CONFLICT VALIDATION ---
+            const conflictingEntry = data.timetable.find(entry => {
+                if (entry.day !== dayInt) return false;
+                
+                const existingStartMins = timeToMinutes(entry.start);
+                const existingEndMins = timeToMinutes(entry.end);
+                
+                // Check for overlap: 
+                const isNewStartInside = startMinutes >= existingStartMins && startMinutes < existingEndMins;
+                const isNewEndInside = endMinutes > existingStartMins && endMinutes <= existingEndMins;
+                const isNewContainingExisting = startMinutes <= existingStartMins && endMinutes >= existingEndMins;
+                
+                return isNewStartInside || isNewEndInside || isNewContainingExisting;
+            });
+
+            if (conflictingEntry) {
+                return showToast(`CONFLICT: This schedule overlaps with existing entry: ${conflictingEntry.status} ${conflictingEntry.message} on ${DAYS_OF_WEEK[conflictingEntry.day]} from ${conflictingEntry.start} to ${conflictingEntry.end}.`);
+            }
+            // --- END CONFLICT VALIDATION ---
+
+
             data.timetable.push(newEntry);
             
             App.currentProfileData = data; 
@@ -1747,6 +1851,8 @@
                 birthday: '',
                 gender: '',
                 hobbies: '',
+                travelDestination: '', // NEW
+                destinationTimezone: '', // NEW
                 timeZoneOffset: new Date().getTimezoneOffset() * -1, 
                 timezoneOverride: 'auto', // Default: Auto-Detect
                 privacy: { 
@@ -1827,8 +1933,45 @@
             App.currentUser = null;
             hashChangeRouter(); 
         }
+        
+        // --- NEW: Snooze Preset Handler ---
+        async function handlePresetClick(e) {
+            if (!App.currentUser) return showToast("Please log in first.");
 
-        // --- Settings & Save ---
+            const btn = e.currentTarget;
+            const emoji = btn.dataset.emoji;
+            const message = btn.dataset.message;
+            const durationMinutes = parseInt(btn.dataset.duration, 10);
+            
+            // Calculate end time
+            let endTime = null;
+            if (durationMinutes > 0) {
+                endTime = new Date(Date.now() + durationMinutes * 60 * 1000).toISOString();
+            }
+
+            const dataToSave = {
+                ...App.currentProfileData, // Preserve all other settings
+                status: emoji,
+                message: message,
+                endTime: endTime,
+                autoResetStatus: true, // Default to auto-reset for presets
+                updatedAt: new Date().toISOString()
+            };
+
+            // Update settings form immediately for visual consistency
+            document.getElementById('status-emoji').value = emoji;
+            document.getElementById('status-message').value = message;
+            document.getElementById('status-time-type').value = durationMinutes > 0 ? 'duration' : 'none';
+            document.getElementById('status-duration').value = durationMinutes;
+            toggleTimeInputs(document.getElementById('status-time-type').value);
+            document.getElementById('auto-reset').checked = true;
+
+            // Save/log status and navigate
+            await saveAndLogStatus(dataToSave); 
+            showToast(`Status updated: ${emoji} ${message} for ${durationMinutes} minutes!`);
+        }
+
+        // --- Settings & Save (Updated for new fields) ---
         async function handleSaveSettings() {
             if (!App.currentUser) return;
             
@@ -1896,7 +2039,11 @@
                 school: document.getElementById('school')?.value.trim(),
                 timeZoneOffset: clientUtcOffsetMinutes,
                 
-                // NEW: Separated Timezone settings
+                // NEW: Travel Status Fields
+                travelDestination: document.getElementById('travel-destination')?.value.trim(),
+                destinationTimezone: document.getElementById('destination-timezone')?.value,
+                
+                // NEW: Timezone settings & Privacy
                 timezoneOverride: document.getElementById('timezone-selector')?.value,
                 privacy: {
                     email: document.getElementById('privacy-email')?.value,
@@ -1907,7 +2054,7 @@
                     gender: document.getElementById('privacy-gender')?.value,
                     hobbies: document.getElementById('privacy-hobbies')?.value,
                     country: document.getElementById('privacy-country')?.value,
-                    timezone: document.getElementById('privacy-timezone')?.value // This is ONLY the visibility setting
+                    timezone: document.getElementById('privacy-timezone')?.value
                 }
             };
             
@@ -2041,6 +2188,32 @@
                     showToast('Could not copy link.', 'error');
                 });
             }
+        }
+        
+        // --- NEW: QR Code Generator Logic ---
+        function handleGenerateQrCode() {
+            if (!App.currentUser) return showToast("Please log in to generate your QR code.");
+            if (isPublicView) return showToast("QR code generation is only available on your dashboard.");
+
+            const shareUrl = `${window.location.origin}${window.location.pathname}?user=${App.currentUser.userId}`;
+            const qrContainer = document.getElementById('qrcode-container');
+            
+            // Using a simple external API for QR code generation (since we can't include a JS library file)
+            const qrCodeApiUrl = `https://chart.googleapis.com/chart?cht=qr&chs=200x200&chl=${encodeURIComponent(shareUrl)}`;
+            
+            const qrImg = document.createElement('img');
+            qrImg.src = qrCodeApiUrl;
+            qrImg.width = 200;
+            qrImg.height = 200;
+            qrImg.alt = "Profile QR Code";
+            qrImg.style.display = 'block';
+            qrImg.style.borderRadius = '4px';
+
+            qrContainer.innerHTML = '';
+            qrContainer.appendChild(qrImg);
+            
+            showToast('QR Code generated! Scan to share your profile. 🤳');
+            document.getElementById('generate-qrcode-btn').textContent = 'QR Generated (Click to Re-Generate)';
         }
 
 
@@ -2247,6 +2420,14 @@
                     previewEl.textContent = 'No image selected.';
                 }
             });
+
+            // NEW: Preset Button Listener
+            document.querySelectorAll('.preset-btn').forEach(btn => {
+                btn.addEventListener('click', handlePresetClick);
+            });
+
+            // NEW: QR Code Button Listener
+            document.getElementById('generate-qrcode-btn')?.addEventListener('click', handleGenerateQrCode);
         }
         
         document.addEventListener('DOMContentLoaded', handlePageLoad);
