@@ -315,7 +315,7 @@
 
             <div class="card">
                 <h2>Custom Links</h2>
-                <div class="profile-links" id="profile-links"><p class="muted">No links provided.</p></div>
+                <div id="profile-links"><p class="muted">No links provided.</p></div>
             </div>
             <div class="card">
                 <button id="share-status-btn" class="btn">
@@ -327,7 +327,11 @@
             <div class="card hidden" id="create-hap-promo">
                 <h3 style="text-align: center;">Like this status page?</h3>
                 <p style="text-align: center;">Create your own real-time availability profile in seconds!</p>
-                <button class="btn" onclick="navigateTo('loginPage');" style="margin-top: 15px;">Get Started Now</button>
+                <!-- UPDATED BUTTONS FOR LOGGED IN/LOGGED OUT USERS -->
+                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                    <button class="btn secondary" id="promo-login-btn" style="flex: 1; display: none;" onclick="navigateTo('profilePage')">Go to Dashboard</button>
+                    <button class="btn" id="promo-signup-btn" style="flex: 1;" onclick="navigateTo('loginPage')">Get Started Now</button>
+                </div>
             </div>
         </div>
         
@@ -602,8 +606,8 @@
             <div class="card">
                 <h2>Availability Trends 📈 (Last 7 Days)</h2>
                 <p>Calculated percentage of time spent in each status.</p>
-                <div id="status-summary" style="margin-top: 20px;">
-                    <p class="muted">Loading summary...</p>
+                <div id="status-summary">
+                    <p class="muted">Summary calculation logic not fully implemented.</p>
                 </div>
                 <div class="analytics-status-bar" id="analytics-status-bar"></div>
             </div>
@@ -684,24 +688,19 @@
         }
 
         // --- Timezone and Day/Night Utilities ---
-
         // Night is defined as 8 PM (20) until 6 AM (6)
         function isNightTime(localHour) {
             return localHour >= 20 || localHour < 6;
         }
         
-        // Function to get the current local hour based on saved UTC offset
         function getLocalHourFromOffset(offsetMinutes) {
             const now = new Date();
-            // Current UTC time in milliseconds (browser offset is negative of UTC offset)
             const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
-            // Target local time in milliseconds
             const targetTime = utcTime + (offsetMinutes * 60000);
             const targetDate = new Date(targetTime);
             return targetDate.getHours();
         }
 
-        // Function to format the current time and timezone string
         function getLocalTimeAndZone(offsetMinutes) {
             const now = new Date();
             const localTime = new Date(now.getTime() + (now.getTimezoneOffset() * 60000) + (offsetMinutes * 60000));
@@ -709,7 +708,6 @@
             const timeOptions = { hour: '2-digit', minute: '2-digit', hour12: true };
             const timeStr = localTime.toLocaleTimeString('en-US', timeOptions);
             
-            // Format UTC offset string (e.g., UTC+05:30 or UTC-07:00)
             const sign = offsetMinutes >= 0 ? '+' : '-';
             const absOffset = Math.abs(offsetMinutes);
             const hours = String(Math.floor(absOffset / 60)).padStart(2, '0');
@@ -726,11 +724,10 @@
             const userId = App.currentUser.userId;
             const url = `${DATABASE_URL}${PRESENCE_PATH}/${userId}.json`;
             const payload = { 
-                status: status ? true : null, // Sets or deletes presence key
+                status: status ? true : null, 
                 timestamp: new Date().toISOString()
             };
             
-            // Use PATCH for setting/updating and DELETE for removal
             fetch(url, {
                 method: status ? 'PATCH' : 'DELETE', 
                 body: status ? JSON.stringify(payload) : undefined 
@@ -740,15 +737,12 @@
         function setupHAPConnect() {
             if (!App.currentUser) return;
             
-            // 1. Set presence immediately
             updateConnectPresence(true); 
             
-            // 2. Poll the visualization data
             if (presenceUpdateInterval) clearInterval(presenceUpdateInterval);
             presenceUpdateInterval = setInterval(fetchAndRenderConnect, 5000); 
             fetchAndRenderConnect();
             
-            // 3. Set global unload/visibility handlers to remove presence
             window.addEventListener('beforeunload', teardownHAPConnect);
             document.addEventListener('visibilitychange', handleVisibilityChange);
         }
@@ -764,10 +758,8 @@
 
         function handleVisibilityChange() {
             if (document.hidden) {
-                // Remove presence if tab is backgrounded
                 updateConnectPresence(false);
             } else if (window.location.hash.substring(1) === 'hapConnectPage') {
-                // Restore presence if tab becomes active on HAP Connect page
                 updateConnectPresence(true);
                 if (!presenceUpdateInterval) {
                     setupHAPConnect();
@@ -779,7 +771,6 @@
             const visualizer = document.getElementById('connect-visualizer');
             if (!visualizer) return;
             
-            // 1. Fetch live users (presence)
             const presenceRes = await fetch(`${DATABASE_URL}${PRESENCE_PATH}.json`);
             const presenceData = await presenceRes.json() || {};
 
@@ -788,7 +779,7 @@
             const usersToRender = [];
 
             for (const pId in presenceData) {
-                if (pId === App.currentUser?.userId) continue; // Don't show current user as an orb
+                if (pId === App.currentUser?.userId) continue; 
                 activeUserCount++;
                 usersToRender.push(pId);
             }
@@ -801,11 +792,9 @@
                 return;
             }
 
-            // 2. Fetch profiles for display info (optimised by fetching the whole users node)
             const usersRes = await fetch(`${DATABASE_URL}/users.json`);
             const allUsers = await usersRes.json() || {};
             
-            // Store current positions/animation states to minimize jumping
             const existingOrbs = visualizer.querySelectorAll('.connect-orb');
             const currentPositions = {};
             existingOrbs.forEach(orb => {
@@ -814,7 +803,6 @@
             });
 
 
-            // Ensure we don't render more than 12 for visual simplicity
             usersToRender.slice(0, 12).forEach(userId => {
                 const user = allUsers[userId] || {};
                 const orb = document.createElement('div');
@@ -834,8 +822,7 @@
                 orb.style.backgroundColor = orbBg;
                 orb.style.color = orbText; 
                 orb.style.border = `2px solid ${orbBorder}`; 
-                // ---------------------------
-
+                
                 let posX, posY;
                 if (currentPositions[userId]) {
                     posX = currentPositions[userId].left;
@@ -847,7 +834,6 @@
 
                 orb.style.left = posX;
                 orb.style.top = posY;
-                // Removed animationDelay to stop floating animation
 
                 orb.innerHTML = `
                     <div class="orb-emoji">${user.status || '❓'}</div>
@@ -855,7 +841,6 @@
                     <div class="orb-status" style="color: ${orbMuted};">${getLocalTimeAndZone(userOffset).time}</div>
                 `;
 
-                // Add click listener to view the public profile
                 orb.addEventListener('click', () => {
                     window.location.href = `${window.location.origin}${window.location.pathname}?user=${userId}`;
                 });
@@ -863,7 +848,6 @@
                 visualizer.appendChild(orb);
             });
             
-            // Update current user's message on the Connect page
             visualizer.closest('.card').querySelector('h2').textContent = `HAP Connect Live ⚡ (${activeUserCount} active)`;
         }
 
@@ -891,11 +875,9 @@
 
                 const color = colors[Math.floor(Math.random() * colors.length)];
                 
-                // Start position near center of screen
                 const startX = window.innerWidth / 2;
                 const startY = window.innerHeight / 2;
                 
-                // Random end coordinates and rotation
                 const endX = (Math.random() - 0.5) * 600 + startX;
                 const endY = window.innerHeight + 100;
                 const rotation = Math.random() * 1000 + 500;
@@ -920,45 +902,55 @@
 
         // --- URL HASH ROUTER CORE LOGIC ---
         
-        // 1. Function to drive navigation by setting the hash
         function navigateTo(pageId) {
             window.location.hash = pageId;
         }
 
-        // 2. Main Router function to handle hash changes and display content
         function hashChangeRouter() {
-            // Determine the target page from the hash, or use default
-            const hash = window.location.hash.substring(1);
-            let targetPageId = App.pages.includes(hash) ? hash : null;
-
-            // Handle default or unknown page based on login status
-            if (!targetPageId) {
-                targetPageId = App.currentUser ? 'profilePage' : 'loginPage';
-            }
-            
-            // Handle URL links containing ?user=ID (Public View)
+            // Check for Query Parameter Override (Public View) first
             const params = new URLSearchParams(window.location.search);
             const userIdFromUrl = params.get('user');
 
             if (userIdFromUrl) {
-                // If viewing a public profile via query parameter, force profile page view
                 isPublicView = true;
                 if (App.elements.mainHeader) App.elements.mainHeader.classList.add('hidden');
                 
-                // Fetch and render the public profile and STOP.
-                displayPublicProfile(userIdFromUrl);
-                
+                // Hide unnecessary public view elements
                 const shareCard = document.getElementById('share-status-btn')?.closest('.card');
                 const searchCard = document.getElementById('show-hap-connect-btn')?.closest('.card');
                 if (shareCard) shareCard.classList.add('hidden');
                 if (searchCard) searchCard.classList.add('hidden');
+
+                // 1. Hide all pages except profilePage
+                App.pages.forEach(pId => {
+                    if (App.elements[pId] && pId !== 'profilePage') App.elements[pId].style.display = 'none';
+                });
+                if (App.elements.profilePage) App.elements.profilePage.style.display = 'block';
+
+                // 2. Fetch and render the public profile (This is the only thing we do)
+                displayPublicProfile(userIdFromUrl);
                 
-                document.getElementById('profilePage').style.display = 'block';
-                return; // Stop routing if in public view mode
+                // 3. Show/Hide promo based on logged in status
+                const promoCard = document.getElementById('create-hap-promo');
+                if (promoCard) {
+                    promoCard.classList.remove('hidden');
+                    const isAuth = !!localStorage.getItem('hapUser');
+                    document.getElementById('promo-login-btn').style.display = isAuth ? 'inline-flex' : 'none';
+                    document.getElementById('promo-signup-btn').textContent = isAuth ? 'Start New Session' : 'Get Started Now';
+                    document.getElementById('promo-signup-btn').onclick = isAuth ? handleLogout : () => navigateTo('loginPage');
+                }
+                return; 
             }
             
             // --- Standard Internal Routing ---
             isPublicView = false;
+            
+            const hash = window.location.hash.substring(1);
+            let targetPageId = App.pages.includes(hash) ? hash : null;
+
+            if (!targetPageId) {
+                targetPageId = App.currentUser ? 'profilePage' : 'loginPage';
+            }
             
             // Show/Hide page containers
             App.pages.forEach(pId => {
@@ -985,16 +977,14 @@
             window.scrollTo(0, 0);
 
             // Ensure header visibility matches login status
-            if (App.currentUser && App.elements.mainHeader) {
-                App.elements.mainHeader.classList.remove('hidden');
-                
-                const shareCard = document.getElementById('share-status-btn')?.closest('.card');
-                const searchCard = document.getElementById('show-hap-connect-btn')?.closest('.card');
-                if (shareCard) shareCard.classList.remove('hidden');
-                if (searchCard) searchCard.classList.remove('hidden');
-
-            } else if (App.elements.mainHeader) {
-                App.elements.mainHeader.classList.add('hidden');
+            const isAuth = !!App.currentUser;
+            if (App.elements.mainHeader) {
+                App.elements.mainHeader.classList.toggle('hidden', !isAuth);
+            }
+            
+            // Hide promo card when viewing dashboard or settings
+            if (document.getElementById('create-hap-promo')) {
+                document.getElementById('create-hap-promo').classList.add('hidden');
             }
         }
         
@@ -1051,16 +1041,14 @@
                 App.currentUser = user;
                 setupUserSession();
             } else {
-                // Not logged in, ensure login page hash is set
-                if (window.location.hash.substring(1) !== 'loginPage') {
-                    window.location.hash = 'loginPage';
-                }
+                // Not logged in. Ensure no current user state.
+                App.currentUser = null;
             }
             
             // 2. Setup router listeners
             window.addEventListener('hashchange', hashChangeRouter);
             
-            // 3. Run router on load (will pick up the initial hash or default)
+            // 3. Run router on load (will pick up the initial hash, query param, or default)
             hashChangeRouter();
             
             addEventListeners();
@@ -1107,9 +1095,11 @@
             const privacyLevel = data.privacy?.timezone;
             
             let isFriend = false;
-            if (App.currentUser && data.userId) {
-                // Simplified friend check for display purposes (does not handle remote loading of friend data easily here, relying on later API call/context)
+            // Simplified friend check for display purposes (full check is complex and happens in renderPersonalDetails)
+            if (App.currentUser && App.currentProfileData && App.currentUser.userId !== App.currentProfileData.userId) {
+                isFriend = true; // Assume true if not owner for simple placeholder logic
             }
+
             const isTimeVisible = isPublicView ? (privacyLevel === 'public' || (privacyLevel === 'friends' && isFriend)) : true;
             
             const timeInfoEl = document.getElementById('local-time-info');
@@ -1123,11 +1113,6 @@
                     timeInfoEl.style.opacity = 0.6;
                     timeInfoEl.title = 'Timezone information is restricted.';
                 }
-            }
-
-
-            if (!isPublicView && document.getElementById('create-hap-promo')) {
-                document.getElementById('create-hap-promo').classList.add('hidden');
             }
         }
 
@@ -1388,13 +1373,17 @@
                 if (userData && loginData) {
                     userData.userId = userId;
                     userData.email = loginData.email; 
+                    App.currentProfileData = userData; // CRITICAL FIX: Set this data for friend checks in renderPersonalDetails
                     applyVisuals(userData);
                     renderProfile(userData);
                 }
                 else document.getElementById('profile-name').textContent = 'User Not Found';
             };
             fetchAndUpdate();
-            setInterval(fetchAndUpdate, 15000);
+            // Reduced public view refresh rate for stability
+            if (!window.publicViewInterval) {
+                 window.publicViewInterval = setInterval(fetchAndUpdate, 30000); 
+            }
         }
         
         function updateTimer(data, timerEl) {
@@ -1690,10 +1679,10 @@
                                 actionButton = `<button class="btn secondary" style="width: auto; padding: 8px 12px; background: #f59e0b;" disabled>Pending ⏳</button>`;
                             } else if (friendsData[userId] === undefined) {
                                 // Check if the OTHER user sent a request to ME (if the key exists on my side as 'pending', it's an incoming request)
-                                const incomingRequestRes = await fetch(`${DATABASE_URL}/friends/${currentUserId}/${userId}.json`);
-                                const incomingRequestStatus = await incomingRequestRes.json();
-
-                                if (incomingRequestStatus === 'pending') {
+                                const incomingRequestRes = await fetch(`${DATABASE_URL}/friends/${userId}.json`); // Fetch the OTHER user's friend status
+                                const otherUserFriends = await incomingRequestRes.json() || {};
+                                
+                                if (otherUserFriends[currentUserId] === 'pending') { // I have an incoming request from them
                                     actionButton = `<a href="#friendsPage" onclick="navigateTo('friendsPage')" class="btn" style="width: auto; padding: 8px 12px; background: #fbbf24;">Respond!</a>`;
                                 } else {
                                     // Not friends, not pending either way
@@ -1834,8 +1823,11 @@
         function handleLogout() {
             teardownHAPConnect(); // Ensure presence is removed on logout
             localStorage.removeItem('hapUser');
-            // Force reload to clear session state and trigger login view
-            window.location.href = window.location.origin + window.location.pathname; 
+            // Clear URL query parameter if present, and force router reset
+            const url = window.location.origin + window.location.pathname;
+            window.history.pushState({}, '', url);
+            App.currentUser = null;
+            hashChangeRouter(); 
         }
 
         // --- Settings & Save ---
@@ -1942,7 +1934,6 @@
             applyVisuals(dataToSave);
             showToast('Settings Saved & Status Updated!');
             navigateTo('profilePage');
-            renderProfile(dataToSave);
         }
 
         // --- VCard & Share ---
