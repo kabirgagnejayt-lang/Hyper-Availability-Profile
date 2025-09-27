@@ -150,12 +150,12 @@
             background: #f87171; color: white; text-align: center; font-weight: bold;
             z-index: 5000; display: none; border-bottom: 2px solid #ef4444;
         }
-        /* Removed Confetti Styles */
     </style>
 </head>
 <body>
     
     <div id="global-error-display">A critical error occurred. Check the console for details.</div>
+
     <header id="mainHeader" class="hidden">
         <nav>
             <button class="nav-btn" data-page="profilePage">
@@ -230,9 +230,8 @@
             <div class="card hidden" id="create-hap-promo">
                 <h3 style="text-align: center;">Like this status page?</h3>
                 <p style="text-align: center;">Create your own real-time availability profile in seconds!</p>
-                <div style="display: flex; gap: 10px; margin-top: 15px;">
-                    <button class="btn secondary" id="promo-login-btn" style="flex: 1; display: none;" onclick="navigateTo('profilePage')">Go to Dashboard</button>
-                    <button class="btn" id="promo-signup-btn" style="flex: 1;" onclick="navigateTo('loginPage')">Get Started Now</button>
+                <div style="display: flex; justify-content: center; margin-top: 15px;">
+                    <button class="btn" id="promo-action-btn" style="flex: 0 1 250px;"></button>
                 </div>
             </div>
         </div>
@@ -487,14 +486,11 @@
         };
 
         const DATABASE_URL = "https://happp-96438-default-rtdb.firebaseio.com/";
-        // Removed PRESENCE_PATH
         let countdownInterval;
         let timetableCheckInterval;
-        // Removed presenceUpdateInterval
         let isPublicView = false; // Tracks if the user is viewing via ?user=ID
 
         const App = {
-            // Removed 'hapConnectPage' and 'friendsPage'
             pages: ['loginPage', 'profilePage', 'analyticsPage', 'settingsPage'],
             elements: {},
             currentUser: null,
@@ -562,10 +558,6 @@
         }
         // --- End Timezone Utilities ---
 
-        // --- Removed Presence Tracking & HAP Connect Core Logic ---
-        
-        // --- Removed Friend Acceptance Animation (Confetti) ---
-
 
         // --- URL HASH ROUTER CORE LOGIC ---
         
@@ -578,6 +570,7 @@
             const params = new URLSearchParams(window.location.search);
             const userIdFromUrl = params.get('user');
             const promoCard = document.getElementById('create-hap-promo');
+            const promoActionBtn = document.getElementById('promo-action-btn'); // Get the single button
 
 
             if (userIdFromUrl) {
@@ -586,7 +579,6 @@
                 
                 // Hide unnecessary public view elements
                 const shareCard = document.getElementById('share-status-btn')?.closest('.card');
-                // Removed searchCard hide
                 if (shareCard) shareCard.classList.add('hidden');
 
                 // 1. Hide all pages except profilePage
@@ -598,15 +590,23 @@
                 // 2. Fetch and render the public profile (This is the only thing we do)
                 displayPublicProfile(userIdFromUrl);
                 
-                // 3. Show/Hide promo based on logged in status (FIXED LOGIC)
-                if (promoCard) {
+                // 3. Set up the single promo action button (FIXED LOGIC)
+                if (promoCard && promoActionBtn) {
                     promoCard.classList.remove('hidden');
                     const isAuth = !!localStorage.getItem('hapUser');
-                    document.getElementById('promo-login-btn').style.display = isAuth ? 'inline-flex' : 'none';
-                    document.getElementById('promo-signup-btn').textContent = isAuth ? 'Go to My Dashboard' : 'Get Started Now';
-                    document.getElementById('promo-signup-btn').onclick = isAuth ? () => navigateTo('profilePage') : () => navigateTo('loginPage');
-                    if (!isAuth) {
-                        document.getElementById('promo-login-btn').style.display = 'none'; // Ensure this button is always hidden if not authed
+                    
+                    if (isAuth) {
+                        promoActionBtn.textContent = 'Go to My Dashboard';
+                        promoActionBtn.className = 'btn secondary'; // secondary style for existing user
+                        promoActionBtn.onclick = () => navigateTo('profilePage');
+                    } else {
+                        promoActionBtn.textContent = 'Get Started Now';
+                        promoActionBtn.className = 'btn'; // primary style for new user
+                        // This action navigates to login and triggers the signup tab
+                        promoActionBtn.onclick = () => { 
+                            navigateTo('loginPage'); 
+                            document.querySelector('.auth-tabs [data-tab="signup"]')?.click();
+                        }; 
                     }
                 }
                 return; 
@@ -632,13 +632,6 @@
             document.querySelectorAll('.nav-btn').forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.page === targetPageId);
             });
-
-            // Handle lifecycle events
-            // Removed connect/friends lifecycle events
-
-            // if (targetPageId === 'analyticsPage') {
-            //     if (App.currentUser) fetchAndRenderAnalytics();
-            // }
 
             window.scrollTo(0, 0);
 
@@ -782,7 +775,6 @@
             
             const profileOwnerId = profileData.userId;
             const isOwner = App.currentUser && App.currentUser.userId === profileOwnerId;
-            // Removed isFriend check
 
             const getDetailHTML = (label, value, field, fallback = '🔒 Private') => {
                 const privacyLevel = profileData.privacy ? profileData.privacy[field] : 'public';
@@ -842,7 +834,6 @@
             container.innerHTML = '';
             
             const isOwner = App.currentUser && App.currentUser.userId === profileData.userId;
-            // Removed friendship check
 
             if (profileData.schedulingLink) {
                 container.innerHTML += `
@@ -852,8 +843,6 @@
                     </a>`;
             }
             
-            // Removed Friend Request Button logic
-
             const vCardButtonHTML = `
                 <button id="download-vcard-btn" class="btn secondary" style="max-width: 250px;">
                     ${App.svg.vcard}
@@ -864,8 +853,6 @@
 
             document.getElementById('download-vcard-btn')?.addEventListener('click', handleVCardDownload);
         }
-
-        // Removed handleSendFriendRequestDirectly
 
         function populateSettings(data) {
             if (!document.getElementById('display-name')) return;
@@ -882,7 +869,7 @@
             document.getElementById('country').value = data.country || '';
             document.getElementById('school').value = data.school || '';
             
-            // Privacy Controls - Removed 'friends' option
+            // Privacy Controls - Simplified options (public/private)
             document.getElementById('privacy-bio').value = data.privacy?.bio || 'public';
             document.getElementById('privacy-age').value = data.privacy?.age || 'public';
             document.getElementById('privacy-gender').value = data.privacy?.gender || 'public';
@@ -1160,11 +1147,6 @@
         }
 
 
-        // --- Removed Friends System Logic ---
-
-
-        // --- Removed Search (Integrated into HAP Connect page) ---
-
         // --- Authentication & Session ---
         
         async function handleSignup(e) {
@@ -1267,7 +1249,6 @@
         }
         
         function handleLogout() {
-            // Removed teardownHAPConnect()
             localStorage.removeItem('hapUser');
             // Clear URL query parameter if present, and force router reset
             const url = window.location.origin + window.location.pathname;
@@ -1395,7 +1376,6 @@
 
             const profileOwnerId = profileData.userId || user.userId;
             const isOwner = user && user.userId === profileOwnerId;
-            // Removed isFriend check
 
             // Helper to check visibility based on privacy settings (only public/private context remains)
             const isVisible = (field) => {
@@ -1557,10 +1537,7 @@
             // Settings & Profile Actions
             document.getElementById('save-settings-btn')?.addEventListener('click', handleSaveSettings);
             document.getElementById('share-status-btn')?.addEventListener('click', handleShareStatus);
-            // Removed show-hap-connect-btn listener
             
-            // Removed HAP Connect/Search listeners
-
             // Timetable 
             document.getElementById('add-timetable-entry-btn')?.addEventListener('click', handleAddTimetableEntry);
             
