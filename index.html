@@ -15,7 +15,6 @@
             --primary: #0ea5e9; --primary-light: #f0f9ff; --primary-dark: #0369a1;
             --bg: #f8fafc; --card: #ffffff; --text: #0f172a; --muted: #64748b;
             --border-color: #e2e8f0; --input-bg: #f1f5f9;
-            --danger: #ef4444; /* Added for Banning/Deletion */
             --radius: 12px; --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
             /* Dynamic PFP Colors (Default to Day/Light) */
             --pfp-bg-day: var(--primary-light);
@@ -24,14 +23,12 @@
             --link-text-color: #0369a1;
             --display-font: 'Inter', sans-serif;
             --profile-header-bg-style: var(--card); /* Base for custom backgrounds */
-            --profile-name-color: var(--text); /* NEW: For custom role perks */
         }
 
         body.dark {
             --primary: #38bdf8; --primary-light: #1e293b; --primary-dark: #7dd3fc;
             --bg: #020617; --card: #0f172a; --text: #e2e8f0; --muted: #94a3b8;
             --border-color: #334155; --input-bg: #1e293b;
-            --danger: #f87171;
         }
 
         html { font-size: 16px; }
@@ -51,7 +48,7 @@
             position: fixed; bottom: 0; left: 0; right: 0;
             z-index: 100; border-top: 1px solid var(--border-color);
         }
-        nav { display: flex; gap: 8px; align-items: center; width: 100%; max-width: 700px; justify-content: space-around; }
+        nav { display: flex; gap: 8px; align-items: center; width: 100%; max-width: 450px; justify-content: space-around; }
         .nav-btn {
             background: transparent; border: none; padding: 8px 10px; border-radius: 8px;
             cursor: pointer; color: var(--muted); font-weight: 500; font-size: 0.9rem;
@@ -90,9 +87,6 @@
         .btn:hover { background-color: var(--primary-dark); }
         .btn.secondary { background: var(--primary-light); color: var(--primary-dark); }
         .btn.secondary:hover { background-color: var(--primary); color: white; }
-        .btn.danger { background: var(--danger); color: white; }
-        .btn.danger:hover { background-color: #b91c1c; } /* Darker red on hover */
-
         .form-group { margin-bottom: 20px; }
 
         /* --- Page Specific Styles --- */
@@ -105,11 +99,12 @@
         /* Profile Page */
         .profile-header { 
             text-align: center; margin-bottom: 30px; 
-            background: var(--profile-header-bg-style); 
+            background: var(--profile-header-bg-style); /* Dynamic Background */
             transition: background 0.5s ease;
         }
         #profile-pfp {
             width: 96px; height: 96px; border-radius: 50%; margin: 0 auto 16px auto;
+            /* Use CSS variables for dynamic color based on time */
             background-color: var(--pfp-bg-day); 
             background-size: cover; background-position: center;
             border: 3px solid var(--pfp-border-day);
@@ -117,19 +112,8 @@
         }
         .profile-emoji { font-size: 4rem; line-height: 1; margin: 16px 0; }
         .profile-name { 
-            font-size: 2.25rem; font-weight: 700; margin: 0; 
-            font-family: var(--display-font);
-            color: var(--profile-name-color); /* NEW: Dynamic Color Perk */
-        }
-        .profile-role {
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: var(--primary);
-            margin-bottom: 15px;
-            padding: 4px 10px;
-            border-radius: 6px;
-            background: var(--primary-light);
-            display: inline-block;
+            font-size: 2.25rem; font-weight: 700; color: var(--text); margin: 0; 
+            font-family: var(--display-font); /* Dynamic Font */
         }
         .profile-message { font-size: 1.2rem; color: var(--muted); min-height: 28px; }
         .profile-timer { font-size: 2.5rem; color: var(--primary); font-weight: 700; margin-top: 24px; min-height: 40px; }
@@ -137,10 +121,11 @@
         .profile-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 30px; }
         .custom-link {
             display: inline-flex; align-items: center; gap: 8px; background: var(--primary-light);
-            padding: 10px 15px; border-radius: 8px; text-decoration: none; color: var(--link-text-color);
+            padding: 10px 15px; border-radius: 8px; text-decoration: none; color: var(--link-text-color); /* Dynamic Link Color */
             font-weight: 500; transition: all 0.2s ease;
         }
         .custom-link:hover { background-color: var(--primary); color: #fff; transform: translateY(-2px); }
+        .custom-link svg { width: 18px; height: 18px; }
         .action-links-container { 
             display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 20px;
         }
@@ -149,7 +134,7 @@
         /* Settings Page */
         .link-group { 
             display: grid; 
-            grid-template-columns: 1fr 2fr;
+            grid-template-columns: 1fr 2fr; /* Simplified columns: Label, URL */
             gap: 10px; margin-bottom: 15px; align-items: center; 
         }
         .privacy-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; align-items: center; }
@@ -158,32 +143,32 @@
             .privacy-group { grid-template-columns: 1fr; } 
         }
         
-        /* Timetable / Location / Custom Status Reuse */
+        /* Timetable */
         .timetable-entry-card { background: var(--input-bg); border-radius: 8px; padding: 12px; margin-bottom: 8px; }
         .location-entry-card { background: var(--primary-light); border-radius: 8px; padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
 
-        /* Analytics Specific Styles & Admin Panel Metrics */
-        .analytics-grid, .admin-grid {
+        /* Analytics Specific Styles */
+        .analytics-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
             gap: 15px;
             margin-top: 20px;
         }
 
-        .analytics-metric, .admin-metric {
+        .analytics-metric {
             background: var(--input-bg);
             padding: 15px;
             border-radius: 8px;
             text-align: center;
             border: 1px solid var(--border-color);
         }
-        .admin-metric-value, .metric-value {
+
+        .metric-value {
             font-size: 2rem;
             font-weight: 700;
             color: var(--primary);
             margin: 0 0 5px 0;
         }
-        .admin-metric-value.danger, .metric-value.danger { color: var(--danger); }
 
         .metric-label {
             font-size: 0.9rem;
@@ -227,51 +212,11 @@
         }
         .search-result-item:last-child { border-bottom: none; }
 
-        /* NEW: Admin Panel Styles */
-        .user-list-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid var(--border-color);
-        }
-        .user-list-item:last-child { border-bottom: none; }
-        .user-info strong { color: var(--text); }
-        .user-info small { display: block; color: var(--muted); font-size: 0.8rem; margin-top: 2px; }
-        .user-actions button { margin-left: 8px; width: auto; padding: 6px 10px; font-size: 0.85rem; }
-        .action-select { width: 100%; margin-top: 10px; }
-
-        .role-perk-item {
-            display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px dashed var(--border-color);
-        }
-        .role-perk-item strong { color: var(--primary); }
-
-        /* NEW: Banned Page Styles */
-        .banned-card {
-            margin-top: 50px;
-            text-align: center;
-            border: 2px solid var(--danger);
-            background: var(--danger);
-            color: white;
-        }
-        .banned-card h1 { color: white; margin-bottom: 15px; }
-        .banned-card p { color: white; opacity: 0.9; }
-        .banned-actions { 
-            display: flex; gap: 15px; margin-top: 30px; 
-            justify-content: center;
-        }
-        .banned-actions button { 
-            flex: 0 1 150px;
-            background: white; 
-            color: var(--danger); 
-        }
-
 
         /* Footer */
         footer {
             margin-top: 40px; text-align: center; color: var(--muted); font-size: 0.9rem;
             padding: 20px 0; border-top: 1px solid var(--border-color);
-            position: relative; /* Ensure it stays above bottom nav */
         }
         footer a { color: var(--primary); text-decoration: none; margin: 0 5px; }
         footer a:hover { text-decoration: underline; }
@@ -309,10 +254,6 @@
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M10.5 4.5a.75.75 0 0 0-1.5 0V7.5a.75.75 0 0 0 1.5 0V4.5ZM17.25 5.25a.75.75 0 0 0-1.5 0V9a.75.75 0 0 0 1.5 0V5.25ZM14.25 7.5a.75.75 0 0 0-1.5 0v10.5a.75.75 0 0 0 1.5 0V7.5ZM21 9a.75.75 0 0 0-1.5 0v7.5a.75.75 0 0 0 1.5 0V9ZM3.75 12a.75.75 0 0 0-1.5 0v4.5a.75.75 0 0 0 1.5 0V12Z"></path><path fill-rule="evenodd" d="M3 3a1.5 1.5 0 0 0-1.5 1.5V19.5A1.5 1.5 0 0 0 3 21h18a1.5 1.5 0 0 0 1.5-1.5V4.5A1.5 1.5 0 0 0 21 3H3ZM5.25 19.5h13.5V4.5H5.25v15Z" clip-rule="evenodd"></path></svg>
                 <span>Analytics</span>
             </button>
-            <button class="nav-btn hidden" id="adminPanelNavBtn" data-page="adminPanelPage">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path fill-rule="evenodd" d="M11.54 3a.75.75 0 0 0-.742.668 20.44 20.44 0 0 1 2.378 0 .75.75 0 0 0-.742-.668ZM-1 1.5a.75.75 0 0 1 .667-.742 21.905 21.905 0 0 0 2.546 0 .75.75 0 0 1 .667.742V19.5a3 3 0 0 1-3 3h-2.25a.75.75 0 0 1-.75-.75V4.5Z" clip-rule="evenodd"></path><path d="M12 2.25c-5.405 0-9.75 4.345-9.75 9.75s4.345 9.75 9.75 9.75 9.75-4.345 9.75-9.75S17.405 2.25 12 2.25Z"></path></svg>
-                <span>Admin</span>
-            </button>
             <button class="nav-btn" data-page="settingsPage">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M11.64 3.023a.75.75 0 0 1 .72 0l1.517.65a.75.75 0 0 0 .841-.252l1.11-1.48A.75.75 0 0 1 17 2.25a.75.75 0 0 1 .633.368l1.11 1.48a.75.75 0 0 0 .84.253l1.518-.65a.75.75 0 0 1 .72 0l1.016.436a.75.75 0 0 1 .45 1.033l-.74 1.385a.75.75 0 0 0 .14.925l1.28.96a.75.75 0 0 1 0 1.302l-1.28.96a.75.75 0 0 0-.14.925l.74 1.385a.75.75 0 0 1-.45 1.033l-1.017.436a.75.75 0 0 1-.72 0l-1.517-.65a.75.75 0 0 0-.84.252l-1.11 1.48A.75.75 0 0 1 17 21.75a.75.75 0 0 1-.633-.368l-1.11-1.48a.75.75 0 0 0-.84-.253l-1.518.65a.75.75 0 0 1-.72 0l-1.016-.436a.75.75 0 0 1-.45-1.033l.74-1.385a.75.75 0 0 0-.14-.925l-1.28-.96a.75.75 0 0 1 0-1.302l1.28-.96a.75.75 0 0 0 .14-.925l-.74-1.385a.75.75 0 0 1 .45-1.033l1.017-.436ZM12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"></path></svg>
                 <span>Settings</span>
@@ -346,36 +287,12 @@
                 <p id="error-message"></p>
             </div>
         </div>
-        
-        <!-- NEW PAGE: Banned User View -->
-        <div id="bannedPage" class="page">
-            <div class="card banned-card">
-                <h1>🛑 Account Restricted</h1>
-                <p style="font-size: 1.2rem; font-weight: 500;">
-                    Your account has been restricted by an administrator.
-                </p>
-                <div style="margin: 20px 0;">
-                    <strong style="display: block; font-size: 1.1rem; margin-bottom: 10px;">Reason:</strong>
-                    <p id="banReasonDisplay" style="font-size: 1rem;"></p>
-                </div>
-                <div id="banTimerContainer" style="margin-bottom: 20px;">
-                    <strong style="display: block; font-size: 1.1rem; margin-bottom: 5px;">Time Remaining:</strong>
-                    <p id="banTimeRemaining" style="font-size: 1.5rem; font-weight: 700;"></p>
-                    <p id="bannedSince" style="font-size: 0.9rem; opacity: 0.8;"></p>
-                </div>
-                <div class="banned-actions">
-                    <button id="bannedLogoutBtn" class="btn">Logout</button>
-                    <button id="bannedDeleteAccountBtn" class="btn danger">Delete Account</button>
-                </div>
-            </div>
-        </div>
 
         <div id="profilePage" class="page">
             <div class="card profile-header">
                 <div id="profile-pfp"></div> 
                 <div class="profile-emoji" id="profile-emoji">❓</div>
                 <h1 class="profile-name" id="profile-name">Loading...</h1>
-                <p class="profile-role" id="profile-role-display"></p> <!-- NEW: Role Display -->
                 <p class="profile-message" id="profile-message">Fetching status...</p>
                 <div class="profile-timer" id="profile-timer"></div>
                 <p class="local-time-display" id="local-time-info" style="font-size: 1rem; margin-top: 10px; font-weight: 500;"></p>
@@ -390,7 +307,7 @@
             </div>
 
             <div class="card action-links-container" id="profile-action-links">
-            </div>
+                </div>
 
             <div class="card">
                 <h2>Custom Links</h2>
@@ -411,59 +328,7 @@
                 </div>
             </div>
         </div>
-
-        <!-- NEW PAGE: Admin Panel -->
-        <div id="adminPanelPage" class="page">
-            <div class="card">
-                <h2>Admin Panel Dashboard 👑</h2>
-                <p class="muted">Global analytics and user controls below.</p>
-
-                <h3 style="margin-top: 20px;">System Metrics</h3>
-                <div class="admin-grid" id="admin-system-metrics">
-                    <p class="muted" style="grid-column: 1 / -1; text-align: center;">Loading...</p>
-                </div>
-
-                <h3 style="margin-top: 20px;">User Management</h3>
-                <div class="form-group" style="margin-top: 15px;">
-                    <input type="text" id="admin-user-search" placeholder="Search users by display name, email, or user ID">
-                </div>
-                <button id="admin-run-user-search-btn" class="btn secondary" style="width: auto; margin-bottom: 15px;">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M10.5 3.75a6.75 6.75 0 1 0 0 13.5 6.75 6.75 0 0 0 0-13.5ZM2.25 10.5a8.25 8.25 0 1 1 14.59 5.28l4.69 4.69a.75.75 0 1 1-1.06 1.06l-4.69-4.69A8.25 8.25 0 0 1 2.25 10.5Z" clip-rule="evenodd"></path></svg>
-                    Search Users
-                </button>
-
-                <div id="admin-user-results">
-                    <p class="muted">Search results appear here.</p>
-                </div>
-            </div>
-
-            <div class="card">
-                <h2>Role Management & Perks</h2>
-                <p class="muted">Control roles, permissions, and visual perks (like name color).</p>
-                <div id="roles-list-container">
-                    <p class="muted">Loading roles...</p>
-                </div>
-
-                <h4 style="font-size: 1.2rem; margin-top: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">Create New Role</h4>
-                <div class="form-group">
-                    <input type="text" id="new-role-name" placeholder="Role Name (e.g., VIP, Moderator)" style="margin-bottom: 10px;">
-                    <label for="new-role-name-color">Name Color Perk</label>
-                    <input type="color" id="new-role-name-color" value="#0ea5e9" style="height: 30px; margin-bottom: 10px;">
-                    <p class="muted" style="font-size: 0.85rem; margin-bottom: 10px;">More perks can be added here (e.g., larger PFP, custom badge).</p>
-                </div>
-                <button id="admin-create-role-btn" class="btn secondary" style="width: auto;">
-                    Create Role
-                </button>
-            </div>
-
-            <div class="card">
-                <h2>User Feedback Inbox 📧</h2>
-                <div id="admin-feedback-inbox">
-                    <p class="muted">No feedback received.</p>
-                </div>
-            </div>
-        </div>
-
+        
         <div id="settingsPage" class="page">
             <div class="card">
                 <h2>Profile Settings</h2>
@@ -648,7 +513,7 @@
                     <label for="accent-color">Profile Accent Color</label>
                     <input type="color" id="accent-color" value="#0ea5e9">
                 </div>
-                <div class="form-group">
+                 <div class="form-group">
                     <label for="link-text-color">Custom Link Text Color</label>
                     <input type="color" id="link-text-color" value="#0369a1">
                 </div>
@@ -662,27 +527,23 @@
                 </div>
             </div>
 
-            <!-- NEW CARD: Custom Status Presets -->
-            <div class="card">
-                <h2>Custom Status Presets ✨</h2>
-                <p class="muted" style="margin-bottom: 15px;">Define your own reusable status options (Emoji + Title).</p>
-                
-                <div id="custom-status-entries-container">
-                    <p class="muted" id="no-custom-status-message">No custom statuses defined yet.</p>
-                </div>
-                
-                <button id="add-custom-status-btn" class="btn secondary" style="margin-top: 15px; width: auto; padding: 8px 12px; font-size: 0.9rem;">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M12 3.75a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0V4.5a.75.75 0 0 1 .75-.75ZM20.25 10.5a.75.75 0 0 0-.75.75v4.5a.75.75 0 0 0 1.5 0v-4.5a.75.75 0 0 0-.75-.75ZM3.75 10.5a.75.75 0 0 0-.75.75v4.5a.75.75 0 0 0 1.5 0v-4.5a.75.75 0 0 0-.75-.75ZM18.75 4.5a.75.75 0 0 0-.75.75V9a.75.75 0 0 0 1.5 0V5.25a.75.75 0 0 0-.75-.75ZM5.25 4.5a.75.75 0 0 0-.75.75V9a.75.75 0 0 0 1.5 0V5.25a.75.75 0 0 0-.75-.75ZM15 7.5a.75.75 0 0 0-.75.75v4.5a.75.75 0 0 0 1.5 0V8.25A.75.75 0 0 0 15 7.5ZM9 7.5a.75.75 0 0 0-.75.75v4.5a.75.75 0 0 0 1.5 0V8.25A.75.75 0 0 0 9 7.5Z" clip-rule="evenodd"></path></svg>
-                    <span>Define New Custom Status</span>
-                </button>
-            </div>
-
             <div class="card">
                 <h2>Update Status</h2>
                 <div class="form-group">
                     <label for="status-emoji">Current Status</label>
                     <select id="status-emoji">
-                        <!-- Options populated dynamically by JS, including custom ones -->
+                        <option value="🟢">🟢 Available</option>
+                        <option value="💻">💻 Busy</option>
+                        <option value="🧠">🧠 Deep Work</option>
+                        <option value="🚗">🚗 Commuting</option>
+                        <option value="☕">☕ On a Break</option>
+                        <option value="🔴">🔴 Do Not Disturb</option>
+                        <option value="📚">📚 School/Study</option>
+                        <option value="🏖️">🏖️ Vacation/OOO</option>
+                        <option value="😴">😴 Offline/Sleeping</option>
+                        <option value="🍽️">🍽️ Meal Time</option>
+                        <option value="🏋️">🏋️ Working Out</option>
+                        <option value="🎮">🎮 Gaming</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -739,36 +600,14 @@
                     <span>Add Schedule</span>
                 </button>
             </div>
-
+            
             <div class="card">
                 <h2>Custom Links</h2>
                 <div id="custom-links-container"></div>
             </div>
-            
-            <!-- NEW CARD: Feedback -->
-            <div class="card">
-                <h2>Send Feedback to Admin</h2>
-                <p class="muted">Help us improve HAP or report an issue directly to the admin.</p>
-                <div class="form-group">
-                    <textarea id="feedback-message" placeholder="Type your feedback (min 10 chars)..."></textarea>
-                </div>
-                <button id="submit-feedback-btn" class="btn secondary">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path fill-rule="evenodd" d="M12.53 16.28a.75.75 0 0 0-1.06 0l-7.5 7.5a.75.75 0 0 0 1.06 1.06L12 17.8l6.97 6.97a.75.75 0 1 0 1.06-1.06l-7.5-7.5ZM12 4.5a7.5 7.5 0 1 0 0 15 7.5 7.5 0 0 0 0-15Z" clip-rule="evenodd"></path></svg>
-                    Submit Feedback
-                </button>
-            </div>
-
-
             <div class="card">
                 <button id="save-settings-btn" class="btn">Save & Update Status</button>
                 <button id="logout-btn" class="btn secondary" style="margin-top: 12px;">Logout</button>
-                
-                <!-- NEW: Danger Zone for Deletion -->
-                <h3 style="font-size: 1.2rem; margin-top: 30px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; color: var(--danger);">Danger Zone</h3>
-                <button id="delete-account-btn" class="btn danger" style="margin-top: 12px;">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M16.5 4.478a.75.75 0 0 0-1.06-.014L12 8.358 8.56 4.464a.75.75 0 0 0-1.061.014 1.5 1.5 0 0 0 .015 2.122L10.94 10.5l-3.326 3.914a1.5 1.5 0 0 0-.015 2.122.75.75 0 0 0 1.06.014L12 12.642l3.44 3.894a.75.75 0 0 0 1.06-.014 1.5 1.5 0 0 0-.015-2.122L13.06 10.5l3.326-3.914a1.5 1.5 0 0 0 .015-2.122ZM4.5 21a1.5 1.5 0 0 1-1.5-1.5V6a1.5 1.5 0 0 1 1.5-1.5h15A1.5 1.5 0 0 1 21 6v13.5a1.5 1.5 0 0 1-1.5 1.5h-15Z" clip-rule="evenodd"></path></svg>
-                    <span>Permanently Delete Account</span>
-                </button>
             </div>
         </div>
         
@@ -794,7 +633,6 @@
                     <p class="muted" style="grid-column: 1 / -1; text-align: center;">Loading view data...</p>
                 </div>
             </div>
-
             <div class="card">
                 <h2>Status History Timeline (Last 10)</h2>
                 <div id="history-log">
@@ -806,7 +644,9 @@
     
     <footer>
         <p>
-            &copy; 2025 HAP Admin Edition | Your User ID: <span id="footer-user-id">Loading...</span>
+            &copy; 2025 <a href="https://www.youtube.com/@KabirInvents" target="_blank">Kabir Gagneja Invents</a> | 
+            <a href="https://play.google.com/store/apps/developer?id=Kabir+Gagneja+Invents" target="_blank">Google Play</a> | 
+            <a href="https://whatsapp.com/channel/0029VbB4DCr9Gv7Qj7NgCX2t" target="_blank">WhatsApp Channel</a>
         </p>
     </footer>
 
@@ -825,24 +665,45 @@
             return false;
         };
 
-        // --- CONSTANTS AND GLOBALS (Defined First) ---
         const DATABASE_URL = "https://happp-96438-default-rtdb.firebaseio.com/";
         const ANALYTICS_PATH = '/analytics'; 
-        const LOCATION_RANGE_KM = 0.5;
-        const DAYS_OF_WEEK = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-
+        const LOCATION_RANGE_KM = 0.5; // 500 meters range for location status
+        
+        // Comprehensive list of Timezone UTC offsets (in minutes) for the selector
         const TIMEZONE_MAP = {
-            'auto': new Date().getTimezoneOffset() * -1, 'UTC-12:00 (Eniwetok)': -720, 'UTC-11:00 (Midway Island)': -660, 
-            'UTC-10:00 (Hawaii)': -600, 'UTC-09:00 (Alaska)': -540, 'UTC-08:00 (Pacific/PST)': -480,
-            'UTC-07:00 (Mountain/MST)': -420, 'UTC-06:00 (Central/CST)': -360, 'UTC-05:00 (Eastern/EST)': -300,
-            'UTC-04:00 (Atlantic)': -240, 'UTC-03:30 (Newfoundland)': -210, 'UTC-03:00 (Buenos Aires)': -180,
-            'UTC-02:00 (Mid-Atlantic)': -120, 'UTC-01:00 (Azores)': -60, 'UTC+00:00 (GMT/London)': 0,
-            'UTC+01:00 (CET/Paris)': 60, 'UTC+02:00 (Cairo/SAST)': 120, 'UTC+03:00 (Moscow/Nairobi)': 180,
-            'UTC+03:30 (Tehran)': 210, 'UTC+04:00 (Abu Dhabi)': 240, 'UTC+04:30 (Kabul)': 270,
-            'UTC+05:00 (Karachi)': 300, 'UTC+05:30 (IST/New Delhi)': 330, 'UTC+05:45 (Kathmandu)': 345,
-            'UTC+06:00 (Almaty/Dhaka)': 360, 'UTC+06:30 (Yangon)': 390, 'UTC+07:00 (Bangkok/Hanoi)': 420,
-            'UTC+08:00 (SGT/Beijing)': 480, 'UTC+09:00 (Tokyo/Seoul)': 540, 'UTC+09:30 (Darwin)': 570,
-            'UTC+10:00 (AEST/Sydney)': 600, 'UTC+11:00 (Solomon Is.)': 660, 'UTC+12:00 (Fiji/Auckland)': 720,
+            'auto': new Date().getTimezoneOffset() * -1, // Client's current offset
+            'UTC-12:00 (Eniwetok)': -720,
+            'UTC-11:00 (Midway Island)': -660,
+            'UTC-10:00 (Hawaii)': -600,
+            'UTC-09:00 (Alaska)': -540,
+            'UTC-08:00 (Pacific/PST)': -480,
+            'UTC-07:00 (Mountain/MST)': -420,
+            'UTC-06:00 (Central/CST)': -360,
+            'UTC-05:00 (Eastern/EST)': -300,
+            'UTC-04:00 (Atlantic)': -240,
+            'UTC-03:30 (Newfoundland)': -210,
+            'UTC-03:00 (Buenos Aires)': -180,
+            'UTC-02:00 (Mid-Atlantic)': -120,
+            'UTC-01:00 (Azores)': -60,
+            'UTC+00:00 (GMT/London)': 0,
+            'UTC+01:00 (CET/Paris)': 60,
+            'UTC+02:00 (Cairo/SAST)': 120,
+            'UTC+03:00 (Moscow/Nairobi)': 180,
+            'UTC+03:30 (Tehran)': 210,
+            'UTC+04:00 (Abu Dhabi)': 240,
+            'UTC+04:30 (Kabul)': 270,
+            'UTC+05:00 (Karachi)': 300,
+            'UTC+05:30 (IST/New Delhi)': 330,
+            'UTC+05:45 (Kathmandu)': 345,
+            'UTC+06:00 (Almaty/Dhaka)': 360,
+            'UTC+06:30 (Yangon)': 390,
+            'UTC+07:00 (Bangkok/Hanoi)': 420,
+            'UTC+08:00 (SGT/Beijing)': 480,
+            'UTC+09:00 (Tokyo/Seoul)': 540,
+            'UTC+09:30 (Darwin)': 570,
+            'UTC+10:00 (AEST/Sydney)': 600,
+            'UTC+11:00 (Solomon Is.)': 660,
+            'UTC+12:00 (Fiji/Auckland)': 720,
             'UTC+13:00 (Tonga)': 780,
         };
 
@@ -851,12 +712,9 @@
         let isPublicView = false;
         let locationWatcherId = null;
         let allUsersCache = null;
-        let adminUsersCache = null;
-        let adminRolesCache = null;
-        let banCountdownInterval = null;
 
         const App = {
-            pages: ['loginPage', 'profilePage', 'analyticsPage', 'settingsPage', 'adminPanelPage', 'bannedPage'],
+            pages: ['loginPage', 'profilePage', 'analyticsPage', 'settingsPage'],
             elements: {},
             currentUser: null,
             currentProfileData: null, 
@@ -868,36 +726,11 @@
                 '🟢': '#10b981', '💻': '#3b82f6', '🧠': '#3b82f6', '🚗': '#f59e0b', '☕': '#ef4444', '🔴': '#ef4444', '📚': '#8b5cf6', '🏖️': '#06b6d4', '😴': '#1e293b', '🍽️': '#f97316', '🏋️': '#4ade80', '🎮': '#ec4899', '❓': '#64748b'
             }
         };
+        
+        const DAYS_OF_WEEK = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-        // --- FORWARD DECLARATIONS (Required for circular references and listeners) ---
-        function navigateToInternal(pageId) { /* ... defined later ... */ }
-        function hashChangeRouter() { /* ... defined later ... */ }
-        function setupUserSession() { /* ... defined later ... */ }
-        function handleLogout() { /* ... defined later ... */ }
-        function handleAccountDeletion() { /* ... defined later ... */ }
-        function updateStatus(statusData) { /* ... defined later ... */ }
-        function checkProximity(currentLat, currentLon) { /* ... defined later ... */ }
-        function checkTimetableAndApplyStatus(data) { /* ... defined later ... */ }
-        function renderProfile(data) { /* ... defined later ... */ }
-        function populateSettings(data) { /* ... defined later ... */ }
-        function renderSavedLocations() { /* ... defined later ... */ }
-        function renderCustomStatusSettings(customStatuses) { /* ... defined later ... */ }
-        function populateStatusEmojiSelector(data) { /* ... defined later ... */ }
-        function renderTimetableSettings(timetable) { /* ... defined later ... */ }
-        function handleRemoveLocationEntry(e) { /* ... defined later ... */ }
-        function handleRemoveTimetableEntry(e) { /* ... defined later ... */ }
-        function handleAddCustomStatus() { /* ... defined later ... */ }
-        function handleRemoveCustomStatus(e) { /* ... defined later ... */ }
-        function handleVCardDownload() { /* ... defined later ... */ }
-        function handleShareStatus() { /* ... defined later ... */ }
-        function handleSubmitFeedback() { /* ... defined later ... */ }
-        function handleAdminUserSearch() { /* ... defined later ... */ }
-        function suggestStatusBasedOnTime() { /* ... defined later ... */ }
-        
-        // --- FUNCTION DEFINITIONS (Must be sequential) ---
-        
+        // --- Utilities ---
         function emailToId(email) { return btoa(email.toLowerCase()).replace(/=/g, ''); }
-        function uuidv4() { return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) { var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8); return v.toString(16); }); }
         function showToast(message) {
             const toast = App.elements.toast;
             if (!toast) return;
@@ -911,24 +744,26 @@
             const birthDate = new Date(dateString);
             let age = today.getFullYear() - birthDate.getFullYear();
             const monthDifference = today.getMonth() - birthDate.getMonth();
-            if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) { age--; }
+            if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
             return age >= 0 ? age : null;
         }
-        function getAnalyticsDateRange(days) {
-            const dates = [];
-            const endDate = new Date(); 
-            for (let i = 0; i < days; i++) {
-                const d = new Date(endDate);
-                d.setDate(endDate.getDate() - i);
-                dates.push(d.toISOString().substring(0, 10));
-            }
-            return dates;
-        }
+
+        // --- Timezone and Day/Night Utilities ---
         function getTzOffsetMinutes(timezoneId) {
-            if (timezoneId === 'auto') { return new Date().getTimezoneOffset() * -1; }
+            if (timezoneId === 'auto') {
+                return new Date().getTimezoneOffset() * -1;
+            }
+            // Find the offset by value
             const key = Object.keys(TIMEZONE_MAP).find(k => TIMEZONE_MAP[k] === parseInt(timezoneId));
             return TIMEZONE_MAP[key] || TIMEZONE_MAP['auto'];
         }
+
+        function isNightTime(localHour) {
+            return localHour >= 20 || localHour < 6;
+        }
+        
         function getLocalHourFromOffset(offsetMinutes) {
             const now = new Date();
             const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
@@ -937,7 +772,931 @@
             return targetDate.getHours();
         }
 
-        // --- AUTH & CORE ---
+        function getLocalTimeAndZone(timezoneId) {
+            const offsetMinutes = getTzOffsetMinutes(timezoneId);
+            const now = new Date();
+            const localTime = new Date(now.getTime() + (now.getTimezoneOffset() * 60000) + (offsetMinutes * 60000));
+            
+            const timeOptions = { hour: '2-digit', minute: '2-digit', hour12: true };
+            const timeStr = localTime.toLocaleTimeString('en-US', timeOptions);
+            
+            const sign = offsetMinutes >= 0 ? '+' : '-';
+            const absOffset = Math.abs(offsetMinutes);
+            const hours = String(Math.floor(absOffset / 60)).padStart(2, '0');
+            const minutes = String(absOffset % 60).padStart(2, '0');
+            const offsetStr = `UTC${sign}${hours}:${minutes}`;
+
+            return { time: timeStr, offset: offsetStr, hour: localTime.getHours(), label: timezoneId };
+        }
+        // --- End Timezone Utilities ---
+
+        // --- Core Router Functions (Modified to fix the public data bug) ---
+        
+        function navigateToInternal(pageId) {
+            const cleanUrl = window.location.origin + window.location.pathname;
+            window.history.pushState({}, '', cleanUrl); 
+            window.location.hash = pageId; 
+            
+            // FIX: Force reload of user session data when returning from public view
+            if (App.currentUser) {
+                setupUserSession(); 
+            }
+        }
+
+        function navigateTo(pageId) {
+            window.location.hash = pageId;
+        }
+
+        function hashChangeRouter() {
+            const params = new URLSearchParams(window.location.search);
+            const userIdFromUrl = params.get('user');
+            const promoCard = document.getElementById('create-hap-promo');
+            const promoActionBtn = document.getElementById('promo-action-btn'); 
+            
+            let targetPageId;
+
+            if (userIdFromUrl) {
+                isPublicView = true;
+                if (App.elements.mainHeader) App.elements.mainHeader.classList.add('hidden');
+                
+                const shareCard = document.getElementById('share-status-btn')?.closest('.card');
+                if (shareCard) shareCard.classList.add('hidden');
+
+                App.pages.forEach(pId => {
+                    if (App.elements[pId] && pId !== 'profilePage') App.elements[pId].style.display = 'none';
+                });
+                if (App.elements.profilePage) App.elements.profilePage.style.display = 'block';
+
+                displayPublicProfile(userIdFromUrl);
+                
+                if (promoCard && promoActionBtn) {
+                    promoCard.classList.remove('hidden');
+                    const isAuth = !!localStorage.getItem('hapUser');
+                    
+                    if (isAuth) {
+                        promoActionBtn.textContent = 'Go to My Dashboard';
+                        promoActionBtn.className = 'btn secondary'; 
+                        promoActionBtn.onclick = () => navigateToInternal('profilePage'); 
+                    } else {
+                        promoActionBtn.textContent = 'Get Started Now';
+                        promoActionBtn.className = 'btn'; 
+                        promoActionBtn.onclick = () => { 
+                            navigateToInternal('loginPage'); 
+                            document.querySelector('.auth-tabs [data-tab="signup"]')?.click();
+                        }; 
+                    }
+                }
+                return; 
+            }
+            
+            // --- Standard Internal Routing ---
+            isPublicView = false;
+            
+            const hash = window.location.hash.substring(1);
+            targetPageId = App.pages.includes(hash) ? hash : null;
+
+            if (!targetPageId) {
+                targetPageId = App.currentUser ? 'profilePage' : 'loginPage';
+            }
+
+            if (targetPageId === 'analyticsPage' && App.currentUser) {
+                fetchAndRenderAnalytics();
+            }
+            
+            if (targetPageId === 'settingsPage' && App.currentUser) {
+                renderSavedLocations(); 
+            }
+
+            App.pages.forEach(pId => {
+                if (App.elements[pId]) App.elements[pId].style.display = 'none';
+            });
+            if (App.elements[targetPageId]) App.elements[targetPageId].style.display = 'block';
+
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.page === targetPageId);
+            });
+
+            window.scrollTo(0, 0);
+
+            const isAuth = !!App.currentUser;
+            if (App.elements.mainHeader) {
+                App.elements.mainHeader.classList.toggle('hidden', !isAuth);
+            }
+            
+            if (promoCard) {
+                promoCard.classList.add('hidden');
+            }
+        }
+        
+        // --- Location Tracking Utilities ---
+        function getDistanceKm(lat1, lon1, lat2, lon2) {
+            const R = 6371; 
+            const dLat = (lat2 - lat1) * (Math.PI / 180);
+            const dLon = (lon2 - lon1) * (Math.PI / 180);
+            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                      Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return R * c;
+        }
+
+        function startLocationTracking() {
+            if (!App.currentUser) return;
+            if (locationWatcherId) navigator.geolocation.clearWatch(locationWatcherId);
+            
+            locationWatcherId = navigator.geolocation.watchPosition(
+                (position) => {
+                    checkProximity(position.coords.latitude, position.coords.longitude);
+                    document.getElementById('current-location-status').textContent = `Location: ${position.coords.latitude.toFixed(4)}, ${position.coords.longitude.toFixed(4)}`;
+                },
+                (error) => {
+                    const statusEl = document.getElementById('current-location-status');
+                    if (statusEl) statusEl.textContent = `Location Error: ${error.message}.`;
+                    console.warn(`Geolocation error (${error.code}): ${error.message}`);
+                },
+                { enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 }
+            );
+        }
+
+        function stopLocationTracking() {
+            if (locationWatcherId) {
+                navigator.geolocation.clearWatch(locationWatcherId);
+                locationWatcherId = null;
+            }
+        }
+
+        async function checkProximity(currentLat, currentLon) {
+            const savedLocations = App.currentProfileData?.savedLocations || [];
+            if (savedLocations.length === 0) return;
+
+            let closestLocation = null;
+            let closestDistance = Infinity;
+
+            for (const loc of savedLocations) {
+                const distance = getDistanceKm(currentLat, currentLon, loc.latitude, loc.longitude);
+                if (distance < LOCATION_RANGE_KM && distance < closestDistance) {
+                    closestDistance = distance;
+                    closestLocation = loc;
+                }
+            }
+
+            const proximityEl = document.getElementById('proximity-status');
+            if (!App.currentUser) return; 
+
+            if (closestLocation) {
+                if (App.currentProfileData.status !== closestLocation.status || App.currentProfileData.message !== closestLocation.message) {
+                     await updateStatus({
+                        status: closestLocation.status,
+                        message: `📍 At ${closestLocation.name}`,
+                        endTime: null, 
+                        autoResetStatus: false 
+                    });
+                    showToast(`Status updated: Now at ${closestLocation.name}`);
+                    proximityEl.textContent = `Near: ${closestLocation.name} (Auto-status active)`;
+                } else {
+                    proximityEl.textContent = `Near: ${closestLocation.name}`;
+                }
+            } else {
+                if (proximityEl) proximityEl.textContent = '';
+            }
+        }
+        
+        function renderSavedLocations() {
+            const container = document.getElementById('saved-locations-container');
+            if (!container) return;
+            container.innerHTML = '';
+            const savedLocations = App.currentProfileData?.savedLocations || [];
+
+            if (savedLocations.length === 0) {
+                container.innerHTML = '<p class="muted">No saved locations.</p>';
+                return;
+            }
+
+            savedLocations.forEach((loc, index) => {
+                const entryDiv = document.createElement('div');
+                entryDiv.className = 'location-entry-card';
+                entryDiv.innerHTML = `
+                    <div style="flex: 1;">
+                        <strong style="font-size: 1rem; color: var(--text);">${loc.name}</strong>
+                        <p style="margin-top: 5px; font-size: 0.9rem;">
+                            ${loc.status} ${loc.message || 'Auto Status'}
+                        </p>
+                        <p style="font-size: 0.75rem; opacity: 0.8;">Lat: ${loc.latitude.toFixed(4)}, Lon: ${loc.longitude.toFixed(4)}</p>
+                    </div>
+                    <button data-index="${index}" class="remove-location-btn btn secondary" style="width: auto; padding: 5px 10px; font-size: 0.8rem; margin-left: 10px;">
+                        Remove
+                    </button>`;
+                
+                container.appendChild(entryDiv);
+            });
+            
+            document.querySelectorAll('.remove-location-btn').forEach(btn => {
+                btn.addEventListener('click', handleRemoveLocationEntry);
+            });
+        }
+        
+        async function handleAddLocationEntry() {
+            if (!navigator.geolocation) {
+                return showToast("Geolocation is not supported by your browser.");
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                    const name = prompt("Enter a name for this location (e.g., Home, Office):");
+                    if (!name) return;
+
+                    const status = prompt("Enter Status Emoji for this location (e.g., 🏠, 💻):");
+                    if (!status) return;
+
+                    const message = prompt("Enter Status Message for this time:") || '';
+
+                    const newLocation = {
+                        name: name.trim(),
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude,
+                        status: status.trim(),
+                        message: message.trim(),
+                    };
+                    
+                    const data = App.currentProfileData || { savedLocations: [] };
+                    data.savedLocations = data.savedLocations || [];
+                    data.savedLocations.push(newLocation);
+
+                    await fetch(`${DATABASE_URL}/users/${App.currentUser.userId}.json`, { 
+                        method: 'PATCH', 
+                        body: JSON.stringify({ savedLocations: data.savedLocations }) 
+                    });
+                    
+                    App.currentProfileData = data; 
+                    renderSavedLocations();
+                    startLocationTracking();
+                    showToast("Location saved and tracking started!");
+                },
+                (error) => {
+                    showToast(`Failed to get location: ${error.message}`);
+                }
+            );
+        }
+
+        async function handleRemoveLocationEntry(e) {
+            const index = parseInt(e.currentTarget.dataset.index, 10);
+            
+            const data = App.currentProfileData || { savedLocations: [] };
+            data.savedLocations = data.savedLocations.filter((_, i) => i !== index); 
+            
+            await fetch(`${DATABASE_URL}/users/${App.currentUser.userId}.json`, { 
+                method: 'PATCH', 
+                body: JSON.stringify({ savedLocations: data.savedLocations }) 
+            });
+            
+            App.currentProfileData = data; 
+            renderSavedLocations();
+            showToast("Location removed.");
+        }
+
+
+        function applyVisuals(data) {
+            const theme = data.theme || 'light';
+            document.body.className = theme === 'dark' ? 'dark' : '';
+            if (App.elements.themeSelect) App.elements.themeSelect.value = theme;
+            
+            const accent = data.profileAccentColor || '#0ea5e9';
+            document.documentElement.style.setProperty('--primary', accent);
+            document.documentElement.style.setProperty('--primary-dark', theme === 'dark' ? '#7dd3fc' : accent);
+            
+            // Customization
+            document.documentElement.style.setProperty('--link-text-color', data.linkTextColor || '#0369a1');
+            document.documentElement.style.setProperty('--display-font', data.displayNameFont || 'Inter, sans-serif');
+            
+            const bgValue = data.profileBgValue;
+            let bgStyle = 'var(--card)';
+            if (bgValue) {
+                bgStyle = bgValue.includes('url(') || bgValue.includes('gradient(') ? bgValue : bgValue;
+                if (bgValue.startsWith('#') || bgValue.startsWith('rgb')) {
+                    bgStyle = bgValue;
+                }
+            }
+            document.documentElement.style.setProperty('--profile-header-bg-style', bgStyle);
+            
+            // Dynamic PFP styling based on local time
+            const offset = getTzOffsetMinutes(data.timezoneOverride || 'auto');
+            const hour = getLocalHourFromOffset(offset);
+            const isNight = isNightTime(hour);
+
+            const pfpElement = document.getElementById('profile-pfp');
+            if (pfpElement) {
+                if (data.pfpUrl) {
+                    pfpElement.style.backgroundImage = `url(${data.pfpUrl})`;
+                } else {
+                    pfpElement.style.backgroundImage = 'none';
+                }
+                // Apply dynamic background/border
+                if (isNight) {
+                    pfpElement.style.backgroundColor = '#1e293b'; 
+                    pfpElement.style.border = `3px solid ${data.profileAccentColor || '#7dd3fc'}`; 
+                } else {
+                    pfpElement.style.backgroundColor = 'var(--primary-light)'; 
+                    pfpElement.style.border = `3px solid ${data.profileAccentColor || 'var(--primary)'}`; 
+                }
+            }
+            
+            localStorage.setItem('hapTheme', theme);
+        }
+
+        // --- Core Application Logic (Init, Session, Data, etc.) ---
+        function handlePageLoad() {
+            App.pages.forEach(pId => App.elements[pId] = document.getElementById(pId));
+            App.elements.mainHeader = document.getElementById('mainHeader');
+            App.elements.themeSelect = document.getElementById('themeSelect');
+            App.elements.toast = document.getElementById('toast');
+            
+            const user = JSON.parse(localStorage.getItem('hapUser'));
+            if (user) {
+                App.currentUser = user;
+                setupUserSession();
+            } else {
+                App.currentUser = null;
+            }
+            
+            window.addEventListener('hashchange', hashChangeRouter);
+            hashChangeRouter();
+            
+            addEventListeners();
+        }
+
+        async function setupUserSession() {
+            if (timetableCheckInterval) clearInterval(timetableCheckInterval);
+
+            // FIX: Ensure we fetch the logged-in user's data after a public view session
+            const response = await fetch(`${DATABASE_URL}/users/${App.currentUser.userId}.json`);
+            const data = await response.json() || {};
+            App.currentProfileData = data; 
+
+            applyVisuals(data);
+            renderProfile(data);
+            populateSettings(data);
+            
+            if (data.savedLocations && data.savedLocations.length > 0) {
+                startLocationTracking();
+            } else {
+                stopLocationTracking();
+            }
+
+            await checkTimetableAndApplyStatus(data); 
+            timetableCheckInterval = setInterval(async () => {
+                const updatedDataRes = await fetch(`${DATABASE_URL}/users/${App.currentUser.userId}.json`);
+                const updatedData = await updatedDataRes.json() || {};
+                
+                App.currentProfileData = updatedData;
+
+                await checkTimetableAndApplyStatus(updatedData);
+            }, 60000); 
+        }
+
+        // --- Data Rendering ---
+        function renderProfile(data) {
+            document.getElementById('profile-name').textContent = data.displayName || 'Unnamed User';
+            document.getElementById('profile-emoji').textContent = data.status || '❓';
+            
+            const bioText = data.bio && (isPublicView ? data.bio : (data.privacy?.bio === 'public' ? data.bio : 'No message set.'));
+            document.getElementById('profile-message').textContent = bioText || data.message || 'No message set.';
+            
+            // Dynamic Title Logic
+            const titleTemplate = data.dynamicTitleTemplate || "[Status Emoji] [Name]'s Status";
+            let timeRemainingText = '';
+            if (data.endTime) {
+                const distance = new Date(data.endTime).getTime() - Date.now();
+                if (distance > 0) {
+                    const h = Math.floor(distance / 36e5);
+                    const m = Math.floor((distance % 36e5) / 6e4);
+                    timeRemainingText = h > 0 ? `${h}h ${m}m` : `${m}m`;
+                }
+            }
+            document.getElementById('app-title').textContent = titleTemplate
+                .replace('[Name]', data.displayName || 'HAP User')
+                .replace('[Status Emoji]', data.status || '❓')
+                .replace('[Message]', data.message || '')
+                .replace('[Time Remaining]', timeRemainingText);
+            
+            updateTimer(data, document.getElementById('profile-timer'));
+            renderCustomLinks(data.links, document.getElementById('profile-links'));
+            renderActionLinks(data);
+            renderPersonalDetails(data);
+            
+            // Local Time Display respecting Timezone Override
+            const tzId = data.timezoneOverride || 'auto';
+            const offset = getTzOffsetMinutes(tzId);
+            const localTimeData = getLocalTimeAndZone(tzId);
+            const privacyLevel = data.privacy?.timezone;
+            
+            const isTimeVisible = isPublicView ? (privacyLevel === 'public') : true; 
+            
+            const timeInfoEl = document.getElementById('local-time-info');
+            if (timeInfoEl) {
+                 if (isTimeVisible) {
+                    const zoneLabel = tzId !== 'auto' ? `(${localTimeData.label.split('(')[1].replace(')', '')})` : '';
+                    timeInfoEl.textContent = `${localTimeData.offset} ${zoneLabel} (${localTimeData.time})`;
+                    timeInfoEl.style.opacity = 1;
+                    timeInfoEl.title = '';
+                } else {
+                    timeInfoEl.textContent = 'Timezone: 🔒 Restricted';
+                    timeInfoEl.style.opacity = 0.6;
+                    timeInfoEl.title = 'Timezone information is restricted.';
+                }
+            }
+            
+            if (isPublicView && (!App.currentUser || App.currentUser.userId !== data.userId)) {
+                trackProfileView(data.userId);
+            }
+        }
+
+        // NEW: View Tracking Logic
+        async function trackProfileView(profileId) {
+            const today = new Date().toISOString().substring(0, 10);
+            
+            // 1. Increment Daily Count
+            const dailyRefUrl = `${DATABASE_URL}${ANALYTICS_PATH}/${profileId}/views_daily/${today}.json`;
+            try {
+                let currentDailyViews = (await fetch(dailyRefUrl).then(res => res.json())) || 0;
+                if (typeof currentDailyViews !== 'number') currentDailyViews = 0;
+                await fetch(dailyRefUrl, { method: 'PUT', body: JSON.stringify(currentDailyViews + 1) });
+            } catch(e) {
+                console.error("Failed to track daily view:", e);
+            }
+
+            // 2. Increment All-Time Total
+            const totalRefUrl = `${DATABASE_URL}${ANALYTICS_PATH}/${profileId}/total_views.json`;
+            try {
+                let currentTotalViews = (await fetch(totalRefUrl).then(res => res.json())) || 0;
+                if (typeof currentTotalViews !== 'number') currentTotalViews = 0;
+                await fetch(totalRefUrl, { method: 'PUT', body: JSON.stringify(currentTotalViews + 1) });
+            } catch(e) {
+                console.error("Failed to track all-time view:", e);
+            }
+        }
+
+        async function renderPersonalDetails(profileData) {
+            const container = document.getElementById('personal-details-list');
+            if (!container) return; 
+            container.innerHTML = '';
+            
+            const profileOwnerId = profileData.userId;
+            const isOwner = App.currentUser && App.currentUser.userId === profileOwnerId;
+
+            const getDetailHTML = (label, value, field, fallback = '🔒 Private') => {
+                const privacyLevel = profileData.privacy ? profileData.privacy[field] : 'public';
+                
+                if (isOwner) return `<div class="personal-detail-item"><strong>${label}:</strong> ${value || 'N/A'}</div>`;
+                
+                if (privacyLevel === 'public' && value) return `<div class="personal-detail-item"><strong>${label}:</strong> ${value}</div>`;
+                
+                return `<div class="personal-detail-item" style="opacity: 0.6;"><strong>${label}:</strong> ${fallback}</div>`;
+            };
+            
+            let html = '';
+            
+            const emailValue = profileData.email || 'N/A';
+            const emailVisible = isOwner || (profileData.privacy?.email === 'public' && emailValue !== 'N/A');
+            
+            if (emailVisible && emailValue !== 'N/A') {
+                html += `<div class="personal-detail-item"><strong>Email:</strong> ${emailValue}</div>`;
+            } else if (!isOwner) {
+                 html += `<div class="personal-detail-item" style="opacity: 0.6;"><strong>Email:</strong> 🔒 Restricted</div>`;
+            }
+
+            html += getDetailHTML('Bio', profileData.bio, 'bio', '🔒 Restricted');
+            
+            if (profileData.birthday) {
+                const age = calculateAge(profileData.birthday);
+                const ageVisibility = profileData.privacy?.age || 'private';
+
+                if (age !== null) {
+                    if (isOwner) {
+                         html += `<div class="personal-detail-item"><strong>Age:</strong> ${age} (Born: ${profileData.birthday})</div>`;
+                    } else if (ageVisibility === 'public') {
+                        html += `<div class="personal-detail-item"><strong>Age:</strong> ${age}</div>`;
+                    } else {
+                        html += `<div class="personal-detail-item" style="opacity: 0.6;"><strong>Age:</strong> 🔒 Private</div>`;
+                    }
+                }
+            }
+
+            const genderDisplay = profileData.gender ? profileData.gender.charAt(0).toUpperCase() + profileData.gender.slice(1) : 'N/A';
+            html += getDetailHTML('Gender', genderDisplay, 'gender', '🔒 Private');
+            
+            html += getDetailHTML('Hobbies', profileData.hobbies, 'hobbies', '🔒 Restricted');
+            html += getDetailHTML('Phone', profileData.phone, 'phone', '🔒 Private');
+            html += getDetailHTML('Country', profileData.country, 'country', '🔒 Restricted');
+            html += getDetailHTML('School/Affiliation', profileData.school, 'school', '🔒 Restricted');
+            
+            container.innerHTML = html || '<p class="muted">No public or shared contact details.</p>';
+        }
+
+
+        async function renderActionLinks(profileData) {
+            const container = document.getElementById('profile-action-links');
+            if (!container) return;
+            container.innerHTML = '';
+            
+            const isOwner = App.currentUser && App.currentUser.userId === profileData.userId;
+
+            if (profileData.schedulingLink) {
+                container.innerHTML += `
+                    <a href="${profileData.schedulingLink}" target="_blank" class="btn secondary" style="max-width: 250px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M12 7.5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0v-4.5A.75.75 0 0 1 12 7.5ZM12 18a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z"></path><path fill-rule="evenodd" d="M12 2.25c-5.405 0-9.75 4.345-9.75 9.75s4.345 9.75 9.75 9.75 9.75-4.345 9.75-9.75S17.405 2.25 12 2.25Zm0 1.5a8.25 8.25 0 1 0 0 16.5 8.25 8.25 0 0 0 0-16.5Z" clip-rule="evenodd"></path></svg>
+                        <span>Book a Meeting</span>
+                    </a>`;
+            }
+            
+            const vCardButtonHTML = `
+                <button id="download-vcard-btn" class="btn secondary" style="max-width: 250px;">
+                    ${App.svg.vcard}
+                    <span>Get Contact Card</span>
+                </button>`;
+
+            container.innerHTML += vCardButtonHTML;
+
+            document.getElementById('download-vcard-btn')?.addEventListener('click', handleVCardDownload);
+        }
+
+        // Status Suggestion Logic
+        function suggestStatusBasedOnTime() {
+            const now = new Date();
+            const hour = now.getHours();
+            const day = now.getDay(); 
+
+            let emoji = '🟢';
+            let message = 'Available for a chat.';
+
+            if (day === 0 || day === 6) { 
+                emoji = '🏖️';
+                if (hour >= 10 && hour < 18) message = 'Enjoying the weekend!';
+                else if (hour >= 20 || hour < 6) { emoji = '😴'; message = 'Offline. Weekend wind-down.'; }
+            } else { 
+                if (hour >= 6 && hour < 9) {
+                    emoji = '🚗'; message = 'Commuting or starting up.';
+                } else if (hour >= 9 && hour < 12) {
+                    emoji = '💻'; message = 'Focusing on deep work.';
+                } else if (hour >= 12 && hour < 14) {
+                    emoji = '🍽️'; message = 'Lunch break, back soon!';
+                } else if (hour >= 14 && hour < 17) {
+                    emoji = '🧠'; message = 'Productive afternoon session.';
+                } else if (hour >= 17 && hour < 19) {
+                    emoji = '🏋️'; message = 'Finished work, doing personal tasks/workout.';
+                } else if (hour >= 19 && hour < 22) {
+                    emoji = '☕'; message = 'Relaxing in the evening.';
+                } else {
+                    emoji = '😴'; message = 'Offline/Sleeping.';
+                }
+            }
+
+            document.getElementById('status-emoji').value = emoji;
+            document.getElementById('status-message').value = message;
+            showToast(`Suggested Status: ${emoji} ${message}`);
+        }
+
+
+        function populateSettings(data) {
+            if (!document.getElementById('display-name')) return;
+
+            document.getElementById('display-name').value = data.displayName || App.currentUser.displayName;
+            document.getElementById('themeSelect').value = data.theme || 'light';
+            
+            // New Customization Fields
+            document.getElementById('display-font').value = data.displayNameFont || 'Inter, sans-serif';
+            document.getElementById('dynamic-title-template').value = data.dynamicTitleTemplate || "[Status Emoji] [Name]'s Status";
+            document.getElementById('link-text-color').value = data.linkTextColor || '#0369a1';
+            document.getElementById('profile-bg-value').value = data.profileBgValue || '';
+
+            document.getElementById('bio').value = data.bio || '';
+            document.getElementById('birthday').value = data.birthday || '';
+            document.getElementById('gender').value = data.gender || '';
+            document.getElementById('hobbies').value = data.hobbies || '';
+
+            document.getElementById('phone-number').value = data.phone || '';
+            document.getElementById('country').value = data.country || '';
+            document.getElementById('school').value = data.school || '';
+            
+            // Privacy Controls
+            document.getElementById('privacy-bio').value = data.privacy?.bio || 'public';
+            document.getElementById('privacy-age').value = data.privacy?.age || 'public';
+            document.getElementById('privacy-gender').value = data.privacy?.gender || 'public';
+            document.getElementById('privacy-hobbies').value = data.privacy?.hobbies || 'public';
+            document.getElementById('privacy-email').value = data.privacy?.email || 'public';
+            document.getElementById('privacy-phone').value = data.privacy?.phone || 'public';
+            document.getElementById('privacy-school').value = data.privacy?.school || 'public';
+            document.getElementById('privacy-country').value = data.privacy?.country || 'public';
+            
+            // Timezone Selector (Value is the offset in minutes)
+            const timezoneSelector = document.getElementById('timezone-selector');
+            timezoneSelector.innerHTML = ''; // Clear existing
+            
+            // Add 'Auto-Detect' option first
+            timezoneSelector.innerHTML += `<option value="auto">Auto-Detect (Client's Browser)</option>`;
+            
+            const selectedTzOffset = data.timezoneOverride || 'auto';
+            
+            Object.entries(TIMEZONE_MAP).sort(([, a], [, b]) => a - b).forEach(([label, offset]) => {
+                 // Skip 'auto' which is already added
+                if (label !== 'auto') {
+                    const value = offset.toString();
+                    const isSelected = value === selectedTzOffset.toString();
+                    timezoneSelector.innerHTML += `<option value="${value}" ${isSelected ? 'selected' : ''}>${label}</option>`;
+                }
+            });
+            
+            // Timezone Visibility
+            document.getElementById('privacy-timezone').value = data.privacy?.timezone || 'public';
+
+
+            document.getElementById('accent-color').value = data.profileAccentColor || '#0ea5e9';
+            document.getElementById('scheduling-link').value = data.schedulingLink || '';
+            
+            document.getElementById('status-emoji').value = data.status || '🟢';
+            document.getElementById('status-message').value = data.message || '';
+            document.getElementById('auto-reset').checked = !!data.autoResetStatus;
+            
+            const durationInput = document.getElementById('status-duration');
+            const untilInput = document.getElementById('status-until');
+            const timeTypeSelect = document.getElementById('status-time-type');
+            
+            if (data.endTime) {
+                const now = Date.now();
+                const endTime = new Date(data.endTime).getTime();
+                const duration = (endTime - now) / 60000;
+                
+                if (duration > 0 && duration < (24 * 60)) { 
+                    durationInput.value = Math.round(duration);
+                    timeTypeSelect.value = 'duration';
+                } else if (endTime > now) { 
+                    const d = new Date(data.endTime);
+                    untilInput.value = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+                    timeTypeSelect.value = 'until';
+                }
+            } else {
+                timeTypeSelect.value = 'none';
+            }
+            
+            toggleTimeInputs(timeTypeSelect.value);
+
+            // Link Inputs (Simplified, without icons)
+            const linksContainer = document.getElementById('custom-links-container');
+            linksContainer.innerHTML = '';
+            for (let i = 0; i < 5; i++) {
+                const link = data.links ? data.links[i] : null;
+                linksContainer.innerHTML += `
+                    <div class="link-group">
+                        <input type="text" id="link-label-${i}" placeholder="Label ${i + 1}" value="${link ? link.label : ''}">
+                        <input type="url" id="link-url-${i}" placeholder="https://..." value="${link ? link.url : ''}">
+                    </div>`;
+            }
+            
+            renderTimetableSettings(data.timetable);
+            renderSavedLocations();
+        }
+        
+        function renderCustomLinks(links, container) {
+            if (!container) return;
+            container.innerHTML = '';
+            if (!links || links.filter(l => l && l.url).length === 0) {
+                container.innerHTML = '<p class="muted">No links provided.</p>';
+                return;
+            }
+            links.forEach(link => {
+                if (link && link.label && link.url) {
+                    container.innerHTML += `
+                        <a href="${link.url}" target="_blank" class="custom-link">
+                            ${App.svg.link} <span>${link.label}</span>
+                        </a>`;
+                }
+            });
+        }
+
+        async function displayPublicProfile(userId) {
+            const fetchAndUpdate = async () => {
+                const userRes = await fetch(`${DATABASE_URL}/users/${userId}.json`);
+                const userData = await userRes.json();
+                
+                const loginRes = await fetch(`${DATABASE_URL}/logins/${userId}.json`);
+                const loginData = await loginRes.json();
+
+                if (userData && loginData) {
+                    userData.userId = userId;
+                    userData.email = loginData.email; 
+                    App.currentProfileData = userData; 
+                    applyVisuals(userData);
+                    renderProfile(userData); 
+                }
+                else document.getElementById('profile-name').textContent = 'User Not Found';
+            };
+            fetchAndUpdate();
+            
+            if (!window.publicViewInterval) {
+                 window.publicViewInterval = setInterval(fetchAndUpdate, 30000); 
+            }
+        }
+        
+        function updateTimer(data, timerEl) {
+            if (countdownInterval) clearInterval(countdownInterval);
+            if (!timerEl) return;
+            timerEl.textContent = '';
+            
+            if (data.endTime) {
+                const endTime = new Date(data.endTime).getTime();
+                
+                countdownInterval = setInterval(() => {
+                    const distance = endTime - Date.now();
+                    if (distance < 0) {
+                        clearInterval(countdownInterval);
+                        timerEl.textContent = "Time's up! Status expired.";
+                        
+                        if (App.currentUser && data.autoResetStatus && data.userId === App.currentUser.userId) {
+                            resetStatusToDefault();
+                        }
+                        return;
+                    }
+                    const h = Math.floor(distance / 36e5);
+                    const m = Math.floor((distance % 36e5) / 6e4);
+                    const s = Math.floor((distance % 6e4) / 1000);
+                    timerEl.textContent = `Ends in: ${h > 0 ? `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}` : `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`}`;
+                }, 1000);
+            }
+        }
+        
+        async function updateStatus(statusData) {
+             if (!App.currentUser) return;
+             if (App.currentProfileData.endTime && new Date(App.currentProfileData.endTime).getTime() > Date.now()) {
+                if (statusData.status === App.currentProfileData.status && statusData.message === App.currentProfileData.message) {
+                    return; 
+                }
+             }
+
+             const dataToSave = {
+                status: statusData.status,
+                message: statusData.message,
+                endTime: statusData.endTime || null, 
+                autoResetStatus: statusData.autoResetStatus || false, 
+                updatedAt: new Date().toISOString()
+             };
+             
+             await fetch(`${DATABASE_URL}/users/${App.currentUser.userId}.json`, { 
+                method: 'PATCH', 
+                body: JSON.stringify(dataToSave) 
+             });
+             
+             await fetch(`${DATABASE_URL}/history/${App.currentUser.userId}.json`, { 
+                method: 'POST', 
+                body: JSON.stringify(dataToSave) 
+             });
+
+             const updatedDataRes = await fetch(`${DATABASE_URL}/users/${App.currentUser.userId}.json`);
+             App.currentProfileData = await updatedDataRes.json() || {};
+             renderProfile(App.currentProfileData);
+             populateSettings(App.currentProfileData);
+        }
+        
+        async function resetStatusToDefault() {
+            const defaultData = {
+                status: '🟢',
+                message: 'Available again.',
+                endTime: null,
+                autoResetStatus: false, 
+                updatedAt: new Date().toISOString()
+            };
+            await updateStatus(defaultData);
+            showToast('Status automatically reset to Available.');
+        }
+
+        // --- Timetable Logic (Unchanged) ---
+        function renderTimetableSettings(timetable = []) {
+            const container = document.getElementById('timetable-entries-container');
+            if (!container) return;
+            container.innerHTML = '';
+
+            if (!timetable || timetable.length === 0) {
+                container.innerHTML = '<p class="muted" id="no-timetable-message">No scheduled entries yet.</p>';
+                return;
+            }
+
+            timetable.forEach((entry, index) => {
+                const entryDiv = document.createElement('div');
+                entryDiv.className = 'timetable-entry-card';
+                
+                entryDiv.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <strong style="font-size: 1rem; color: var(--text);">
+                            ${entry.status} ${entry.message}
+                        </strong>
+                        <button data-index="${index}" class="remove-timetable-btn btn secondary" style="width: auto; padding: 5px 10px; font-size: 0.8rem;">
+                            Remove
+                        </button>
+                    </div>
+                    <p style="margin-top: 5px; color: var(--primary); font-size: 0.9rem;">
+                        ${DAYS_OF_WEEK[entry.day]} ${entry.start} - ${entry.end}
+                    </p>`;
+                
+                container.appendChild(entryDiv);
+            });
+            
+            document.querySelectorAll('.remove-timetable-btn').forEach(btn => {
+                btn.addEventListener('click', handleRemoveTimetableEntry);
+            });
+        }
+
+        function handleAddTimetableEntry() {
+            const day = prompt("Enter Day (0=Sun, 1=Mon, ..., 6=Sat):");
+            if (day === null || isNaN(day) || day < 0 || day > 6) return showToast("Invalid day (Must be 0-6).");
+            
+            const start = prompt("Enter Start Time (HH:MM, 24hr format, e.g., 09:00):");
+            if (!start || !/^\d{2}:\d{2}$/.test(start)) return showToast("Invalid start time format (HH:MM).");
+
+            const end = prompt("Enter End Time (HH:MM, 24hr format, e.g., 17:00):");
+            if (!end || !/^\d{2}:\d{2}$/.test(end)) return showToast("Invalid end time format (HH:MM).");
+
+            const status = prompt("Enter Status Emoji for this schedule (e.g., 📚, 🧠, 🟢):");
+            if (!status || status.trim() === '') return showToast("Timetable status emoji cannot be empty.");
+            
+            const message = prompt("Enter Status Message for this time (e.g., Lunch Break, Class Time):") || 'Scheduled Activity';
+
+            const newEntry = {
+                day: parseInt(day, 10),
+                start: start,
+                end: end,
+                status: status.trim(), 
+                message: message.trim()
+            };
+            
+            const data = App.currentProfileData || { timetable: [] };
+            data.timetable = data.timetable || [];
+            data.timetable.push(newEntry);
+            
+            App.currentProfileData = data; 
+            renderTimetableSettings(data.timetable);
+            showToast("Timetable entry added (Click 'Save' to apply).");
+        }
+
+        function handleRemoveTimetableEntry(e) {
+            const index = parseInt(e.currentTarget.dataset.index, 10);
+            
+            const data = App.currentProfileData || { timetable: [] };
+            data.timetable = data.timetable.filter((_, i) => i !== index); 
+            
+            App.currentProfileData = data; 
+            renderTimetableSettings(data.timetable);
+            showToast("Timetable entry removed (Click 'Save' to apply).");
+        }
+
+        async function checkTimetableAndApplyStatus(data) {
+            if (!App.currentUser || !data || !data.timetable) return;
+            
+            if (data.endTime && new Date(data.endTime).getTime() > Date.now()) return; 
+
+            const now = new Date();
+            const currentDay = now.getDay(); 
+            const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            
+            let activeSchedule = null;
+
+            for (const entry of data.timetable) {
+                if (entry.day === currentDay && currentTime >= entry.start && currentTime < entry.end) {
+                    activeSchedule = entry;
+                    break;
+                }
+            }
+
+            if (activeSchedule) {
+                if (data.status !== activeSchedule.status || data.message !== activeSchedule.message) {
+                    const [endHour, endMinute] = activeSchedule.end.split(':').map(Number);
+                    
+                    const endTime = new Date(now);
+                    endTime.setHours(endHour, endMinute, 0, 0); 
+                    
+                    if (endTime.getTime() < Date.now()) { 
+                        endTime.setDate(endTime.getDate() + 1);
+                    }
+
+                    const updateData = {
+                        status: activeSchedule.status,
+                        message: activeSchedule.message,
+                        endTime: endTime.toISOString(), 
+                        autoResetStatus: true, 
+                        updatedAt: new Date().toISOString()
+                    };
+                    
+                    await updateStatus(updateData);
+                    showToast(`Timetable activated: ${activeSchedule.status} ${activeSchedule.message}`);
+                }
+            } else {
+                if (data.autoResetStatus && data.endTime) {
+                    const scheduledEndTime = new Date(data.endTime).getTime();
+                    if (Date.now() >= scheduledEndTime) {
+                        resetStatusToDefault(); 
+                    }
+                }
+            }
+        }
+
+
+        // --- Authentication & Session (Unchanged) ---
         
         async function handleSignup(e) {
             e.preventDefault();
@@ -946,32 +1705,75 @@
             const displayName = document.getElementById('signup-name').value.trim();
             const errorMessage = document.getElementById('error-message');
             errorMessage.textContent = '';
-            if (!email || !password || !displayName) { errorMessage.textContent = 'All fields are required.'; return; }
+            
+            if (!email || !password || !displayName) {
+                errorMessage.textContent = 'All fields are required.'; return;
+            }
 
             const userId = emailToId(email);
             const response = await fetch(`${DATABASE_URL}/logins/${userId}.json`);
             const existingLogin = await response.json();
-            if (existingLogin) { errorMessage.textContent = 'An account with this email already exists.'; return; }
+
+            if (existingLogin) {
+                errorMessage.textContent = 'An account with this email already exists.'; return;
+            }
             
             const params = new URLSearchParams(window.location.search);
             const referrerId = params.get('ref');
 
-            await fetch(`${DATABASE_URL}/logins/${userId}.json`, { method: 'PUT', body: JSON.stringify({ email, password, displayName, signupDate: new Date().toISOString().substring(0, 10) }) });
+            await fetch(`${DATABASE_URL}/logins/${userId}.json`, { method: 'PUT', body: JSON.stringify({ email, password, displayName }) });
             
             const initialProfile = {
-                displayName: displayName, theme: 'light', profileAccentColor: '#0ea5e9', status: '🟢', message: 'Ready for the day!',
-                role: 'User', banStatus: { isBanned: false, reason: null, bannedUntil: null, bannedAt: null },
-                links: [], endTime: null, pfpUrl: null, schedulingLink: null, autoResetStatus: false,
-                timetable: [], savedLocations: [], customStatuses: {}, displayNameFont: 'Inter, sans-serif',
-                dynamicTitleTemplate: "[Status Emoji] [Name]'s Status", linkTextColor: '#0369a1', profileBgValue: '',
-                phone: '', country: '', school: '', bio: 'Hey there! This is my Hyper Availability Profile.',
-                birthday: '', gender: '', hobbies: '', timeZoneOffset: new Date().getTimezoneOffset() * -1, 
-                timezoneOverride: 'auto', privacy: { email: 'public', phone: 'public', school: 'public', bio: 'public',
-                age: 'public', gender: 'public', hobbies: 'public', country: 'public', timezone: 'public' },
-                referrerId: referrerId || null, updatedAt: new Date().toISOString()
+                displayName: displayName,
+                theme: 'light',
+                profileAccentColor: '#0ea5e9',
+                status: '🟢',
+                message: 'Ready for the day!',
+                links: [],
+                endTime: null,
+                pfpUrl: null,
+                schedulingLink: null,
+                autoResetStatus: false,
+                timetable: [],
+                savedLocations: [],
+                displayNameFont: 'Inter, sans-serif',
+                dynamicTitleTemplate: "[Status Emoji] [Name]'s Status",
+                linkTextColor: '#0369a1',
+                profileBgValue: '',
+                phone: '',
+                country: '',
+                school: '',
+                bio: 'Hey there! This is my Hyper Availability Profile.',
+                birthday: '',
+                gender: '',
+                hobbies: '',
+                timeZoneOffset: new Date().getTimezoneOffset() * -1, 
+                timezoneOverride: 'auto', // Default: Auto-Detect
+                privacy: { 
+                    email: 'public', 
+                    phone: 'public', 
+                    school: 'public',
+                    bio: 'public',
+                    age: 'public',
+                    gender: 'public',
+                    hobbies: 'public',
+                    country: 'public',
+                    timezone: 'public' // Default: Public
+                },
+                referrerId: referrerId || null, 
+                updatedAt: new Date().toISOString()
             };
             await fetch(`${DATABASE_URL}/users/${userId}.json`, { method: 'PUT', body: JSON.stringify(initialProfile) });
-            await fetch(`${DATABASE_URL}/history/${userId}.json`, { method: 'POST', body: JSON.stringify({ status: initialProfile.status, message: initialProfile.message, endTime: initialProfile.endTime, timestamp: initialProfile.updatedAt }) });
+            
+            await fetch(`${DATABASE_URL}/history/${userId}.json`, { 
+                method: 'POST', 
+                body: JSON.stringify({ 
+                    status: initialProfile.status, 
+                    message: initialProfile.message,
+                    endTime: initialProfile.endTime,
+                    timestamp: initialProfile.updatedAt
+                })
+            });
 
             if (referrerId) {
                 const referredCountRef = `${DATABASE_URL}${ANALYTICS_PATH}/${referrerId}/referred_count.json`;
@@ -979,13 +1781,15 @@
                     let currentCount = (await fetch(referredCountRef).then(res => res.json())) || 0;
                     if (typeof currentCount !== 'number') currentCount = 0;
                     await fetch(referredCountRef, { method: 'PUT', body: JSON.stringify(currentCount + 1) });
-                } catch (e) { console.error("Failed to increment referrer count:", e); }
+                } catch (e) {
+                    console.error("Failed to increment referrer count:", e);
+                }
             }
+
 
             App.currentUser = { email, displayName, userId };
             localStorage.setItem('hapUser', JSON.stringify(App.currentUser));
             if (App.elements.mainHeader) App.elements.mainHeader.classList.remove('hidden');
-            setupUserSession(); 
             navigateToInternal('profilePage'); 
         }
 
@@ -996,7 +1800,9 @@
             const errorMessage = document.getElementById('error-message');
             errorMessage.textContent = '';
             
-            if (!email || !password) { errorMessage.textContent = 'Email and password cannot be empty.'; return; }
+            if (!email || !password) {
+                errorMessage.textContent = 'Email and password cannot be empty.'; return;
+            }
 
             const userId = emailToId(email);
             const response = await fetch(`${DATABASE_URL}/logins/${userId}.json`);
@@ -1013,266 +1819,147 @@
             }
         }
         
-        // --- SESSION AND NAVIGATION CORE ---
-
-        async function setupUserSession() {
-            if (timetableCheckInterval) clearInterval(timetableCheckInterval);
-
-            const userRes = await fetch(`${DATABASE_URL}/users/${App.currentUser.userId}.json`);
-            const data = await userRes.json() || {};
-            data.userId = App.currentUser.userId;
-            data.email = App.currentUser.email;
-
-            if (!data.role) { data.role = 'User'; await fetch(`${DATABASE_URL}/users/${App.currentUser.userId}/role.json`, { method: 'PUT', body: JSON.stringify('User') }); }
-            
-            const rolesRes = await fetch(`${DATABASE_URL}/roles.json`);
-            adminRolesCache = await rolesRes.json() || { 
-                'User': { name: 'User', perks: {} }, 'Admin': { name: 'Admin', perks: { nameColor: '#ef4444' } }, 'Owner': { name: 'Owner', perks: { nameColor: '#FFD700' } },
-            };
-            data.roleData = adminRolesCache[data.role] || { name: data.role, perks: {} };
-
-            App.currentProfileData = data; 
-            
-            if (data.banStatus?.isBanned) { return navigateTo('bannedPage'); }
-
-            const isAdmin = data.role === 'Admin' || data.role === 'Owner';
-            document.getElementById('adminPanelNavBtn')?.classList.toggle('hidden', !isAdmin);
-            document.getElementById('footer-user-id').textContent = App.currentUser.userId;
-            
-            applyVisuals(data);
-            renderProfile(data);
-            populateSettings(data);
-            
-            if (data.savedLocations && data.savedLocations.length > 0) { startLocationTracking(); } else { stopLocationTracking(); }
-            await checkTimetableAndApplyStatus(data); 
-            
-            timetableCheckInterval = setInterval(async () => {
-                const updatedDataRes = await fetch(`${DATABASE_URL}/users/${App.currentUser.userId}.json`);
-                const updatedData = await updatedDataRes.json() || {};
-                const updatedRolesRes = await fetch(`${DATABASE_URL}/roles.json`);
-                adminRolesCache = await updatedRolesRes.json() || {};
-                updatedData.roleData = adminRolesCache[updatedData.role] || { name: updatedData.role, perks: {} };
-                App.currentProfileData = updatedData;
-                applyVisuals(updatedData); 
-                await checkTimetableAndApplyStatus(updatedData);
-            }, 60000); 
-        }
-
-        function navigateToInternal(pageId) {
-            const cleanUrl = window.location.origin + window.location.pathname;
-            window.history.pushState({}, '', cleanUrl); 
-            window.location.hash = pageId; 
-            if (App.currentUser) { setupUserSession(); }
-        }
-
-        function hashChangeRouter() {
-            const params = new URLSearchParams(window.location.search);
-            const userIdFromUrl = params.get('user');
-            const promoCard = document.getElementById('create-hap-promo');
-            const promoActionBtn = document.getElementById('promo-action-btn'); 
-            let targetPageId;
-
-            if (userIdFromUrl) {
-                isPublicView = true;
-                if (App.elements.mainHeader) App.elements.mainHeader.classList.add('hidden');
-                const shareCard = document.getElementById('share-status-btn')?.closest('.card');
-                if (shareCard) shareCard.classList.add('hidden');
-                App.pages.forEach(pId => { if (App.elements[pId] && pId !== 'profilePage') App.elements[pId].style.display = 'none'; });
-                if (App.elements.profilePage) App.elements.profilePage.style.display = 'block';
-                displayPublicProfile(userIdFromUrl);
-                if (promoCard && promoActionBtn) {
-                    promoCard.classList.remove('hidden');
-                    const isAuth = !!localStorage.getItem('hapUser');
-                    if (isAuth) {
-                        promoActionBtn.textContent = 'Go to My Dashboard'; promoActionBtn.className = 'btn secondary'; 
-                        promoActionBtn.onclick = () => navigateToInternal('profilePage'); 
-                    } else {
-                        promoActionBtn.textContent = 'Get Started Now'; promoActionBtn.className = 'btn'; 
-                        promoActionBtn.onclick = () => { navigateToInternal('loginPage'); document.querySelector('.auth-tabs [data-tab="signup"]')?.click(); }; 
-                    }
-                }
-                return; 
-            }
-            
-            isPublicView = false;
-            const hash = window.location.hash.substring(1);
-            targetPageId = App.pages.includes(hash) ? hash : null;
-
-            if (!targetPageId) { targetPageId = App.currentUser ? 'profilePage' : 'loginPage'; }
-            
-            if (App.currentProfileData?.banStatus?.isBanned && App.currentUser && targetPageId !== 'loginPage' && targetPageId !== 'bannedPage') {
-                targetPageId = 'bannedPage'; renderBannedPage(App.currentProfileData.banStatus);
-            } else if (targetPageId === 'bannedPage' && !App.currentProfileData?.banStatus?.isBanned) { targetPageId = 'profilePage'; }
-
-            if (targetPageId === 'analyticsPage' && App.currentUser) { fetchAndRenderAnalytics(); }
-            if (targetPageId === 'settingsPage' && App.currentUser) { renderSavedLocations(); }
-            if (targetPageId === 'adminPanelPage' && App.currentUser && (App.currentProfileData?.role === 'Admin' || App.currentProfileData?.role === 'Owner')) { fetchAndRenderAdminData(); } 
-
-            App.pages.forEach(pId => { if (App.elements[pId]) App.elements[pId].style.display = 'none'; });
-            if (App.elements[targetPageId]) App.elements[targetPageId].style.display = 'block';
-
-            document.querySelectorAll('.nav-btn').forEach(btn => { btn.classList.toggle('active', btn.dataset.page === targetPageId); });
-            window.scrollTo(0, 0);
-
-            const isAuth = !!App.currentUser;
-            if (App.elements.mainHeader) { App.elements.mainHeader.classList.toggle('hidden', !isAuth || targetPageId === 'bannedPage'); }
-            if (promoCard) { promoCard.classList.add('hidden'); }
-        }
-
         function handleLogout() {
             stopLocationTracking();
             localStorage.removeItem('hapUser');
-            if (banCountdownInterval) clearInterval(banCountdownInterval);
-
             const url = window.location.origin + window.location.pathname;
             window.history.pushState({}, '', url);
             App.currentUser = null;
-            App.currentProfileData = null;
-            adminUsersCache = null;
-            adminRolesCache = null;
             hashChangeRouter(); 
         }
 
-        async function handleAccountDeletion() {
-            if (!App.currentUser) { showToast("Error: Not authenticated."); return; }
-
-            const confirmation = prompt(
-                `DANGER ZONE: Are you absolutely sure you want to permanently delete your account (${App.currentUser.email})? 
-                \nThis action cannot be undone. All your data, history, and analytics will be removed. 
-                \nType your display name to confirm: "${App.currentUser.displayName}"`
-            );
-
-            if (confirmation !== App.currentUser.displayName) { showToast("Deletion cancelled or display name mismatched."); return; }
-
-            try {
-                const userId = App.currentUser.userId;
-                const deletePaths = [
-                    `/logins/${userId}.json`, `/users/${userId}.json`, `/history/${userId}.json`,
-                    `${ANALYTICS_PATH}/${userId}.json` 
-                ];
-
-                showToast("Deleting account data... please wait.");
-                const deletionPromises = deletePaths.map(path => fetch(DATABASE_URL + path, { method: 'DELETE' }));
-                await Promise.all(deletionPromises);
-
-                stopLocationTracking();
-                localStorage.removeItem('hapUser');
-                if (banCountdownInterval) clearInterval(banCountdownInterval);
-                App.currentUser = null;
-                
-                const cleanUrl = window.location.origin + window.location.pathname;
-                window.history.pushState({}, '', cleanUrl);
-                
-                showToast("Account successfully deleted. Goodbye!");
-                
-                navigateTo('loginPage'); 
-
-            } catch (e) {
-                console.error("Account Deletion Error:", e);
-                showToast("A network error occurred. Please try again or check the console.");
+        // --- Settings & Save ---
+        async function handleSaveSettings() {
+            if (!App.currentUser) return;
+            
+            const customLinks = [];
+            for (let i = 0; i < 5; i++) {
+                const label = document.getElementById(`link-label-${i}`)?.value.trim();
+                const url = document.getElementById(`link-url-${i}`)?.value.trim();
+                if (label && url) customLinks.push({ label, url });
             }
-        }
-        
-        // --- FEATURE SPECIFIC FUNCTIONS ---
-        
-        // Banning
-        function renderBannedPage(banStatus) {
-            document.getElementById('banReasonDisplay').textContent = banStatus.reason || 'No specific reason provided.';
-            document.getElementById('bannedSince').textContent = `Banned on: ${new Date(banStatus.bannedAt).toLocaleDateString()}`;
 
-            if (banCountdownInterval) clearInterval(banCountdownInterval);
-            const timerEl = document.getElementById('banTimeRemaining');
-            const timerContainer = document.getElementById('banTimerContainer');
+            const timeType = document.getElementById('status-time-type')?.value;
+            let endTime = null;
 
-            if (banStatus.bannedUntil) {
-                timerContainer.classList.remove('hidden');
-                const endTime = new Date(banStatus.bannedUntil).getTime();
+            if (timeType === 'duration') {
+                const duration = parseInt(document.getElementById('status-duration')?.value, 10);
+                if (duration > 0) {
+                    endTime = new Date(Date.now() + duration * 60 * 1000).toISOString();
+                }
+            } else if (timeType === 'until') {
+                const timeString = document.getElementById('status-until')?.value;
+                if (timeString) {
+                    const [hours, minutes] = timeString.split(':').map(Number);
+                    const d = new Date();
+                    d.setHours(hours, minutes, 0, 0);
+                    if (d.getTime() < Date.now()) {
+                        d.setDate(d.getDate() + 1);
+                    }
+                    endTime = d.toISOString();
+                }
+            }
+            
+            const data = App.currentProfileData || {};
+            const currentPfpUrl = data.pfpUrl;
+            const currentTimetable = data.timetable || [];
+            const currentLocations = data.savedLocations || [];
+            const clientUtcOffsetMinutes = new Date().getTimezoneOffset() * -1; 
 
-                banCountdownInterval = setInterval(() => {
-                    const distance = endTime - Date.now();
-                    if (distance < 0) { clearInterval(banCountdownInterval); timerEl.textContent = "Ban Expired. Please log in again."; handleLogout(); return; }
-                    const d = Math.floor(distance / (1000 * 60 * 60 * 24));
-                    const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                    const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-                    const s = Math.floor((distance % (1000 * 60)) / 1000);
-                    timerEl.textContent = `${d}d ${h}h ${m}m ${s}s`;
-                }, 1000);
+            const dataToSave = {
+                displayName: document.getElementById('display-name')?.value.trim(),
+                theme: document.getElementById('themeSelect')?.value,
+                profileAccentColor: document.getElementById('accent-color')?.value,
+                schedulingLink: document.getElementById('scheduling-link')?.value.trim(),
+                status: document.getElementById('status-emoji')?.value,
+                message: document.getElementById('status-message')?.value.trim(),
+                autoResetStatus: document.getElementById('auto-reset')?.checked,
+                updatedAt: new Date().toISOString(),
+                links: customLinks,
+                endTime: endTime,
+                pfpUrl: currentPfpUrl,
+                timetable: currentTimetable,
+                savedLocations: currentLocations, 
+                
+                // Customization Fields
+                displayNameFont: document.getElementById('display-font')?.value,
+                dynamicTitleTemplate: document.getElementById('dynamic-title-template')?.value,
+                linkTextColor: document.getElementById('link-text-color')?.value,
+                profileBgValue: document.getElementById('profile-bg-value')?.value.trim(),
+
+                bio: document.getElementById('bio')?.value.trim().substring(0, 100), 
+                birthday: document.getElementById('birthday')?.value.trim(),
+                gender: document.getElementById('gender')?.value,
+                hobbies: document.getElementById('hobbies')?.value.trim(),
+                phone: document.getElementById('phone-number')?.value.trim(),
+                country: document.getElementById('country')?.value.trim(),
+                school: document.getElementById('school')?.value.trim(),
+                timeZoneOffset: clientUtcOffsetMinutes,
+                
+                // NEW: Separated Timezone settings
+                timezoneOverride: document.getElementById('timezone-selector')?.value,
+                privacy: {
+                    email: document.getElementById('privacy-email')?.value,
+                    phone: document.getElementById('privacy-phone')?.value,
+                    school: document.getElementById('privacy-school')?.value,
+                    bio: document.getElementById('privacy-bio')?.value,
+                    age: document.getElementById('privacy-age')?.value,
+                    gender: document.getElementById('privacy-gender')?.value,
+                    hobbies: document.getElementById('privacy-hobbies')?.value,
+                    country: document.getElementById('privacy-country')?.value,
+                    timezone: document.getElementById('privacy-timezone')?.value // This is ONLY the visibility setting
+                }
+            };
+            
+            const pfpFile = document.getElementById('pfp-upload')?.files[0];
+            const pfpPreviewEl = document.getElementById('pfp-preview-text');
+
+            if (pfpFile) {
+                const reader = new FileReader();
+                reader.onload = async function(e) {
+                    dataToSave.pfpUrl = e.target.result;
+                    if (document.getElementById('pfp-upload')) document.getElementById('pfp-upload').value = ''; 
+                    if (pfpPreviewEl) pfpPreviewEl.textContent = 'Image saved.';
+                    await saveAndLogStatus(dataToSave);
+                };
+                reader.readAsDataURL(pfpFile);
             } else {
-                timerContainer.classList.add('hidden');
-                timerEl.textContent = "Permanent Ban.";
+                await saveAndLogStatus(dataToSave);
             }
         }
+        
+        async function saveAndLogStatus(dataToSave) {
+            await fetch(`${DATABASE_URL}/users/${App.currentUser.userId}.json`, { method: 'PUT', body: JSON.stringify(dataToSave) });
+            
+            await fetch(`${DATABASE_URL}/history/${App.currentUser.userId}.json`, { 
+                method: 'POST', 
+                body: JSON.stringify({ 
+                    status: dataToSave.status, 
+                    message: dataToSave.message,
+                    endTime: dataToSave.endTime,
+                    timestamp: dataToSave.updatedAt
+                })
+            });
 
-        // Perks & Visuals
-        async function applyCustomPerks(roleName) {
-            const roleData = adminRolesCache?.[roleName];
-            const perks = roleData?.perks || {};
-            document.documentElement.style.setProperty('--profile-name-color', perks.nameColor || 'var(--text)');
-        }
-        function applyVisuals(data) {
-            // ... (Visuals logic unchanged, uses applyCustomPerks) ...
-            const theme = data.theme || 'light';
-            document.body.className = theme === 'dark' ? 'dark' : '';
-            if (App.elements.themeSelect) App.elements.themeSelect.value = theme;
-            
-            const accent = data.profileAccentColor || '#0ea5e9';
-            document.documentElement.style.setProperty('--primary', accent);
-            document.documentElement.style.setProperty('--primary-dark', theme === 'dark' ? '#7dd3fc' : accent);
-            
-            document.documentElement.style.setProperty('--link-text-color', data.linkTextColor || '#0369a1');
-            document.documentElement.style.setProperty('--display-font', data.displayNameFont || 'Inter, sans-serif');
-            
-            const bgValue = data.profileBgValue;
-            let bgStyle = 'var(--card)';
-            if (bgValue) {
-                bgStyle = bgValue.includes('url(') || bgValue.includes('gradient(') ? bgValue : bgValue;
-                if (bgValue.startsWith('#') || bgValue.startsWith('rgb')) {
-                    bgStyle = bgValue;
-                }
-            }
-            document.documentElement.style.setProperty('--profile-header-bg-style', bgStyle);
-            
-            const offset = getTzOffsetMinutes(data.timezoneOverride || 'auto');
-            const hour = getLocalHourFromOffset(offset);
-            const isNight = isNightTime(hour);
-
-            const pfpElement = document.getElementById('profile-pfp');
-            if (pfpElement) {
-                if (data.pfpUrl) {
-                    pfpElement.style.backgroundImage = `url(${data.pfpUrl})`;
-                } else {
-                    pfpElement.style.backgroundImage = 'none';
-                }
-                if (isNight) {
-                    pfpElement.style.backgroundColor = '#1e293b'; 
-                    pfpElement.style.border = `3px solid ${data.profileAccentColor || '#7dd3fc'}`; 
-                } else {
-                    pfpElement.style.backgroundColor = 'var(--primary-light)'; 
-                    pfpElement.style.border = `3px solid ${data.profileAccentColor || 'var(--primary)'}`; 
-                }
-            }
-            
-            applyCustomPerks(data.role);
-            localStorage.setItem('hapTheme', theme);
+            App.currentProfileData = dataToSave; 
+            applyVisuals(dataToSave);
+            showToast('Settings Saved & Status Updated!');
+            navigateTo('profilePage');
         }
 
-        // Link Clicks & Sharing
-        async function trackLinkClick(profileId) {
-             const linkClicksUrl = `${DATABASE_URL}${ANALYTICS_PATH}/${profileId}/link_clicks.json`;
-             try {
-                 let currentLinkClicks = (await fetch(linkClicksUrl).then(res => res.json())) || 0;
-                 if (typeof currentLinkClicks !== 'number') currentLinkClicks = 0;
-                 await fetch(linkClicksUrl, { method: 'PUT', body: JSON.stringify(currentLinkClicks + 1) });
-             } catch(e) { console.error("Failed to track link click:", e); }
-        }
-
+        // --- VCard & Share (Unchanged) ---
         async function handleVCardDownload() {
             const profileData = App.currentProfileData;
             const user = App.currentUser;
-            if (!profileData || !user) { showToast('Must be logged in or viewing a public profile to generate contact card.'); return; }
+            
+            if (!profileData || !user) { 
+                showToast('Must be logged in or viewing a public profile to generate contact card.'); 
+                return; 
+            }
 
             const profileOwnerId = profileData.userId || user.userId;
             const isOwner = user && user.userId === profileOwnerId;
+
             const isVisible = (field) => {
                 const privacyLevel = profileData.privacy?.[field] || 'public';
                 if (isOwner) return true;
@@ -1281,25 +1968,49 @@
             };
 
             const vcard = [
-                'BEGIN:VCARD', 'VERSION:3.0',
+                'BEGIN:VCARD',
+                'VERSION:3.0',
                 `N:;${profileData.displayName || user.displayName};;;`,
-                `FN:${profileData.displayName || user.displayName}`, `UID:${profileOwnerId}`,
+                `FN:${profileData.displayName || user.displayName}`,
+                `UID:${profileOwnerId}`,
             ];
 
-            if (isOwner || isVisible('email')) { vcard.push(`EMAIL;TYPE=internet,work:${user.email || profileData.email || 'N/A'}`); }
-            if (profileData.phone && isVisible('phone')) { vcard.push(`TEL;TYPE=cell:${profileData.phone}`); }
-            if (profileData.bio && isVisible('bio')) { vcard.push(`NOTE:${profileData.bio.replace(/(\r\n|\n|\r)/gm, " ")}`); }
-            if (profileData.country && isVisible('country')) { vcard.push(`ADR;TYPE=home:;;;;;;${profileData.country}`); }
-            if (profileData.schedulingLink) { vcard.push(`URL;TYPE=scheduling:${profileData.schedulingLink}`); }
-            if (profileData.pfpUrl) { vcard.push(`PHOTO;VALUE=URI:${profileData.pfpUrl}`); }
+            if (isOwner || isVisible('email')) {
+                vcard.push(`EMAIL;TYPE=internet,work:${user.email || profileData.email || 'N/A'}`);
+            }
+
+            if (profileData.phone && isVisible('phone')) {
+                vcard.push(`TEL;TYPE=cell:${profileData.phone}`);
+            }
+            
+            if (profileData.bio && isVisible('bio')) {
+                vcard.push(`NOTE:${profileData.bio.replace(/(\r\n|\n|\r)/gm, " ")}`);
+            }
+
+            if (profileData.country && isVisible('country')) {
+                vcard.push(`ADR;TYPE=home:;;;;;;${profileData.country}`);
+            }
+
+            if (profileData.schedulingLink) {
+                vcard.push(`URL;TYPE=scheduling:${profileData.schedulingLink}`);
+            }
+            
+            if (profileData.pfpUrl) {
+                vcard.push(`PHOTO;VALUE=URI:${profileData.pfpUrl}`);
+            }
+
             vcard.push('END:VCARD');
 
             const vcardText = vcard.join('\n');
+            
             const blob = new Blob([vcardText], { type: 'text/vcard;charset=utf-8' });
             const url = URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href = url;
+            const a = document.createElement('a');
+            a.href = url;
             a.download = `${(profileData.displayName || user.displayName).replace(/\s/g, '_')}_hap_contact.vcf`;
-            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
             URL.revokeObjectURL(url);
             showToast('Contact Card downloaded! 💾');
         }
@@ -1314,365 +2025,180 @@
             };
 
             try {
-                if (navigator.share) { await navigator.share(shareData); } 
-                else { document.execCommand('copy'); showToast('Profile and referral link copied to clipboard!'); }
+                if (navigator.share) {
+                    await navigator.share(shareData);
+                } else {
+                    navigator.clipboard.writeText(shareUrl).then(() => {
+                        showToast('Profile and referral link copied to clipboard!');
+                    }).catch(clipErr => {
+                        showToast('Could not copy link.', 'error');
+                    });
+                }
             } catch (err) {
-                 document.execCommand('copy'); showToast('Profile and referral link copied to clipboard!');
+                navigator.clipboard.writeText(shareUrl).then(() => {
+                    showToast('Profile and referral link copied to clipboard!');
+                }).catch(clipErr => {
+                    showToast('Could not copy link.', 'error');
+                });
             }
         }
-        
-        // Location
-        function startLocationTracking() {
-            if (!App.currentUser) return;
-            if (locationWatcherId) navigator.geolocation.clearWatch(locationWatcherId);
-            locationWatcherId = navigator.geolocation.watchPosition(
-                (position) => {
-                    checkProximity(position.coords.latitude, position.coords.longitude);
-                    document.getElementById('current-location-status').textContent = `Location: ${position.coords.latitude.toFixed(4)}, ${position.coords.longitude.toFixed(4)}`;
-                },
-                (error) => {
-                    const statusEl = document.getElementById('current-location-status');
-                    if (statusEl) statusEl.textContent = `Location Error: ${error.message}.`;
-                },
-                { enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 }
-            );
-        }
-        function stopLocationTracking() {
-            if (locationWatcherId) { navigator.geolocation.clearWatch(locationWatcherId); locationWatcherId = null; }
-        }
-        async function checkProximity(currentLat, currentLon) {
-             const savedLocations = App.currentProfileData?.savedLocations || [];
-            if (savedLocations.length === 0) return;
-            let closestLocation = null;
-            let closestDistance = Infinity;
-            for (const loc of savedLocations) {
-                const distance = getDistanceKm(currentLat, currentLon, loc.latitude, loc.longitude);
-                if (distance < LOCATION_RANGE_KM && distance < closestDistance) { closestDistance = distance; closestLocation = loc; }
-            }
-            const proximityEl = document.getElementById('proximity-status');
-            if (!App.currentUser) return; 
-            if (closestLocation) {
-                if (App.currentProfileData.status !== closestLocation.status || App.currentProfileData.message !== closestLocation.message) {
-                     await updateStatus({ status: closestLocation.status, message: `📍 At ${closestLocation.name}`, endTime: null, autoResetStatus: false });
-                    showToast(`Status updated: Now at ${closestLocation.name}`);
-                    proximityEl.textContent = `Near: ${closestLocation.name} (Auto-status active)`;
-                } else { proximityEl.textContent = `Near: ${closestLocation.name}`; }
-            } else {
-                if (proximityEl) proximityEl.textContent = '';
-            }
-        }
-        
-        // Admin
-        async function fetchAndRenderAdminData() {
-            if (!App.currentUser || (App.currentProfileData.role !== 'Admin' && App.currentProfileData.role !== 'Owner')) return;
 
-            const metricsEl = document.getElementById('admin-system-metrics');
-            const feedbackEl = document.getElementById('admin-feedback-inbox');
-            
-            metricsEl.innerHTML = '<p class="muted" style="grid-column: 1 / -1; text-align: center;">Loading all system data...</p>';
-            feedbackEl.innerHTML = '<p class="muted">Loading feedback...</p>';
+
+        // --- Analytics and Search Logic (Unchanged) ---
+        
+        function getAnalyticsDateRange(days) {
+            const dates = [];
+            const endDate = new Date(); 
+            for (let i = 0; i < days; i++) {
+                const d = new Date(endDate);
+                d.setDate(endDate.getDate() - i);
+                dates.push(d.toISOString().substring(0, 10));
+            }
+            return dates;
+        }
+
+        async function fetchAndRenderAnalytics() {
+            if (!App.currentUser) return;
+            const userId = App.currentUser.userId;
+            const analyticsGridEl = document.getElementById('view-analytics-grid');
+            const historyLogEl = document.getElementById('history-log');
+
+            if (analyticsGridEl) analyticsGridEl.innerHTML = '<p class="muted" style="grid-column: 1 / -1; text-align: center;">Fetching data...</p>';
+            if (historyLogEl) historyLogEl.innerHTML = '<p class="muted">Fetching history...</p>';
 
             try {
-                const [allUsersRes, allLoginsRes, allAnalyticsRes, feedbackRes] = await Promise.all([
-                    fetch(`${DATABASE_URL}/users.json`), fetch(`${DATABASE_URL}/logins.json`),
-                    fetch(`${DATABASE_URL}${ANALYTICS_PATH}.json`), fetch(`${DATABASE_URL}/feedback.json`)
-                ]);
-
-                allUsersCache = await allUsersRes.json() || {};
-                const allLogins = await allLoginsRes.json() || {};
-                const globalAnalytics = await allAnalyticsRes.json() || {};
-                const feedbackData = await feedbackRes.json() || {};
+                const analyticsRes = await fetch(`${DATABASE_URL}${ANALYTICS_PATH}/${userId}.json`);
+                const allAnalyticsData = await analyticsRes.json() || {};
+                const dailyViews = allAnalyticsData.views_daily || {};
+                const totalViews = allAnalyticsData.total_views || 0;
+                const referredCount = allAnalyticsData.referred_count || 0;
                 
-                adminUsersCache = {};
-                const today = new Date().toISOString().substring(0, 10);
-                let todaySignups = 0;
-                let activeUsers = 0;
-                let totalLinkClicks = 0;
-                const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).getTime();
-
-                for (const userId in allUsersCache) {
-                    const user = allUsersCache[userId];
-                    const login = allLogins[userId] || {};
-                    const analytics = globalAnalytics[userId] || {};
-
-                    if (login.signupDate === today) todaySignups++;
-                    if (new Date(user.updatedAt || 0).getTime() > sevenDaysAgo) activeUsers++;
-                    
-                    adminUsersCache[userId] = {
-                        userId, displayName: user.displayName || 'Unnamed', email: login.email || 'N/A',
-                        role: user.role || 'User', isBanned: user.banStatus?.isBanned || false,
-                        updatedAt: user.updatedAt, totalViews: analytics.total_views || 0,
-                        linkClicks: analytics.link_clicks || 0, rawProfile: user
-                    };
-                    totalLinkClicks += (analytics.link_clicks || 0);
-                }
+                const dayRanges = [
+                    { label: "Today", days: 1 },
+                    { label: "Last 3 Days", days: 3 },
+                    { label: "Last 7 Days", days: 7 },
+                    { label: "Last 14 Days", days: 14 },
+                    { label: "Last 28 Days", days: 28 },
+                ];
                 
-                const totalUsers = Object.keys(allUsersCache).length;
-                metricsEl.innerHTML = `
-                    <div class="admin-metric"><div class="admin-metric-value">${totalUsers.toLocaleString()}</div><div class="metric-label">Total Users</div></div>
-                    <div class="admin-metric"><div class="admin-metric-value">${todaySignups.toLocaleString()}</div><div class="metric-label">Today's Signups</div></div>
-                    <div class="admin-metric"><div class="admin-metric-value">${activeUsers.toLocaleString()}</div><div class="metric-label">Active (Last 7D)</div></div>
-                    <div class="admin-metric"><div class="admin-metric-value">${totalLinkClicks.toLocaleString()}</div><div class="metric-label">Total Link Clicks</div></div>
-                `;
+                const analyticsMetrics = [];
+                const todayDate = new Date().toISOString().substring(0, 10);
 
-                if (Object.keys(feedbackData).length > 0) {
-                    feedbackEl.innerHTML = Object.values(feedbackData).reverse().map(f => `
-                        <div class="timetable-entry-card" style="margin-bottom: 10px; border-left: 3px solid var(--primary);">
-                            <p style="color: var(--text); margin: 0;"><strong>User:</strong> ${f.userDisplay} (${f.userId.substring(0, 6)})</p>
-                            <p style="font-size: 0.9rem; margin: 5px 0 0 0;">${f.message}</p>
-                            <small style="display: block; opacity: 0.7;">${new Date(f.timestamp).toLocaleString()}</small>
+                dayRanges.forEach(range => {
+                    let totalViewsRange = 0;
+                    const datesToInclude = getAnalyticsDateRange(range.days);
+
+                    datesToInclude.forEach(date => {
+                        totalViewsRange += (dailyViews[date] || 0);
+                    });
+
+                    analyticsMetrics.push({ label: range.label, value: totalViewsRange });
+                });
+                
+                analyticsMetrics.push({ label: "All-Time Views", value: totalViews });
+                analyticsMetrics.push({ label: "Referred Accounts", value: referredCount });
+
+
+                if (analyticsGridEl) {
+                    analyticsGridEl.innerHTML = analyticsMetrics.map(metric => `
+                        <div class="analytics-metric">
+                            <div class="metric-value">${metric.value.toLocaleString()}</div>
+                            <div class="metric-label">${metric.label}</div>
                         </div>
                     `).join('');
-                } else { feedbackEl.innerHTML = '<p class="muted">No feedback received.</p>'; }
+                }
 
-                renderAdminRoles();
+
+                const userHistoryRes = await fetch(`${DATABASE_URL}/history/${App.currentUser.userId}.json`);
+                const historyData = await userHistoryRes.json();
+                
+                if (historyLogEl) {
+                    if (historyData) {
+                        const history = Object.values(historyData).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                        historyLogEl.innerHTML = '';
+                        history.slice(0, 10).forEach(item => {
+                            historyLogEl.innerHTML += `
+                                <div class="history-item">
+                                    <span class="history-status">${item.status} ${item.message || '(No message)'}</span>
+                                    <p class="history-time">${new Date(item.timestamp).toLocaleString()}</p>
+                                </div>`;
+                        });
+                    } else {
+                        historyLogEl.innerHTML = '<p class="muted">No status history found.</p>';
+                    }
+                }
             } catch (e) {
-                console.error("Admin Panel Fetch Error:", e);
-                metricsEl.innerHTML = `<p class="muted" style="grid-column: 1 / -1; color: var(--danger); text-align: center;">Error loading admin data.</p>`;
+                console.error("Analytics fetch error:", e);
+                if (analyticsGridEl) analyticsGridEl.innerHTML = '<p class="muted" style="grid-column: 1 / -1; color: #ef4444; text-align: center;">Error loading view data.</p>';
+                if (historyLogEl) historyLogEl.innerHTML = '<p class="muted">Error loading history.</p>';
             }
         }
 
-        async function handleCreateRole() {
-            const name = document.getElementById('new-role-name')?.value.trim();
-            const color = document.getElementById('new-role-name-color')?.value;
-            if (!name || name.length < 2) return showToast("Role name required.");
-            if (['Admin', 'User', 'Owner'].includes(name)) return showToast("Role name is reserved.");
+        async function handleSearchUsers() {
+            const searchTerm = document.getElementById('user-search-input')?.value.trim().toLowerCase();
+            const resultsList = document.getElementById('search-results-list');
+            if (!resultsList || !App.currentUser) return;
 
-            const newRole = { name: name, perks: { nameColor: color } };
-            await fetch(`${DATABASE_URL}/roles/${name}.json`, { method: 'PUT', body: JSON.stringify(newRole) });
-            adminRolesCache[name] = newRole;
-
-            showToast(`Role "${name}" created with color perk.`);
-            document.getElementById('new-role-name').value = '';
-            document.getElementById('new-role-name-color').value = '#0ea5e9';
-            await fetchAndRenderAdminData();
-        }
-
-        async function handleDeleteRole(e) {
-            const roleName = e.currentTarget.dataset.role;
-            if (!confirm(`Are you sure you want to delete the role "${roleName}"? Users in this role will be reverted to 'User'.`)) return;
-
-            await fetch(`${DATABASE_URL}/roles/${roleName}.json`, { method: 'DELETE' });
-            const updates = {};
-            for (const userId in adminUsersCache) {
-                if (adminUsersCache[userId].role === roleName) {
-                    updates[userId] = { role: 'User' };
-                    adminUsersCache[userId].role = 'User';
-                }
-            }
-            if (Object.keys(updates).length > 0) { await fetch(`${DATABASE_URL}/users.json`, { method: 'PATCH', body: JSON.stringify(updates) }); }
-
-            showToast(`Role "${roleName}" deleted and users reverted to 'User'.`);
-            await fetchAndRenderAdminData();
-        }
-
-        async function handleBanUser(e) {
-            const userId = e.currentTarget.dataset.id;
-            const user = adminUsersCache[userId];
-            if (!user) return;
+            resultsList.innerHTML = '<p class="muted">Searching...</p>';
             
-            const isCurrentlyBanned = user.rawProfile.banStatus?.isBanned;
-
-            if (isCurrentlyBanned) {
-                if (!confirm(`CONFIRM: Unban user ${user.displayName}?`)) return;
-                const unbanData = { banStatus: { isBanned: false, reason: null, bannedUntil: null, bannedAt: null } };
-                await fetch(`${DATABASE_URL}/users/${userId}.json`, { method: 'PATCH', body: JSON.stringify(unbanData) });
-                showToast(`User ${user.displayName} has been unbanned.`);
-            } else {
-                const banType = prompt("Type 'perm' for permanent ban, or a number of days for temporary ban (e.g., 7):").toLowerCase();
-                if (banType === null) return;
-                const banReason = prompt("Enter a reason for the ban:");
-                if (!banReason || banReason.trim() === '') return showToast("Ban reason is required.");
-
-                let bannedUntil = null;
-                const bannedAt = new Date().toISOString();
-
-                if (banType !== 'perm') {
-                    const days = parseInt(banType, 10);
-                    if (isNaN(days) || days <= 0) { return showToast("Invalid ban duration or command. Use 'perm' or a positive number of days."); }
-                    const endDate = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
-                    bannedUntil = endDate.toISOString();
-                }
-
-                const banData = { banStatus: { isBanned: true, reason: banReason, bannedUntil: bannedUntil, bannedAt: bannedAt } };
-                await fetch(`${DATABASE_URL}/users/${userId}.json`, { method: 'PATCH', body: JSON.stringify(banData) });
-                showToast(`User ${user.displayName} has been banned (${bannedUntil ? 'Temporary' : 'Permanent'}).`);
+            if (searchTerm.length < 2) {
+                resultsList.innerHTML = '<p class="muted">Enter at least 2 characters to search.</p>';
+                return;
             }
-            await fetchAndRenderAdminData(); 
-            handleAdminUserSearch();
-        }
-
-        async function handleRoleAssignment(e) {
-            const userId = e.target.dataset.id;
-            const newRole = e.target.value;
-            const user = adminUsersCache[userId];
-            if (!user) return;
-
-            if (!confirm(`CONFIRM: Change role of ${user.displayName} to "${newRole}"?`)) { e.target.value = user.role; return; }
 
             try {
-                await fetch(`${DATABASE_URL}/users/${userId}/role.json`, { method: 'PUT', body: JSON.stringify(newRole) });
-                user.role = newRole;
-                showToast(`${user.displayName} assigned role: ${newRole}.`);
-                handleAdminUserSearch(); 
-            } catch (e) {
-                console.error("Role Assignment Error:", e);
-                showToast("Failed to assign role.");
+                if (!allUsersCache) {
+                     const response = await fetch(`${DATABASE_URL}/users.json`);
+                     allUsersCache = await response.json() || {};
+                }
+                
+                let foundResults = 0;
+                let resultsHTML = '';
+                
+                if (allUsersCache) {
+                    for (const userId in allUsersCache) {
+                        if (userId === App.currentUser.userId) continue; 
+                        
+                        const user = allUsersCache[userId];
+                        const displayName = (user.displayName || '').toLowerCase();
+                        
+                        if (displayName.includes(searchTerm)) {
+                            foundResults++;
+                            const publicUrl = `${window.location.origin}${window.location.pathname}?user=${userId}`;
+                            
+                            resultsHTML += `
+                                <div class="search-result-item">
+                                    <a href="${publicUrl}" style="text-decoration: none; color: var(--text); display: flex; align-items: center; justify-content: space-between; flex-grow: 1;">
+                                        <div>
+                                            <div style="font-size: 1.2rem; font-weight: 600;">${user.status || '❓'} ${user.displayName || 'Unnamed User'}</div>
+                                            <p style="font-size: 0.9rem; margin-top: 4px;">${user.message || 'No message set.'}</p>
+                                        </div>
+                                    </a>
+                                    <a href="${publicUrl}" class="btn" style="width: auto; padding: 8px 12px; margin-left: 15px;">View Profile</a>
+                                </div>`;
+                        }
+                    }
+                }
+                
+                if (foundResults > 0) {
+                    resultsList.innerHTML = `<div style="margin-top: 15px;">${resultsHTML}</div>`;
+                } else {
+                    resultsList.innerHTML = '<p class="muted">No public users found matching your search term.</p>';
+                }
+
+            } catch (error) {
+                console.error("Search error:", error);
+                resultsList.innerHTML = '<p class="muted" style="color: #ef4444;">Error fetching user data for search.</p>';
             }
         }
 
-        // --- CUSTOM STATUSES ---
 
-        async function handleAddCustomStatus() {
-            const emoji = prompt("Enter a single emoji for your custom status (e.g., ✍️, 🚀):");
-            if (!emoji || emoji.trim().length === 0) return showToast("Emoji is required.");
-            
-            const title = prompt("Enter a title/message for this custom status (e.g., Writing Code, Launching Product):");
-            if (!title || title.trim().length === 0) return showToast("Title/Message is required.");
-
-            const newId = uuidv4();
-            const newStatus = { id: newId, emoji: emoji.trim(), title: title.trim() };
-            
-            const data = App.currentProfileData || { customStatuses: {} };
-            data.customStatuses = data.customStatuses || {};
-            data.customStatuses[newId] = newStatus;
-
-            await fetch(`${DATABASE_URL}/users/${App.currentUser.userId}.json`, {
-                method: 'PATCH', body: JSON.stringify({ customStatuses: data.customStatuses })
-            });
-            
-            App.currentProfileData = data;
-            populateSettings(data); 
-            showToast(`Custom Status '${newStatus.title}' added!`);
-        }
-
-        async function handleRemoveCustomStatus(e) {
-            const statusId = e.currentTarget.dataset.id;
-            
-            const data = App.currentProfileData || { customStatuses: {} };
-            if (data.customStatuses && data.customStatuses[statusId]) { delete data.customStatuses[statusId]; }
-            
-            await fetch(`${DATABASE_URL}/users/${App.currentUser.userId}.json`, {
-                method: 'PATCH', body: JSON.stringify({ customStatuses: data.customStatuses })
-            });
-            
-            App.currentProfileData = data;
-            populateSettings(data); 
-            showToast("Custom Status removed (Click 'Save' to ensure main status is updated if it was in use).");
-        }
-
-        // --- RENDER HELPERS (Final set) ---
+        // --- Event Listeners and Utilities ---
         
-        function renderAdminRoles() {
-            const container = document.getElementById('roles-list-container');
-            if (!container) return;
-            container.innerHTML = '';
-            
-            Object.values(adminRolesCache || {}).forEach(role => {
-                const perkDisplay = role.perks?.nameColor ? `Color: <span style="color: ${role.perks.nameColor};">${role.perks.nameColor}</span>` : 'No perks';
-                const roleDiv = document.createElement('div');
-                roleDiv.className = 'role-perk-item';
-                roleDiv.innerHTML = `
-                    <div style="display: flex; flex-direction: column;">
-                        <strong style="color: ${role.perks?.nameColor || 'var(--text)'};">${role.name}</strong>
-                        <span style="font-size: 0.9rem; color: var(--muted);">${perkDisplay}</span>
-                    </div>
-                    ${role.name !== 'Admin' && role.name !== 'User' && role.name !== 'Owner' ? 
-                        `<button data-role="${role.name}" class="admin-delete-role-btn btn danger" style="width: auto; padding: 6px 10px;">Delete Role</button>` : ''}
-                `;
-                container.appendChild(roleDiv);
-            });
-
-             document.querySelectorAll('.admin-delete-role-btn').forEach(btn => { btn.addEventListener('click', handleDeleteRole); });
-        }
-
         function toggleTimeInputs(type) {
             document.getElementById('status-duration-group')?.classList.toggle('hidden', type !== 'duration');
             document.getElementById('status-until-group')?.classList.toggle('hidden', type !== 'until');
         }
-
-        function suggestStatusBasedOnTime() {
-            const now = new Date();
-            const hour = now.getHours();
-            const day = now.getDay(); 
-            let emoji = '🟢';
-            let message = 'Available for a chat.';
-
-            if (day === 0 || day === 6) { emoji = '🏖️'; if (hour >= 10 && hour < 18) message = 'Enjoying the weekend!'; else if (hour >= 20 || hour < 6) { emoji = '😴'; message = 'Offline. Weekend wind-down.'; } } 
-            else { 
-                if (hour >= 6 && hour < 9) { emoji = '🚗'; message = 'Commuting or starting up.'; } 
-                else if (hour >= 9 && hour < 12) { emoji = '💻'; message = 'Focusing on deep work.'; } 
-                else if (hour >= 12 && hour < 14) { emoji = '🍽️'; message = 'Lunch break, back soon!'; } 
-                else if (hour >= 14 && hour < 17) { emoji = '🧠'; message = 'Productive afternoon session.'; } 
-                else if (hour >= 17 && hour < 19) { emoji = '🏋️'; message = 'Finished work, doing personal tasks/workout.'; } 
-                else if (hour >= 19 && hour < 22) { emoji = '☕'; message = 'Relaxing in the evening.'; } 
-                else { emoji = '😴'; message = 'Offline/Sleeping.'; }
-            }
-
-            document.getElementById('status-emoji').value = emoji;
-            document.getElementById('status-message').value = message;
-            showToast(`Suggested Status: ${emoji} ${message}`);
-        }
-        
-        function renderTimetableSettings(timetable = []) {
-            const container = document.getElementById('timetable-entries-container');
-            if (!container) return;
-            container.innerHTML = '';
-
-            if (!timetable || timetable.length === 0) {
-                container.innerHTML = '<p class="muted" id="no-timetable-message">No scheduled entries yet.</p>';
-                return;
-            }
-
-            timetable.forEach((entry, index) => {
-                const entryDiv = document.createElement('div');
-                entryDiv.className = 'timetable-entry-card';
-                entryDiv.innerHTML = `
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <strong style="font-size: 1rem; color: var(--text);">
-                            ${entry.status} ${entry.message}
-                        </strong>
-                        <button data-index="${index}" class="remove-timetable-btn btn secondary" style="width: auto; padding: 5px 10px; font-size: 0.8rem;">
-                            Remove
-                        </button>
-                    </div>
-                    <p style="margin-top: 5px; color: var(--primary); font-size: 0.9rem;">
-                        ${DAYS_OF_WEEK[entry.day]} ${entry.start} - ${entry.end}
-                    </p>`;
-                container.appendChild(entryDiv);
-            });
-            
-            document.querySelectorAll('.remove-timetable-btn').forEach(btn => { btn.addEventListener('click', handleRemoveTimetableEntry); });
-        }
-        
-        function renderSavedLocations() {
-            const container = document.getElementById('saved-locations-container');
-            if (!container) return;
-            container.innerHTML = '';
-            const savedLocations = App.currentProfileData?.savedLocations || [];
-
-            if (savedLocations.length === 0) { container.innerHTML = '<p class="muted">No saved locations.</p>'; return; }
-
-            savedLocations.forEach((loc, index) => {
-                const entryDiv = document.createElement('div');
-                entryDiv.className = 'location-entry-card';
-                entryDiv.innerHTML = `
-                    <div style="flex: 1;">
-                        <strong style="font-size: 1rem; color: var(--text);">${loc.name}</strong>
-                        <p style="margin-top: 5px; font-size: 0.9rem;">
-                            ${loc.status} ${loc.message || 'Auto Status'}
-                        </p>
-                        <p style="font-size: 0.75rem; opacity: 0.8;">Lat: ${loc.latitude.toFixed(4)}, Lon: ${loc.longitude.toFixed(4)}</p>
-                    </div>
-                    <button data-index="${index}" class="remove-location-btn btn secondary" style="width: auto; padding: 5px 10px; font-size: 0.8rem; margin-left: 10px;">
-                        Remove
-                    </button>`;
-                document.querySelectorAll('.remove-location-btn').forEach(btn => { btn.addEventListener('click', handleRemoveLocationEntry); });
-                container.appendChild(entryDiv);
-            });
-        }
-        
-        // --- EVENT LISTENERS INITIALIZATION ---
         
         function addEventListeners() {
             document.querySelector('.auth-tabs')?.addEventListener('click', e => {
@@ -1695,40 +2221,21 @@
 
             document.getElementById('signup-form')?.addEventListener('submit', handleSignup);
             document.getElementById('login-form')?.addEventListener('submit', handleLogin);
-            
-            // Logout and Delete Buttons
             document.getElementById('logout-btn')?.addEventListener('click', handleLogout);
-            document.getElementById('delete-account-btn')?.addEventListener('click', handleAccountDeletion);
-            document.getElementById('bannedLogoutBtn')?.addEventListener('click', handleLogout);
-            document.getElementById('bannedDeleteAccountBtn')?.addEventListener('click', handleAccountDeletion);
 
             document.getElementById('save-settings-btn')?.addEventListener('click', handleSaveSettings);
             document.getElementById('share-status-btn')?.addEventListener('click', handleShareStatus);
             document.getElementById('add-timetable-entry-btn')?.addEventListener('click', handleAddTimetableEntry);
             document.getElementById('suggest-status-btn')?.addEventListener('click', suggestStatusBasedOnTime);
+            
             document.getElementById('add-location-btn')?.addEventListener('click', handleAddLocationEntry);
             
-            // Custom Status Listeners
-            document.getElementById('add-custom-status-btn')?.addEventListener('click', handleAddCustomStatus);
-            document.getElementById('status-emoji')?.addEventListener('change', (e) => {
-                const selectedValue = e.target.value;
-                const messageInput = document.getElementById('status-message');
-                if (selectedValue.startsWith('CUSTOM-')) {
-                    const customId = selectedValue.substring(7);
-                    const customStatus = App.currentProfileData.customStatuses?.[customId];
-                    if (customStatus) {
-                        messageInput.value = customStatus.title;
-                    }
-                } else {
-                     messageInput.value = ''; 
-                }
-            });
-            
-            document.getElementById('submit-feedback-btn')?.addEventListener('click', handleSubmitFeedback);
-
             document.getElementById('run-search-btn')?.addEventListener('click', handleSearchUsers);
             document.getElementById('user-search-input')?.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') { e.preventDefault(); handleSearchUsers(); }
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleSearchUsers();
+                }
             });
             
             document.getElementById('pfp-upload')?.addEventListener('change', (e) => {
@@ -1740,35 +2247,6 @@
                     previewEl.textContent = 'No image selected.';
                 }
             });
-
-            // --- Admin Panel Listeners ---
-            document.getElementById('admin-run-user-search-btn')?.addEventListener('click', handleAdminUserSearch);
-            document.getElementById('admin-user-search')?.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') { e.preventDefault(); handleAdminUserSearch(); }
-            });
-            document.getElementById('admin-create-role-btn')?.addEventListener('click', handleCreateRole);
-        }
-
-        // --- DOM CONTENT LOADED ---
-        
-        function handlePageLoad() {
-            App.pages.forEach(pId => App.elements[pId] = document.getElementById(pId));
-            App.elements.mainHeader = document.getElementById('mainHeader');
-            App.elements.themeSelect = document.getElementById('themeSelect');
-            App.elements.toast = document.getElementById('toast');
-            
-            const user = JSON.parse(localStorage.getItem('hapUser'));
-            if (user) {
-                App.currentUser = user;
-                setupUserSession();
-            } else {
-                App.currentUser = null;
-            }
-            
-            window.addEventListener('hashchange', hashChangeRouter);
-            hashChangeRouter();
-            
-            addEventListeners();
         }
         
         document.addEventListener('DOMContentLoaded', handlePageLoad);
