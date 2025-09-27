@@ -311,6 +311,7 @@
             </div>
 
             <div class="card action-links-container" id="profile-action-links">
+                <!-- This container is where the 'Send Friend Request' and 'Get Contact Card' buttons are dynamically injected -->
                 </div>
 
             <div class="card">
@@ -910,6 +911,8 @@
             // Check for Query Parameter Override (Public View) first
             const params = new URLSearchParams(window.location.search);
             const userIdFromUrl = params.get('user');
+            const promoCard = document.getElementById('create-hap-promo');
+
 
             if (userIdFromUrl) {
                 isPublicView = true;
@@ -930,14 +933,16 @@
                 // 2. Fetch and render the public profile (This is the only thing we do)
                 displayPublicProfile(userIdFromUrl);
                 
-                // 3. Show/Hide promo based on logged in status
-                const promoCard = document.getElementById('create-hap-promo');
+                // 3. Show/Hide promo based on logged in status (FIXED LOGIC)
                 if (promoCard) {
                     promoCard.classList.remove('hidden');
                     const isAuth = !!localStorage.getItem('hapUser');
                     document.getElementById('promo-login-btn').style.display = isAuth ? 'inline-flex' : 'none';
-                    document.getElementById('promo-signup-btn').textContent = isAuth ? 'Start New Session' : 'Get Started Now';
-                    document.getElementById('promo-signup-btn').onclick = isAuth ? handleLogout : () => navigateTo('loginPage');
+                    document.getElementById('promo-signup-btn').textContent = isAuth ? 'Go to My Dashboard' : 'Get Started Now';
+                    document.getElementById('promo-signup-btn').onclick = isAuth ? () => navigateTo('profilePage') : () => navigateTo('loginPage');
+                    if (!isAuth) {
+                        document.getElementById('promo-login-btn').style.display = 'none'; // Ensure this button is always hidden if not authed
+                    }
                 }
                 return; 
             }
@@ -983,8 +988,8 @@
             }
             
             // Hide promo card when viewing dashboard or settings
-            if (document.getElementById('create-hap-promo')) {
-                document.getElementById('create-hap-promo').classList.add('hidden');
+            if (promoCard) {
+                promoCard.classList.add('hidden');
             }
         }
         
@@ -1188,7 +1193,7 @@
         async function renderActionLinks(profileData) {
             const container = document.getElementById('profile-action-links');
             if (!container) return;
-            container.innerHTML = '';
+            container.innerHTML = ''; // FIX 1: Clear the container before adding new buttons
             
             const profileOwnerId = profileData.userId;
             const isOwner = App.currentUser && App.currentUser.userId === profileOwnerId;
