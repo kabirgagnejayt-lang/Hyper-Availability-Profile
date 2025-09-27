@@ -561,6 +561,13 @@
 
         // --- URL HASH ROUTER CORE LOGIC ---
         
+        // New function to clear query parameters and navigate internally
+        function navigateToInternal(pageId) {
+            const cleanUrl = window.location.origin + window.location.pathname;
+            window.history.pushState({}, '', cleanUrl); // Remove ?user=... from the URL
+            window.location.hash = pageId; // Set the new hash
+        }
+
         function navigateTo(pageId) {
             window.location.hash = pageId;
         }
@@ -598,13 +605,15 @@
                     if (isAuth) {
                         promoActionBtn.textContent = 'Go to My Dashboard';
                         promoActionBtn.className = 'btn secondary'; // secondary style for existing user
-                        promoActionBtn.onclick = () => navigateTo('profilePage');
+                        // Use navigateToInternal to clear ?user=ID and go to profilePage
+                        promoActionBtn.onclick = () => navigateToInternal('profilePage'); 
                     } else {
                         promoActionBtn.textContent = 'Get Started Now';
                         promoActionBtn.className = 'btn'; // primary style for new user
-                        // This action navigates to login and triggers the signup tab
+                        // Use navigateToInternal to clear ?user=ID, go to loginPage, and switch to signup tab
                         promoActionBtn.onclick = () => { 
-                            navigateTo('loginPage'); 
+                            navigateToInternal('loginPage'); 
+                            // Manually ensure the signup tab is active if navigating to login
                             document.querySelector('.auth-tabs [data-tab="signup"]')?.click();
                         }; 
                     }
