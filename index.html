@@ -130,7 +130,6 @@
             /* Dynamically set background/text/border via JS */
             cursor: pointer;
             transition: transform 0.3s, box-shadow 0.3s;
-            animation: float 10s infinite ease-in-out;
             opacity: 0.9;
             will-change: transform;
         }
@@ -238,6 +237,7 @@
 
     <header id="mainHeader" class="hidden">
         <nav>
+            <!-- UPDATED NAVIGATION TO USE HASH LINKS (which are intercepted by the router) -->
             <button class="nav-btn" data-page="profilePage">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5a5.5 5.5 0 0 1 3.096 10.047 9.005 9.005 0 0 1 5.9 8.181.75.75 0 0 1-1.498.07 7.502 7.502 0 0 0-15 0 .75.75 0 0 1-1.498-.07A9.005 9.005 0 0 1 9 12.55a5.5 5.5 0 0 1 3-10.05ZM12 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z"></path></svg>
                 <span>Profile</span>
@@ -327,7 +327,7 @@
             <div class="card hidden" id="create-hap-promo">
                 <h3 style="text-align: center;">Like this status page?</h3>
                 <p style="text-align: center;">Create your own real-time availability profile in seconds!</p>
-                <button class="btn" onclick="showPage('loginPage');" style="margin-top: 15px;">Get Started Now</button>
+                <button class="btn" onclick="navigateTo('loginPage');" style="margin-top: 15px;">Get Started Now</button>
             </div>
         </div>
         
@@ -766,7 +766,7 @@
             if (document.hidden) {
                 // Remove presence if tab is backgrounded
                 updateConnectPresence(false);
-            } else if (App.elements.hapConnectPage.style.display === 'block') {
+            } else if (window.location.hash.substring(1) === 'hapConnectPage') {
                 // Restore presence if tab becomes active on HAP Connect page
                 updateConnectPresence(true);
                 if (!presenceUpdateInterval) {
@@ -847,7 +847,7 @@
 
                 orb.style.left = posX;
                 orb.style.top = posY;
-                orb.style.animationDelay = `-${Math.random() * 5}s`; // Stagger animation start
+                // Removed animationDelay to stop floating animation
 
                 orb.innerHTML = `
                     <div class="orb-emoji">${user.status || '❓'}</div>
@@ -918,30 +918,89 @@
         }
 
 
-        // --- Navigation & Page Handling ---
-        function showPage(pageId) {
+        // --- URL HASH ROUTER CORE LOGIC ---
+        
+        // 1. Function to drive navigation by setting the hash
+        function navigateTo(pageId) {
+            window.location.hash = pageId;
+        }
+
+        // 2. Main Router function to handle hash changes and display content
+        function hashChangeRouter() {
+            // Determine the target page from the hash, or use default
+            const hash = window.location.hash.substring(1);
+            let targetPageId = App.pages.includes(hash) ? hash : null;
+
+            // Handle default or unknown page based on login status
+            if (!targetPageId) {
+                targetPageId = App.currentUser ? 'profilePage' : 'loginPage';
+            }
+            
+            // Handle URL links containing ?user=ID (Public View)
+            const params = new URLSearchParams(window.location.search);
+            const userIdFromUrl = params.get('user');
+
+            if (userIdFromUrl) {
+                // If viewing a public profile via query parameter, force profile page view
+                isPublicView = true;
+                if (App.elements.mainHeader) App.elements.mainHeader.classList.add('hidden');
+                
+                // Fetch and render the public profile and STOP.
+                displayPublicProfile(userIdFromUrl);
+                
+                const shareCard = document.getElementById('share-status-btn')?.closest('.card');
+                const searchCard = document.getElementById('show-hap-connect-btn')?.closest('.card');
+                if (shareCard) shareCard.classList.add('hidden');
+                if (searchCard) searchCard.classList.add('hidden');
+                
+                document.getElementById('profilePage').style.display = 'block';
+                return; // Stop routing if in public view mode
+            }
+            
+            // --- Standard Internal Routing ---
+            isPublicView = false;
+            
+            // Show/Hide page containers
             App.pages.forEach(pId => {
                 if (App.elements[pId]) App.elements[pId].style.display = 'none';
             });
-            if (App.elements[pageId]) App.elements[pageId].style.display = 'block';
+            if (App.elements[targetPageId]) App.elements[targetPageId].style.display = 'block';
 
+            // Update navigation bar active state
             document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.page === pageId);
+                btn.classList.toggle('active', btn.dataset.page === targetPageId);
             });
-            
-            // Handle HAP Connect lifecycle
-            if (pageId === 'hapConnectPage') {
+
+            // Handle lifecycle events
+            if (targetPageId === 'hapConnectPage') {
                 if (App.currentUser) setupHAPConnect();
             } else {
                 teardownHAPConnect();
             }
 
-            if (pageId === 'friendsPage') {
+            if (targetPageId === 'friendsPage') {
                 if (App.currentUser) fetchAndRenderFriends();
             }
+
             window.scrollTo(0, 0);
+
+            // Ensure header visibility matches login status
+            if (App.currentUser && App.elements.mainHeader) {
+                App.elements.mainHeader.classList.remove('hidden');
+                
+                const shareCard = document.getElementById('share-status-btn')?.closest('.card');
+                const searchCard = document.getElementById('show-hap-connect-btn')?.closest('.card');
+                if (shareCard) shareCard.classList.remove('hidden');
+                if (searchCard) searchCard.classList.remove('hidden');
+
+            } else if (App.elements.mainHeader) {
+                App.elements.mainHeader.classList.add('hidden');
+            }
         }
         
+        // --- End Router Logic ---
+
+
         function applyVisuals(data) {
             const theme = data.theme || 'light';
             document.body.className = theme === 'dark' ? 'dark' : '';
@@ -986,44 +1045,24 @@
             const localTheme = localStorage.getItem('hapTheme');
             if (localTheme) document.body.className = localTheme === 'dark' ? 'dark' : '';
             
-            const params = new URLSearchParams(window.location.search);
-            const userIdFromUrl = params.get('user');
-
-            const shareBtn = document.getElementById('share-status-btn');
-            const searchBtn = document.getElementById('show-hap-connect-btn'); 
-
-            const shareCard = shareBtn ? shareBtn.closest('.card') : null;
-            const searchCard = searchBtn ? searchBtn.closest('.card') : null;
-            const promoCard = document.getElementById('create-hap-promo');
-
-
-            if (userIdFromUrl) {
-                isPublicView = true;
-                if (App.elements.mainHeader) App.elements.mainHeader.classList.add('hidden');
-                
-                if (shareCard) shareCard.classList.add('hidden');
-                if (searchCard) searchCard.classList.add('hidden');
-                
-                showPage('profilePage');
-                displayPublicProfile(userIdFromUrl);
-
-                if (!localStorage.getItem('hapUser') && promoCard) promoCard.classList.remove('hidden');
-
+            // 1. Check for logged-in user
+            const user = JSON.parse(localStorage.getItem('hapUser'));
+            if (user) {
+                App.currentUser = user;
+                setupUserSession();
             } else {
-                const user = JSON.parse(localStorage.getItem('hapUser'));
-                if (user) {
-                    App.currentUser = user;
-                    if (App.elements.mainHeader) App.elements.mainHeader.classList.remove('hidden');
-                    
-                    if (shareCard) shareCard.classList.remove('hidden');
-                    if (searchCard) searchCard.classList.remove('hidden');
-                    
-                    setupUserSession();
-                } else {
-                    if (App.elements.mainHeader) App.elements.mainHeader.classList.add('hidden');
-                    showPage('loginPage');
+                // Not logged in, ensure login page hash is set
+                if (window.location.hash.substring(1) !== 'loginPage') {
+                    window.location.hash = 'loginPage';
                 }
             }
+            
+            // 2. Setup router listeners
+            window.addEventListener('hashchange', hashChangeRouter);
+            
+            // 3. Run router on load (will pick up the initial hash or default)
+            hashChangeRouter();
+            
             addEventListeners();
         }
 
@@ -1035,7 +1074,6 @@
             App.currentProfileData = data; 
 
             applyVisuals(data);
-            showPage('profilePage');
             renderProfile(data);
             populateSettings(data);
             
@@ -1067,6 +1105,11 @@
             const offset = data.timeZoneOffset || (new Date().getTimezoneOffset() * -1);
             const localTimeData = getLocalTimeAndZone(offset);
             const privacyLevel = data.privacy?.timezone;
+            
+            let isFriend = false;
+            if (App.currentUser && data.userId) {
+                // Simplified friend check for display purposes (does not handle remote loading of friend data easily here, relying on later API call/context)
+            }
             const isTimeVisible = isPublicView ? (privacyLevel === 'public' || (privacyLevel === 'friends' && isFriend)) : true;
             
             const timeInfoEl = document.getElementById('local-time-info');
@@ -1237,7 +1280,7 @@
             renderActionLinks(profileData);
             
             // Re-render HAP Connect search results if we're on that page
-            if (App.elements.hapConnectPage.style.display === 'block') {
+            if (window.location.hash.substring(1) === 'hapConnectPage') {
                 handleSearchUsers();
             }
         }
@@ -1510,7 +1553,7 @@
                         message: activeSchedule.message,
                         endTime: endTime.toISOString(), 
                         autoResetStatus: true, 
-                        updatedAt: now.toISOString()
+                        updatedAt: new Date().toISOString()
                     };
                     
                     await fetch(`${DATABASE_URL}/users/${App.currentUser.userId}.json`, { 
@@ -1651,7 +1694,7 @@
                                 const incomingRequestStatus = await incomingRequestRes.json();
 
                                 if (incomingRequestStatus === 'pending') {
-                                    actionButton = `<a href="#friendsPage" onclick="showPage('friendsPage')" class="btn" style="width: auto; padding: 8px 12px; background: #fbbf24;">Respond!</a>`;
+                                    actionButton = `<a href="#friendsPage" onclick="navigateTo('friendsPage')" class="btn" style="width: auto; padding: 8px 12px; background: #fbbf24;">Respond!</a>`;
                                 } else {
                                     // Not friends, not pending either way
                                     actionButton = `
@@ -1759,7 +1802,7 @@
             App.currentUser = { email, displayName, userId };
             localStorage.setItem('hapUser', JSON.stringify(App.currentUser));
             if (App.elements.mainHeader) App.elements.mainHeader.classList.remove('hidden');
-            setupUserSession();
+            navigateTo('profilePage');
         }
 
         async function handleLogin(e) {
@@ -1782,6 +1825,7 @@
                 localStorage.setItem('hapUser', JSON.stringify(App.currentUser));
                 if (App.elements.mainHeader) App.elements.mainHeader.classList.remove('hidden');
                 setupUserSession();
+                navigateTo('profilePage');
             } else {
                 errorMessage.textContent = 'Invalid email or password.';
             }
@@ -1790,7 +1834,8 @@
         function handleLogout() {
             teardownHAPConnect(); // Ensure presence is removed on logout
             localStorage.removeItem('hapUser');
-            window.location.href = window.location.origin + window.location.pathname;
+            // Force reload to clear session state and trigger login view
+            window.location.href = window.location.origin + window.location.pathname; 
         }
 
         // --- Settings & Save ---
@@ -1896,7 +1941,7 @@
             App.currentProfileData = dataToSave; 
             applyVisuals(dataToSave);
             showToast('Settings Saved & Status Updated!');
-            showPage('profilePage');
+            navigateTo('profilePage');
             renderProfile(dataToSave);
         }
 
@@ -2006,10 +2051,10 @@
                 }
             });
             
-            // Navigation buttons
+            // Navigation buttons (Now use navigateTo for hash routing)
             App.elements.mainHeader?.addEventListener('click', e => {
                 const navBtn = e.target.closest('.nav-btn');
-                if (navBtn) showPage(navBtn.dataset.page);
+                if (navBtn) navigateTo(navBtn.dataset.page);
             });
             
             // Status time input toggle
@@ -2023,7 +2068,7 @@
             // Settings & Profile Actions
             document.getElementById('save-settings-btn')?.addEventListener('click', handleSaveSettings);
             document.getElementById('share-status-btn')?.addEventListener('click', handleShareStatus);
-            document.getElementById('show-hap-connect-btn')?.addEventListener('click', () => showPage('hapConnectPage')); // Connect button listener
+            document.getElementById('show-hap-connect-btn')?.addEventListener('click', () => navigateTo('hapConnectPage')); // Connect button listener
             
             // HAP Connect/Search
             document.getElementById('run-search-btn')?.addEventListener('click', handleSearchUsers);
