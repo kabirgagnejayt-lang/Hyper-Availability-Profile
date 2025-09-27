@@ -14,6 +14,9 @@
             --bg: #f8fafc; --card: #ffffff; --text: #0f172a; --muted: #64748b;
             --border-color: #e2e8f0; --input-bg: #f1f5f9;
             --radius: 12px; --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            /* Dynamic PFP Colors (Default to Day/Light) */
+            --pfp-bg-day: var(--primary-light);
+            --pfp-border-day: var(--primary);
         }
 
         body.dark {
@@ -91,8 +94,10 @@
         .profile-header { text-align: center; margin-bottom: 30px; }
         #profile-pfp {
             width: 96px; height: 96px; border-radius: 50%; margin: 0 auto 16px auto;
-            background-color: var(--primary-light); background-size: cover; background-position: center;
-            border: 3px solid var(--primary);
+            /* Use CSS variables for dynamic color based on time */
+            background-color: var(--pfp-bg-day); 
+            background-size: cover; background-position: center;
+            border: 3px solid var(--pfp-border-day);
             transition: all 0.3s;
         }
         .profile-emoji { font-size: 4rem; line-height: 1; margin: 16px 0; }
@@ -122,8 +127,7 @@
             justify-content: center;
             text-align: center;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            background: var(--card);
-            border: 2px solid var(--primary);
+            /* Dynamically set background/text/border via JS */
             cursor: pointer;
             transition: transform 0.3s, box-shadow 0.3s;
             animation: float 10s infinite ease-in-out;
@@ -139,8 +143,8 @@
         }
 
         .orb-emoji { font-size: 1.5rem; line-height: 1; }
-        .orb-name { font-size: 0.8rem; font-weight: 600; color: var(--text); margin-top: 4px; }
-        .orb-status { font-size: 0.7rem; color: var(--muted); }
+        .orb-name { font-size: 0.8rem; font-weight: 600; margin-top: 4px; }
+        .orb-status { font-size: 0.7rem; }
 
         @keyframes float {
             0% { transform: translateY(0); }
@@ -191,6 +195,11 @@
         
         /* Friends Page */
         .request-item { background: var(--primary-light); padding: 15px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        /* Style for the search result in HAP Connect */
+        .search-result-item {
+            display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid var(--border-color);
+        }
+        .search-result-item:last-child { border-bottom: none; }
 
         /* Timetable */
         .timetable-entry-card { background: var(--input-bg); border-radius: 8px; padding: 12px; margin-bottom: 8px; }
@@ -282,6 +291,8 @@
                 <h1 class="profile-name" id="profile-name">Loading...</h1>
                 <p class="profile-message" id="profile-message">Fetching status...</p>
                 <div class="profile-timer" id="profile-timer"></div>
+                <!-- ADDED LOCAL TIME DISPLAY -->
+                <p class="local-time-display" id="local-time-info" style="font-size: 1rem; margin-top: 10px; font-weight: 500;"></p>
             </div>
             
             <div class="card">
@@ -292,7 +303,7 @@
             </div>
 
             <div class="card">
-                <!-- NEW BUTTON TO GO TO HAP CONNECT -->
+                <!-- NOW FUNCTIONS AS THE MAIN CONNECT/SEARCH BUTTON -->
                 <button id="show-hap-connect-btn" class="btn secondary">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path fill-rule="evenodd" d="M10.5 3.75a6.75 6.75 0 1 0 0 13.5 6.75 6.75 0 0 0 0-13.5ZM2.25 10.5a8.25 8.25 0 1 1 14.59 5.28l4.69 4.69a.75.75 0 1 1-1.06 1.06l-4.69-4.69A8.25 8.25 0 0 1 2.25 10.5Z" clip-rule="evenodd"></path></svg>
                     <span>Go to HAP Connect</span>
@@ -335,8 +346,9 @@
             </div>
 
             <div class="card">
-                <h2>Search Users</h2>
+                <h2>Search Users & Send Request</h2>
                 <div class="form-group">
+                    <!-- Updated search input to focus on emails, since that's how requests are sent -->
                     <input type="text" id="user-search-input" placeholder="Enter display name or email to search" autofocus>
                 </div>
                 <button id="run-search-btn" class="btn" style="margin-bottom: 20px;">
@@ -353,16 +365,6 @@
         </div>
         
         <div id="friendsPage" class="page">
-            <div class="card">
-                <h2>Add Friends by Email</h2>
-                <div class="form-group">
-                    <input type="email" id="friend-email-input" placeholder="Friend's Email Address">
-                </div>
-                <button id="send-friend-request-btn" class="btn">
-                    Send Friend Request
-                </button>
-                <p id="friend-request-message" style="min-height: 24px; margin-top: 15px;"></p>
-            </div>
             
             <div class="card">
                 <h2>Pending Requests</h2>
@@ -438,6 +440,7 @@
                     <select id="privacy-email">
                         <option value="public">Public</option>
                         <option value="friends">Friends Only</option>
+                        <option value="private">Private</option>
                     </select>
                 </div>
                 <div class="privacy-group">
@@ -445,6 +448,7 @@
                     <select id="privacy-bio">
                         <option value="public">Public</option>
                         <option value="friends">Friends Only</option>
+                        <option value="private">Private</option>
                     </select>
                 </div>
                 <div class="privacy-group">
@@ -458,6 +462,7 @@
                 <div class="privacy-group">
                     <label for="privacy-gender">Gender Visibility</label>
                     <select id="privacy-gender">
+                        <option value="public">Public</option>
                         <option value="friends">Friends Only</option>
                         <option value="private">Private</option>
                     </select>
@@ -467,11 +472,21 @@
                     <select id="privacy-hobbies">
                         <option value="public">Public</option>
                         <option value="friends">Friends Only</option>
+                        <option value="private">Private</option>
                     </select>
                 </div>
                 <div class="privacy-group">
                     <label for="privacy-phone">Phone Visibility</label>
                     <select id="privacy-phone">
+                        <option value="public">Public</option>
+                        <option value="friends">Friends Only</option>
+                        <option value="private">Private</option>
+                    </select>
+                </div>
+                <div class="privacy-group">
+                    <label for="privacy-country">Country Visibility</label>
+                    <select id="privacy-country">
+                        <option value="public">Public</option>
                         <option value="friends">Friends Only</option>
                         <option value="private">Private</option>
                     </select>
@@ -481,6 +496,15 @@
                     <select id="privacy-school">
                         <option value="public">Public</option>
                         <option value="friends">Friends Only</option>
+                        <option value="private">Private</option>
+                    </select>
+                </div>
+                <div class="privacy-group">
+                    <label for="privacy-timezone">Timezone/Local Time Visibility</label>
+                    <select id="privacy-timezone">
+                        <option value="public">Public</option>
+                        <option value="friends">Friends Only</option>
+                        <option value="private">Private</option>
                     </select>
                 </div>
             </div>
@@ -659,6 +683,43 @@
             return age >= 0 ? age : null;
         }
 
+        // --- Timezone and Day/Night Utilities ---
+
+        // Night is defined as 8 PM (20) until 6 AM (6)
+        function isNightTime(localHour) {
+            return localHour >= 20 || localHour < 6;
+        }
+        
+        // Function to get the current local hour based on saved UTC offset
+        function getLocalHourFromOffset(offsetMinutes) {
+            const now = new Date();
+            // Current UTC time in milliseconds (browser offset is negative of UTC offset)
+            const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
+            // Target local time in milliseconds
+            const targetTime = utcTime + (offsetMinutes * 60000);
+            const targetDate = new Date(targetTime);
+            return targetDate.getHours();
+        }
+
+        // Function to format the current time and timezone string
+        function getLocalTimeAndZone(offsetMinutes) {
+            const now = new Date();
+            const localTime = new Date(now.getTime() + (now.getTimezoneOffset() * 60000) + (offsetMinutes * 60000));
+            
+            const timeOptions = { hour: '2-digit', minute: '2-digit', hour12: true };
+            const timeStr = localTime.toLocaleTimeString('en-US', timeOptions);
+            
+            // Format UTC offset string (e.g., UTC+05:30 or UTC-07:00)
+            const sign = offsetMinutes >= 0 ? '+' : '-';
+            const absOffset = Math.abs(offsetMinutes);
+            const hours = String(Math.floor(absOffset / 60)).padStart(2, '0');
+            const minutes = String(absOffset % 60).padStart(2, '0');
+            const offsetStr = `UTC${sign}${hours}:${minutes}`;
+
+            return { time: timeStr, offset: offsetStr, hour: localTime.getHours() };
+        }
+        // --- End Timezone Utilities ---
+
         // --- Presence Tracking & HAP Connect Core Logic ---
         function updateConnectPresence(status) {
             if (!App.currentUser) return;
@@ -759,15 +820,27 @@
                 const orb = document.createElement('div');
                 orb.className = 'connect-orb';
                 orb.dataset.userId = userId;
-                orb.style.backgroundColor = user.profileAccentColor || '#0ea5e9';
+                
+                // --- Dynamic Orb Styling ---
+                const userOffset = user.timeZoneOffset || 0;
+                const userLocalHour = getLocalHourFromOffset(userOffset);
+                const isNight = isNightTime(userLocalHour);
+                
+                let orbBg = isNight ? '#0f172a' : '#ffffff'; 
+                let orbText = isNight ? '#e2e8f0' : '#0f172a'; 
+                let orbMuted = isNight ? '#94a3b8' : '#64748b'; 
+                let orbBorder = user.profileAccentColor || '#0ea5e9';
+
+                orb.style.backgroundColor = orbBg;
+                orb.style.color = orbText; 
+                orb.style.border = `2px solid ${orbBorder}`; 
+                // ---------------------------
 
                 let posX, posY;
                 if (currentPositions[userId]) {
-                    // Use existing position if available
                     posX = currentPositions[userId].left;
                     posY = currentPositions[userId].top;
                 } else {
-                    // Random positioning for the animation area (300px height)
                     posX = `${Math.random() * (visualizer.offsetWidth - 120) + 10}px`;
                     posY = `${Math.random() * (visualizer.offsetHeight - 120) + 10}px`;
                 }
@@ -779,7 +852,7 @@
                 orb.innerHTML = `
                     <div class="orb-emoji">${user.status || '❓'}</div>
                     <div class="orb-name">${user.displayName || 'Unknown User'}</div>
-                    <div class="orb-status">${user.message ? user.message.substring(0, 15) + '...' : ''}</div>
+                    <div class="orb-status" style="color: ${orbMuted};">${getLocalTimeAndZone(userOffset).time}</div>
                 `;
 
                 // Add click listener to view the public profile
@@ -877,9 +950,28 @@
             const accent = data.profileAccentColor || '#0ea5e9';
             document.documentElement.style.setProperty('--primary', accent);
             document.documentElement.style.setProperty('--primary-dark', theme === 'dark' ? '#7dd3fc' : accent);
+            
+            // Dynamic PFP styling based on local time
+            const offset = data.timeZoneOffset || (new Date().getTimezoneOffset() * -1);
+            const hour = getLocalHourFromOffset(offset);
+            const isNight = isNightTime(hour);
 
             const pfpElement = document.getElementById('profile-pfp');
-            if (pfpElement) pfpElement.style.backgroundImage = data.pfpUrl ? `url(${data.pfpUrl})` : 'none';
+            if (pfpElement) {
+                if (data.pfpUrl) {
+                    pfpElement.style.backgroundImage = `url(${data.pfpUrl})`;
+                } else {
+                    pfpElement.style.backgroundImage = 'none';
+                }
+                // Apply dynamic background/border
+                if (isNight) {
+                    pfpElement.style.backgroundColor = '#1e293b'; 
+                    pfpElement.style.border = `3px solid ${data.profileAccentColor || '#7dd3fc'}`; 
+                } else {
+                    pfpElement.style.backgroundColor = 'var(--primary-light)'; 
+                    pfpElement.style.border = `3px solid ${data.profileAccentColor || 'var(--primary)'}`; 
+                }
+            }
             
             localStorage.setItem('hapTheme', theme);
         }
@@ -898,7 +990,6 @@
             const userIdFromUrl = params.get('user');
 
             const shareBtn = document.getElementById('share-status-btn');
-            // Renamed and moved the search button functionality to a cleaner ID: show-hap-connect-btn
             const searchBtn = document.getElementById('show-hap-connect-btn'); 
 
             const shareCard = shareBtn ? shareBtn.closest('.card') : null;
@@ -971,6 +1062,26 @@
             renderActionLinks(data);
             
             renderPersonalDetails(data);
+            
+            // Display local time and timezone offset, respecting privacy
+            const offset = data.timeZoneOffset || (new Date().getTimezoneOffset() * -1);
+            const localTimeData = getLocalTimeAndZone(offset);
+            const privacyLevel = data.privacy?.timezone;
+            const isTimeVisible = isPublicView ? (privacyLevel === 'public' || (privacyLevel === 'friends' && isFriend)) : true;
+            
+            const timeInfoEl = document.getElementById('local-time-info');
+            if (timeInfoEl) {
+                 if (isTimeVisible) {
+                    timeInfoEl.textContent = `${localTimeData.offset} (${localTimeData.time})`;
+                    timeInfoEl.style.opacity = 1;
+                    timeInfoEl.title = '';
+                } else {
+                    timeInfoEl.textContent = 'Timezone: 🔒 Restricted';
+                    timeInfoEl.style.opacity = 0.6;
+                    timeInfoEl.title = 'Timezone information is restricted.';
+                }
+            }
+
 
             if (!isPublicView && document.getElementById('create-hap-promo')) {
                 document.getElementById('create-hap-promo').classList.add('hidden');
@@ -1001,15 +1112,13 @@
 
                 if (privacyLevel === 'friends' && isFriend && value) return `<div class="personal-detail-item"><strong>${label}:</strong> ${value}</div>`;
                 
-                if (value) return `<div class="personal-detail-item" style="opacity: 0.6;"><strong>${label}:</strong> ${fallback}</div>`;
-                
-                return '';
+                return `<div class="personal-detail-item" style="opacity: 0.6;"><strong>${label}:</strong> ${fallback}</div>`;
             };
             
             let html = '';
             
             const emailValue = profileData.email || 'N/A';
-            const emailVisible = isOwner || (profileData.privacy?.email === 'public' || isFriend);
+            const emailVisible = isOwner || (profileData.privacy?.email === 'public' || profileData.privacy?.email === 'friends' && isFriend);
             
             if (emailVisible && emailValue !== 'N/A') {
                 html += `<div class="personal-detail-item"><strong>Email:</strong> ${emailValue}</div>`;
@@ -1039,10 +1148,10 @@
             const genderDisplay = profileData.gender ? profileData.gender.charAt(0).toUpperCase() + profileData.gender.slice(1) : 'N/A';
             html += getDetailHTML('Gender', genderDisplay, 'gender', '🔒 Private');
             
-            html += getDetailHTML('Hobbies', profileData.hobbies, 'hobbies');
+            html += getDetailHTML('Hobbies', profileData.hobbies, 'hobbies', '🔒 Restricted');
             html += getDetailHTML('Phone', profileData.phone, 'phone', '🔒 Private');
-            html += getDetailHTML('Country', profileData.country, 'country');
-            html += getDetailHTML('School/Affiliation', profileData.school, 'school');
+            html += getDetailHTML('Country', profileData.country, 'country', '🔒 Restricted');
+            html += getDetailHTML('School/Affiliation', profileData.school, 'school', '🔒 Restricted');
             
             container.innerHTML = html || '<p class="muted">No public or shared contact details.</p>';
         }
@@ -1083,6 +1192,7 @@
                         </button>`;
                 }
                 container.innerHTML += friendBtnHTML;
+                // Note: handleSendFriendRequestDirectly defined below, but added listener here for non-owner viewing
                 document.getElementById('public-friend-request-btn')?.addEventListener('click', () => handleSendFriendRequestDirectly(profileOwnerId, container));
             }
 
@@ -1106,6 +1216,17 @@
             if (!loginData) {
                 showToast('Error: Target user not found.'); return;
             }
+            
+            const currentStatusRes = await fetch(`${DATABASE_URL}/friends/${friendId}/${userId}.json`);
+            const currentStatus = await currentStatusRes.json();
+
+            if (currentStatus === 'accepted') {
+                showToast(`${loginData.displayName} is already your friend.`); return;
+            }
+            if (currentStatus === 'pending') {
+                showToast(`A request is already pending for ${loginData.displayName}.`); return;
+            }
+
 
             await fetch(`${DATABASE_URL}/friends/${friendId}/${userId}.json`, { method: 'PUT', body: JSON.stringify('pending') });
             showToast(`Request sent to ${loginData.displayName}.`);
@@ -1114,6 +1235,11 @@
             const profileData = await profileRes.json();
             profileData.userId = friendId; 
             renderActionLinks(profileData);
+            
+            // Re-render HAP Connect search results if we're on that page
+            if (App.elements.hapConnectPage.style.display === 'block') {
+                handleSearchUsers();
+            }
         }
 
 
@@ -1132,6 +1258,7 @@
             document.getElementById('country').value = data.country || '';
             document.getElementById('school').value = data.school || '';
             
+            // Privacy Controls
             document.getElementById('privacy-bio').value = data.privacy?.bio || 'public';
             document.getElementById('privacy-age').value = data.privacy?.age || 'public';
             document.getElementById('privacy-gender').value = data.privacy?.gender || 'friends';
@@ -1140,6 +1267,11 @@
             document.getElementById('privacy-email').value = data.privacy?.email || 'public';
             document.getElementById('privacy-phone').value = data.privacy?.phone || 'friends';
             document.getElementById('privacy-school').value = data.privacy?.school || 'public';
+            
+            // NEW PRIVACY FIELDS
+            document.getElementById('privacy-country').value = data.privacy?.country || 'public';
+            document.getElementById('privacy-timezone').value = data.privacy?.timezone || 'public';
+
 
             document.getElementById('accent-color').value = data.profileAccentColor || '#0ea5e9';
             document.getElementById('scheduling-link').value = data.schedulingLink || '';
@@ -1465,44 +1597,6 @@
             fetchAndRenderFriends();
         }
 
-        async function handleSendFriendRequest() {
-            const email = document.getElementById('friend-email-input')?.value.trim();
-            const messageEl = document.getElementById('friend-request-message');
-            if (!messageEl) return;
-            messageEl.textContent = '';
-
-            if (!email) {
-                messageEl.textContent = 'Please enter an email address.'; return;
-            }
-            
-            const friendId = emailToId(email);
-            const userId = App.currentUser.userId;
-
-            if (friendId === userId) {
-                messageEl.textContent = 'You cannot friend yourself.'; return;
-            }
-
-            const loginRes = await fetch(`${DATABASE_URL}/logins/${friendId}.json`);
-            const loginData = await loginRes.json();
-            
-            if (!loginData) {
-                messageEl.textContent = 'User not found.'; return;
-            }
-            
-            const currentStatusRes = await fetch(`${DATABASE_URL}/friends/${userId}/${friendId}.json`);
-            const currentStatus = await currentStatusRes.json();
-            
-            if (currentStatus === 'accepted') {
-                messageEl.textContent = `${loginData.displayName} is already your friend.`; return;
-            }
-            if (currentStatus === 'pending') {
-                messageEl.textContent = `A request from ${loginData.displayName} is pending your acceptance.`; return;
-            }
-
-            await fetch(`${DATABASE_URL}/friends/${friendId}/${userId}.json`, { method: 'PUT', body: JSON.stringify('pending') });
-            messageEl.textContent = `Request sent to ${loginData.displayName}.`;
-        }
-
 
         // --- Search (Integrated into HAP Connect page) ---
         async function handleSearchUsers() {
@@ -1516,44 +1610,79 @@
                 resultsList.innerHTML = '<p class="muted">Enter at least 2 characters to search.</p>';
                 return;
             }
+            
+            // Check if current user is logged in
+            if (!App.currentUser) {
+                resultsList.innerHTML = '<p class="muted">Please log in to search for users.</p>';
+                return;
+            }
+            const currentUserId = App.currentUser.userId;
 
             try {
                 const response = await fetch(`${DATABASE_URL}/users.json`);
                 const allUsersData = await response.json(); 
+                const friendsRes = await fetch(`${DATABASE_URL}/friends/${currentUserId}.json`);
+                const friendsData = await friendsRes.json() || {};
                 
                 let foundResults = 0;
                 let resultsHTML = '';
                 
                 if (allUsersData) {
                     for (const userId in allUsersData) {
+                        if (userId === currentUserId) continue; // Don't show current user
+                        
                         const user = allUsersData[userId];
                         const displayName = (user.displayName || '').toLowerCase();
                         
                         if (displayName.includes(searchTerm)) {
                             foundResults++;
                             const publicUrl = `${window.location.origin}${window.location.pathname}?user=${userId}`;
+                            
+                            const friendStatus = friendsData[userId];
+                            let actionButton = '';
+                            
+                            if (friendStatus === 'accepted') {
+                                actionButton = `<button class="btn secondary" style="width: auto; padding: 8px 12px; opacity: 0.8; cursor: default;" disabled>Friends ✅</button>`;
+                            } else if (friendStatus === 'pending') {
+                                actionButton = `<button class="btn secondary" style="width: auto; padding: 8px 12px; background: #f59e0b;" disabled>Pending ⏳</button>`;
+                            } else if (friendsData[userId] === undefined) {
+                                // Check if the OTHER user sent a request to ME (if the key exists on my side as 'pending', it's an incoming request)
+                                const incomingRequestRes = await fetch(`${DATABASE_URL}/friends/${currentUserId}/${userId}.json`);
+                                const incomingRequestStatus = await incomingRequestRes.json();
 
+                                if (incomingRequestStatus === 'pending') {
+                                    actionButton = `<a href="#friendsPage" onclick="showPage('friendsPage')" class="btn" style="width: auto; padding: 8px 12px; background: #fbbf24;">Respond!</a>`;
+                                } else {
+                                    // Not friends, not pending either way
+                                    actionButton = `
+                                        <button class="btn" style="width: auto; padding: 8px 12px;" onclick="handleSendFriendRequestDirectly('${userId}', this.closest('.card'))">
+                                            Connect 🤝
+                                        </button>`;
+                                }
+                            }
+                            
                             resultsHTML += `
-                                <div class="card" style="padding: 15px; margin-bottom: 10px;">
-                                    <a href="${publicUrl}" style="text-decoration: none; color: var(--text); display: flex; align-items: center; justify-content: space-between;">
+                                <div class="search-result-item">
+                                    <a href="${publicUrl}" style="text-decoration: none; color: var(--text); display: flex; align-items: center; justify-content: space-between; flex-grow: 1;">
                                         <div>
                                             <div style="font-size: 1.2rem; font-weight: 600;">${user.status || '❓'} ${user.displayName || 'Unnamed User'}</div>
                                             <p style="font-size: 0.9rem; margin-top: 4px;">${user.message || 'No message set.'}</p>
-                                    </div>
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path fill-rule="evenodd" d="M16.28 11.47a.75.75 0 0 1 0 1.06l-7.5 7.5a.75.75 0 0 1-1.06-1.06L14.69 12 7.72 5.03a.75.75 0 0 1 1.06-1.06l7.5 7.5Z" clip-rule="evenodd"></path></svg>
-                                </a>
-                            </div>`;
+                                        </div>
+                                    </a>
+                                    <div style="margin-left: 15px;">${actionButton}</div>
+                                </div>`;
                         }
                     }
                 }
                 
                 if (foundResults > 0) {
-                    resultsList.innerHTML = `<strong>${foundResults} user(s) found:</strong><div style="margin-top: 15px;">${resultsHTML}</div>`;
+                    resultsList.innerHTML = `<div style="margin-top: 15px;">${resultsHTML}</div>`;
                 } else {
                     resultsList.innerHTML = '<p class="muted">No users found matching your search term.</p>';
                 }
 
             } catch (error) {
+                console.error("Search error:", error);
                 resultsList.innerHTML = '<p class="muted" style="color: #ef4444;">Error fetching user data for search.</p>';
             }
         }
@@ -1601,6 +1730,7 @@
                 birthday: '',
                 gender: '',
                 hobbies: '',
+                timeZoneOffset: new Date().getTimezoneOffset() * -1, // Capture initial client UTC offset
                 privacy: { 
                     email: 'public', 
                     phone: 'friends', 
@@ -1608,7 +1738,9 @@
                     bio: 'public',
                     age: 'public',
                     gender: 'friends',
-                    hobbies: 'public'
+                    hobbies: 'public',
+                    country: 'public',
+                    timezone: 'public'
                 },
                 updatedAt: new Date().toISOString()
             };
@@ -1695,6 +1827,7 @@
             
             const currentPfpUrl = App.currentProfileData ? App.currentProfileData.pfpUrl : null;
             const currentTimetable = App.currentProfileData ? App.currentProfileData.timetable : [];
+            const clientUtcOffsetMinutes = new Date().getTimezoneOffset() * -1; 
 
             const dataToSave = {
                 displayName: document.getElementById('display-name')?.value.trim(),
@@ -1716,6 +1849,7 @@
                 phone: document.getElementById('phone-number')?.value.trim(),
                 country: document.getElementById('country')?.value.trim(),
                 school: document.getElementById('school')?.value.trim(),
+                timeZoneOffset: clientUtcOffsetMinutes, // Saving the offset
                 privacy: {
                     email: document.getElementById('privacy-email')?.value,
                     phone: document.getElementById('privacy-phone')?.value,
@@ -1723,7 +1857,9 @@
                     bio: document.getElementById('privacy-bio')?.value,
                     age: document.getElementById('privacy-age')?.value,
                     gender: document.getElementById('privacy-gender')?.value,
-                    hobbies: document.getElementById('privacy-hobbies')?.value
+                    hobbies: document.getElementById('privacy-hobbies')?.value,
+                    country: document.getElementById('privacy-country')?.value,
+                    timezone: document.getElementById('privacy-timezone')?.value
                 }
             };
             
@@ -1887,7 +2023,7 @@
             // Settings & Profile Actions
             document.getElementById('save-settings-btn')?.addEventListener('click', handleSaveSettings);
             document.getElementById('share-status-btn')?.addEventListener('click', handleShareStatus);
-            document.getElementById('show-hap-connect-btn')?.addEventListener('click', () => showPage('hapConnectPage')); // New Connect button listener
+            document.getElementById('show-hap-connect-btn')?.addEventListener('click', () => showPage('hapConnectPage')); // Connect button listener
             
             // HAP Connect/Search
             document.getElementById('run-search-btn')?.addEventListener('click', handleSearchUsers);
@@ -1900,8 +2036,7 @@
 
             // Timetable & Friends
             document.getElementById('add-timetable-entry-btn')?.addEventListener('click', handleAddTimetableEntry);
-            document.getElementById('send-friend-request-btn')?.addEventListener('click', handleSendFriendRequest);
-
+            
 
             document.getElementById('pfp-upload')?.addEventListener('change', (e) => {
                 const file = e.target.files[0];
