@@ -7,7 +7,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
     <style>
         :root {
             --primary: #0ea5e9; --primary-light: #f0f9ff; --primary-dark: #0369a1;
@@ -105,75 +104,6 @@
         .profile-message { font-size: 1.2rem; color: var(--muted); min-height: 28px; }
         .profile-timer { font-size: 2.5rem; color: var(--primary); font-weight: 700; margin-top: 24px; min-height: 40px; }
         
-        /* HAP Connect Visualization Styles */
-        #connect-visualizer {
-            background: var(--input-bg);
-            border-radius: var(--radius);
-            height: 300px; /* Fixed height for animation area */
-            margin-bottom: 20px;
-            position: relative;
-            overflow: hidden;
-            border: 1px solid var(--border-color);
-        }
-        
-        .connect-orb {
-            position: absolute;
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            /* Dynamically set background/text/border via JS */
-            cursor: pointer;
-            transition: transform 0.3s, box-shadow 0.3s;
-            opacity: 0.9;
-            will-change: transform;
-        }
-
-        .connect-orb:hover {
-            z-index: 10;
-            transform: scale(1.1) translate(-50%, -50%) !important;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
-            opacity: 1;
-        }
-
-        .orb-emoji { font-size: 1.5rem; line-height: 1; }
-        .orb-name { font-size: 0.8rem; font-weight: 600; margin-top: 4px; }
-        .orb-status { font-size: 0.7rem; }
-
-        @keyframes float {
-            0% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-            100% { transform: translateY(0); }
-        }
-
-        /* Confetti Animation (for friend acceptance) */
-        #confetti-overlay {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            z-index: 2000;
-            pointer-events: none;
-        }
-        .confetti-piece {
-            position: absolute;
-            width: 10px; height: 20px;
-            background: rgba(var(--confetti-color), 1);
-            opacity: 0;
-            transform-origin: 50% 50%;
-            animation: confetti-fall 2s ease-out forwards;
-        }
-
-        @keyframes confetti-fall {
-            0% { transform: translate(0, 0) rotate(0); opacity: 1; }
-            100% { transform: translate(var(--x-end), var(--y-end)) rotate(var(--r-end)); opacity: 0; }
-        }
-        /* End HAP Connect Styles */
-
-
         .profile-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 30px; }
         .custom-link {
             display: inline-flex; align-items: center; gap: 8px; background: var(--primary-light);
@@ -192,14 +122,6 @@
         .privacy-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; align-items: center; }
         @media (max-width: 500px) { .link-group, .privacy-group { grid-template-columns: 1fr; } }
         
-        /* Friends Page */
-        .request-item { background: var(--primary-light); padding: 15px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-        /* Style for the search result in HAP Connect */
-        .search-result-item {
-            display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid var(--border-color);
-        }
-        .search-result-item:last-child { border-bottom: none; }
-
         /* Timetable */
         .timetable-entry-card { background: var(--input-bg); border-radius: 8px; padding: 12px; margin-bottom: 8px; }
 
@@ -228,27 +150,17 @@
             background: #f87171; color: white; text-align: center; font-weight: bold;
             z-index: 5000; display: none; border-bottom: 2px solid #ef4444;
         }
+        /* Removed Confetti Styles */
     </style>
 </head>
 <body>
     
     <div id="global-error-display">A critical error occurred. Check the console for details.</div>
-    <div id="confetti-overlay"></div>
-
     <header id="mainHeader" class="hidden">
         <nav>
-            <!-- UPDATED NAVIGATION TO USE HASH LINKS (which are intercepted by the router) -->
             <button class="nav-btn" data-page="profilePage">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5a5.5 5.5 0 0 1 3.096 10.047 9.005 9.005 0 0 1 5.9 8.181.75.75 0 0 1-1.498.07 7.502 7.502 0 0 0-15 0 .75.75 0 0 1-1.498-.07A9.005 9.005 0 0 1 9 12.55a5.5 5.5 0 0 1 3-10.05ZM12 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z"></path></svg>
                 <span>Profile</span>
-            </button>
-            <button class="nav-btn" data-page="hapConnectPage">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M10.5 3.75a6.75 6.75 0 1 0 0 13.5 6.75 6.75 0 0 0 0-13.5ZM2.25 10.5a8.25 8.25 0 1 1 14.59 5.28l4.69 4.69a.75.75 0 1 1-1.06 1.06l-4.69-4.69A8.25 8.25 0 0 1 2.25 10.5Z" clip-rule="evenodd"></path></svg>
-                <span>Connect</span>
-            </button>
-            <button class="nav-btn" data-page="friendsPage">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M9 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM15.55 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0ZM18 17.5a.75.75 0 0 0 .75.75H21a.75.75 0 0 0 0-1.5h-2.25a.75.75 0 0 0-.75.75ZM18.75 9a.75.75 0 0 0-.75.75v1.5a.75.75 0 0 0 1.5 0V9.75a.75.75 0 0 0-.75-.75ZM16.035 7.15A5.5 5.5 0 0 0 12 5.5a5.5 5.5 0 0 0-4.035 1.65A7.004 7.004 0 0 0 1.5 12a.75.75 0 0 0 1.5 0 5.5 5.5 0 0 1 11 0 .75.75 0 0 0 1.5 0 7.004 7.004 0 0 0 2.535-4.85Z"></path></svg>
-                <span>Friends</span>
             </button>
             <button class="nav-btn" data-page="settingsPage">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M11.64 3.023a.75.75 0 0 1 .72 0l1.517.65a.75.75 0 0 0 .841-.252l1.11-1.48A.75.75 0 0 1 17 2.25a.75.75 0 0 1 .633.368l1.11 1.48a.75.75 0 0 0 .84.253l1.518-.65a.75.75 0 0 1 .72 0l1.016.436a.75.75 0 0 1 .45 1.033l-.74 1.385a.75.75 0 0 0 .14.925l1.28.96a.75.75 0 0 1 0 1.302l-1.28.96a.75.75 0 0 0-.14.925l.74 1.385a.75.75 0 0 1-.45 1.033l-1.017.436a.75.75 0 0 1-.72 0l-1.517-.65a.75.75 0 0 0-.84.252l-1.11 1.48A.75.75 0 0 1 17 21.75a.75.75 0 0 1-.633-.368l-1.11-1.48a.75.75 0 0 0-.84-.253l-1.518.65a.75.75 0 0 1-.72 0l-1.016-.436a.75.75 0 0 1-.45-1.033l.74-1.385a.75.75 0 0 0-.14-.925l-1.28-.96a.75.75 0 0 1 0-1.302l1.28-.96a.75.75 0 0 0 .14-.925l-.74-1.385a.75.75 0 0 1 .45-1.033l1.017-.436ZM12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"></path></svg>
@@ -291,7 +203,6 @@
                 <h1 class="profile-name" id="profile-name">Loading...</h1>
                 <p class="profile-message" id="profile-message">Fetching status...</p>
                 <div class="profile-timer" id="profile-timer"></div>
-                <!-- ADDED LOCAL TIME DISPLAY -->
                 <p class="local-time-display" id="local-time-info" style="font-size: 1rem; margin-top: 10px; font-weight: 500;"></p>
             </div>
             
@@ -302,16 +213,7 @@
                 </div>
             </div>
 
-            <div class="card">
-                <!-- NOW FUNCTIONS AS THE MAIN CONNECT/SEARCH BUTTON -->
-                <button id="show-hap-connect-btn" class="btn secondary">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path fill-rule="evenodd" d="M10.5 3.75a6.75 6.75 0 1 0 0 13.5 6.75 6.75 0 0 0 0-13.5ZM2.25 10.5a8.25 8.25 0 1 1 14.59 5.28l4.69 4.69a.75.75 0 1 1-1.06 1.06l-4.69-4.69A8.25 8.25 0 0 1 2.25 10.5Z" clip-rule="evenodd"></path></svg>
-                    <span>Go to HAP Connect</span>
-                </button>
-            </div>
-
             <div class="card action-links-container" id="profile-action-links">
-                <!-- This container is where the 'Send Friend Request' and 'Get Contact Card' buttons are dynamically injected -->
                 </div>
 
             <div class="card">
@@ -328,7 +230,6 @@
             <div class="card hidden" id="create-hap-promo">
                 <h3 style="text-align: center;">Like this status page?</h3>
                 <p style="text-align: center;">Create your own real-time availability profile in seconds!</p>
-                <!-- UPDATED BUTTONS FOR LOGGED IN/LOGGED OUT USERS -->
                 <div style="display: flex; gap: 10px; margin-top: 15px;">
                     <button class="btn secondary" id="promo-login-btn" style="flex: 1; display: none;" onclick="navigateTo('profilePage')">Go to Dashboard</button>
                     <button class="btn" id="promo-signup-btn" style="flex: 1;" onclick="navigateTo('loginPage')">Get Started Now</button>
@@ -336,56 +237,6 @@
             </div>
         </div>
         
-        <div id="hapConnectPage" class="page">
-            <div class="card">
-                <h2>HAP Connect Live ⚡</h2>
-                <p class="muted" style="margin-bottom: 15px;">
-                    See who's currently active on HAP. Click an orb to view their profile.
-                </p>
-                <div id="connect-visualizer">
-                    <!-- Orbs will be dynamically generated here -->
-                    <p class="muted" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
-                        Connecting to real-time status...
-                    </p>
-                </div>
-            </div>
-
-            <div class="card">
-                <h2>Search Users & Send Request</h2>
-                <div class="form-group">
-                    <!-- Updated search input to focus on emails, since that's how requests are sent -->
-                    <input type="text" id="user-search-input" placeholder="Enter display name or email to search" autofocus>
-                </div>
-                <button id="run-search-btn" class="btn" style="margin-bottom: 20px;">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path fill-rule="evenodd" d="M10.5 3.75a6.75 6.75 0 1 0 0 13.5 6.75 6.75 0 0 0 0-13.5ZM2.25 10.5a8.25 8.25 0 1 1 14.59 5.28l4.69 4.69a.75.75 0 1 1-1.06 1.06l-4.69-4.69A8.25 8.25 0 0 1 2.25 10.5Z" clip-rule="evenodd"></path></svg>
-                    Search
-                </button>
-            </div>
-            <div class="card">
-                <h2>Search Results</h2>
-                <div id="search-results-list">
-                    <p class="muted">Search by name to find users.</p>
-                </div>
-            </div>
-        </div>
-        
-        <div id="friendsPage" class="page">
-            
-            <div class="card">
-                <h2>Pending Requests</h2>
-                <div id="pending-requests-list">
-                    <p class="muted">No pending requests.</p>
-                </div>
-            </div>
-
-            <div class="card">
-                <h2>My Friends</h2>
-                <div id="friends-list">
-                    <p class="muted">You have no accepted friends.</p>
-                </div>
-            </div>
-        </div>
-
         <div id="settingsPage" class="page">
             <div class="card">
                 <h2>Profile Settings</h2>
@@ -444,7 +295,6 @@
                     <label for="privacy-email">Email Visibility</label>
                     <select id="privacy-email">
                         <option value="public">Public</option>
-                        <option value="friends">Friends Only</option>
                         <option value="private">Private</option>
                     </select>
                 </div>
@@ -452,7 +302,6 @@
                     <label for="privacy-bio">Bio Visibility</label>
                     <select id="privacy-bio">
                         <option value="public">Public</option>
-                        <option value="friends">Friends Only</option>
                         <option value="private">Private</option>
                     </select>
                 </div>
@@ -460,7 +309,6 @@
                     <label for="privacy-age">Age/Birthday Visibility</label>
                     <select id="privacy-age">
                         <option value="public">Public (Shows Age)</option>
-                        <option value="friends">Friends Only</option>
                         <option value="private">Private</option>
                     </select>
                 </div>
@@ -468,7 +316,6 @@
                     <label for="privacy-gender">Gender Visibility</label>
                     <select id="privacy-gender">
                         <option value="public">Public</option>
-                        <option value="friends">Friends Only</option>
                         <option value="private">Private</option>
                     </select>
                 </div>
@@ -476,7 +323,6 @@
                     <label for="privacy-hobbies">Hobbies Visibility</label>
                     <select id="privacy-hobbies">
                         <option value="public">Public</option>
-                        <option value="friends">Friends Only</option>
                         <option value="private">Private</option>
                     </select>
                 </div>
@@ -484,7 +330,6 @@
                     <label for="privacy-phone">Phone Visibility</label>
                     <select id="privacy-phone">
                         <option value="public">Public</option>
-                        <option value="friends">Friends Only</option>
                         <option value="private">Private</option>
                     </select>
                 </div>
@@ -492,7 +337,6 @@
                     <label for="privacy-country">Country Visibility</label>
                     <select id="privacy-country">
                         <option value="public">Public</option>
-                        <option value="friends">Friends Only</option>
                         <option value="private">Private</option>
                     </select>
                 </div>
@@ -500,7 +344,6 @@
                     <label for="privacy-school">School Visibility</label>
                     <select id="privacy-school">
                         <option value="public">Public</option>
-                        <option value="friends">Friends Only</option>
                         <option value="private">Private</option>
                     </select>
                 </div>
@@ -508,7 +351,6 @@
                     <label for="privacy-timezone">Timezone/Local Time Visibility</label>
                     <select id="privacy-timezone">
                         <option value="public">Public</option>
-                        <option value="friends">Friends Only</option>
                         <option value="private">Private</option>
                     </select>
                 </div>
@@ -589,7 +431,7 @@
                 
                 <button id="add-timetable-entry-btn" class="btn secondary" style="margin-top: 15px;">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path fill-rule="evenodd" d="M12 3.75a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0V4.5a.75.75 0 0 1 .75-.75ZM20.25 10.5a.75.75 0 0 0-.75.75v4.5a.75.75 0 0 0 1.5 0v-4.5a.75.75 0 0 0-.75-.75ZM3.75 10.5a.75.75 0 0 0-.75.75v4.5a.75.75 0 0 0 1.5 0v-4.5a.75.75 0 0 0-.75-.75ZM18.75 4.5a.75.75 0 0 0-.75.75V9a.75.75 0 0 0 1.5 0V5.25a.75.75 0 0 0-.75-.75ZM5.25 4.5a.75.75 0 0 0-.75.75V9a.75.75 0 0 0 1.5 0V5.25a.75.75 0 0 0-.75-.75ZM15 7.5a.75.75 0 0 0-.75.75v4.5a.75.75 0 0 0 1.5 0V8.25A.75.75 0 0 0 15 7.5ZM9 7.5a.75.75 0 0 0-.75.75v4.5a.75.75 0 0 0 1.5 0V8.25A.75.75 0 0 0 9 7.5Z" clip-rule="evenodd"></path></svg>
-                    Add Schedule
+                    <span>Add Schedule</span>
                 </button>
             </div>
             
@@ -645,19 +487,20 @@
         };
 
         const DATABASE_URL = "https://happp-96438-default-rtdb.firebaseio.com/";
-        const PRESENCE_PATH = '/connect_presence';
+        // Removed PRESENCE_PATH
         let countdownInterval;
         let timetableCheckInterval;
-        let presenceUpdateInterval;
+        // Removed presenceUpdateInterval
         let isPublicView = false; // Tracks if the user is viewing via ?user=ID
 
         const App = {
-            pages: ['loginPage', 'profilePage', 'hapConnectPage', 'friendsPage', 'analyticsPage', 'settingsPage'],
+            // Removed 'hapConnectPage' and 'friendsPage'
+            pages: ['loginPage', 'profilePage', 'analyticsPage', 'settingsPage'],
             elements: {},
             currentUser: null,
             currentProfileData: null, 
             svg: {
-                link: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 5 0 0 0 7.54.54l3-3a5 5 5 0 0 0-7.07-7.07l-1.72 1.72"></path><path d="M14 11a5 5 5 0 0 0-7.54-.54l-3 3a5 5 5 0 0 0 7.07 7.07l1.72-1.72"></path></svg>`,
+                link: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72"></path></svg>`,
                 vcard: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M18 1.5a2.25 2.25 0 0 1 2.25 2.25v16.5A2.25 2.25 0 0 1 18 22.5H6a2.25 2.25 0 0 1-2.25-2.25V3.75A2.25 2.25 0 0 1 6 1.5h12ZM6.75 6A.75.75 0 0 0 6 6.75a.75.75 0 0 0 .75.75h10.5a.75.75 0 0 0 .75-.75.75.75 0 0 0-.75-.75H6.75Z"></path><path d="M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z"></path><path d="M6 16.5a.75.75 0 0 0-.75.75v3.25a.75.75 0 0 0 1.5 0v-3.25a.75.75 0 0 0-.75-.75ZM18 16.5a.75.75 0 0 0-.75.75v3.25a.75.75 0 0 0 1.5 0v-3.25a.75.75 0 0 0-.75-.75Z"></path></svg>`
             },
             statusColors: { 
@@ -719,186 +562,9 @@
         }
         // --- End Timezone Utilities ---
 
-        // --- Presence Tracking & HAP Connect Core Logic ---
-        function updateConnectPresence(status) {
-            if (!App.currentUser) return;
-            const userId = App.currentUser.userId;
-            const url = `${DATABASE_URL}${PRESENCE_PATH}/${userId}.json`;
-            const payload = { 
-                status: status ? true : null, 
-                timestamp: new Date().toISOString()
-            };
-            
-            fetch(url, {
-                method: status ? 'PATCH' : 'DELETE', 
-                body: status ? JSON.stringify(payload) : undefined 
-            }).catch(e => console.error("Presence update failed:", e));
-        }
-
-        function setupHAPConnect() {
-            if (!App.currentUser) return;
-            
-            updateConnectPresence(true); 
-            
-            if (presenceUpdateInterval) clearInterval(presenceUpdateInterval);
-            presenceUpdateInterval = setInterval(fetchAndRenderConnect, 5000); 
-            fetchAndRenderConnect();
-            
-            window.addEventListener('beforeunload', teardownHAPConnect);
-            document.addEventListener('visibilitychange', handleVisibilityChange);
-        }
-
-        function teardownHAPConnect() {
-            if (presenceUpdateInterval) clearInterval(presenceUpdateInterval);
-            presenceUpdateInterval = null;
-            updateConnectPresence(false);
-
-            window.removeEventListener('beforeunload', teardownHAPConnect);
-            document.removeEventListener('visibilitychange', handleVisibilityChange);
-        }
-
-        function handleVisibilityChange() {
-            if (document.hidden) {
-                updateConnectPresence(false);
-            } else if (window.location.hash.substring(1) === 'hapConnectPage') {
-                updateConnectPresence(true);
-                if (!presenceUpdateInterval) {
-                    setupHAPConnect();
-                }
-            }
-        }
+        // --- Removed Presence Tracking & HAP Connect Core Logic ---
         
-        async function fetchAndRenderConnect() {
-            const visualizer = document.getElementById('connect-visualizer');
-            if (!visualizer) return;
-            
-            const presenceRes = await fetch(`${DATABASE_URL}${PRESENCE_PATH}.json`);
-            const presenceData = await presenceRes.json() || {};
-
-            visualizer.innerHTML = '';
-            let activeUserCount = 0;
-            const usersToRender = [];
-
-            for (const pId in presenceData) {
-                if (pId === App.currentUser?.userId) continue; 
-                activeUserCount++;
-                usersToRender.push(pId);
-            }
-            
-            if (usersToRender.length === 0) {
-                visualizer.innerHTML = `
-                    <p class="muted" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
-                        You are the only user on HAP Connect right now. Invite friends!
-                    </p>`;
-                return;
-            }
-
-            const usersRes = await fetch(`${DATABASE_URL}/users.json`);
-            const allUsers = await usersRes.json() || {};
-            
-            const existingOrbs = visualizer.querySelectorAll('.connect-orb');
-            const currentPositions = {};
-            existingOrbs.forEach(orb => {
-                currentPositions[orb.dataset.userId] = { left: orb.style.left, top: orb.style.top };
-                orb.remove(); 
-            });
-
-
-            usersToRender.slice(0, 12).forEach(userId => {
-                const user = allUsers[userId] || {};
-                const orb = document.createElement('div');
-                orb.className = 'connect-orb';
-                orb.dataset.userId = userId;
-                
-                // --- Dynamic Orb Styling ---
-                const userOffset = user.timeZoneOffset || 0;
-                const userLocalHour = getLocalHourFromOffset(userOffset);
-                const isNight = isNightTime(userLocalHour);
-                
-                let orbBg = isNight ? '#0f172a' : '#ffffff'; 
-                let orbText = isNight ? '#e2e8f0' : '#0f172a'; 
-                let orbMuted = isNight ? '#94a3b8' : '#64748b'; 
-                let orbBorder = user.profileAccentColor || '#0ea5e9';
-
-                orb.style.backgroundColor = orbBg;
-                orb.style.color = orbText; 
-                orb.style.border = `2px solid ${orbBorder}`; 
-                
-                let posX, posY;
-                if (currentPositions[userId]) {
-                    posX = currentPositions[userId].left;
-                    posY = currentPositions[userId].top;
-                } else {
-                    posX = `${Math.random() * (visualizer.offsetWidth - 120) + 10}px`;
-                    posY = `${Math.random() * (visualizer.offsetHeight - 120) + 10}px`;
-                }
-
-                orb.style.left = posX;
-                orb.style.top = posY;
-
-                orb.innerHTML = `
-                    <div class="orb-emoji">${user.status || '❓'}</div>
-                    <div class="orb-name">${user.displayName || 'Unknown User'}</div>
-                    <div class="orb-status" style="color: ${orbMuted};">${getLocalTimeAndZone(userOffset).time}</div>
-                `;
-
-                orb.addEventListener('click', () => {
-                    window.location.href = `${window.location.origin}${window.location.pathname}?user=${userId}`;
-                });
-
-                visualizer.appendChild(orb);
-            });
-            
-            visualizer.closest('.card').querySelector('h2').textContent = `HAP Connect Live ⚡ (${activeUserCount} active)`;
-        }
-
-
-        // --- Friend Acceptance Animation ---
-        function triggerConfetti() {
-            const overlay = document.getElementById('confetti-overlay');
-            if (!overlay) return;
-
-            // Simple Synth for feedback
-            try {
-                const synth = new Tone.MembraneSynth().toDestination();
-                synth.triggerAttackRelease("C4", "8n");
-                synth.triggerAttackRelease("E4", "8n", "+0.1");
-                synth.triggerAttackRelease("G4", "8n", "+0.2");
-            } catch(e) { /* Tone not allowed to start */ }
-
-
-            const pieces = 50;
-            const colors = ['255,165,0', '255,255,0', '0,128,0', '0,0,255', '128,0,128']; // RGB values
-
-            for (let i = 0; i < pieces; i++) {
-                const piece = document.createElement('div');
-                piece.className = 'confetti-piece';
-
-                const color = colors[Math.floor(Math.random() * colors.length)];
-                
-                const startX = window.innerWidth / 2;
-                const startY = window.innerHeight / 2;
-                
-                const endX = (Math.random() - 0.5) * 600 + startX;
-                const endY = window.innerHeight + 100;
-                const rotation = Math.random() * 1000 + 500;
-
-                piece.style.setProperty('--confetti-color', color);
-                piece.style.left = `${startX}px`;
-                piece.style.top = `${startY}px`;
-                piece.style.setProperty('--x-end', `${endX - startX}px`);
-                piece.style.setProperty('--y-end', `${endY - startY}px`);
-                piece.style.setProperty('--r-end', `${rotation}deg`);
-                piece.style.animationDuration = `${1.5 + Math.random() * 1}s`;
-                piece.style.animationDelay = `-${Math.random() * 0.5}s`;
-
-                overlay.appendChild(piece);
-            }
-
-            setTimeout(() => {
-                overlay.innerHTML = ''; 
-            }, 2500); // Clean up after animation finishes
-        }
+        // --- Removed Friend Acceptance Animation (Confetti) ---
 
 
         // --- URL HASH ROUTER CORE LOGIC ---
@@ -920,9 +586,8 @@
                 
                 // Hide unnecessary public view elements
                 const shareCard = document.getElementById('share-status-btn')?.closest('.card');
-                const searchCard = document.getElementById('show-hap-connect-btn')?.closest('.card');
+                // Removed searchCard hide
                 if (shareCard) shareCard.classList.add('hidden');
-                if (searchCard) searchCard.classList.add('hidden');
 
                 // 1. Hide all pages except profilePage
                 App.pages.forEach(pId => {
@@ -969,15 +634,11 @@
             });
 
             // Handle lifecycle events
-            if (targetPageId === 'hapConnectPage') {
-                if (App.currentUser) setupHAPConnect();
-            } else {
-                teardownHAPConnect();
-            }
+            // Removed connect/friends lifecycle events
 
-            if (targetPageId === 'friendsPage') {
-                if (App.currentUser) fetchAndRenderFriends();
-            }
+            // if (targetPageId === 'analyticsPage') {
+            //     if (App.currentUser) fetchAndRenderAnalytics();
+            // }
 
             window.scrollTo(0, 0);
 
@@ -1037,9 +698,6 @@
             App.elements.themeSelect = document.getElementById('themeSelect');
             App.elements.toast = document.getElementById('toast');
             
-            const localTheme = localStorage.getItem('hapTheme');
-            if (localTheme) document.body.className = localTheme === 'dark' ? 'dark' : '';
-            
             // 1. Check for logged-in user
             const user = JSON.parse(localStorage.getItem('hapUser'));
             if (user) {
@@ -1085,7 +743,8 @@
         function renderProfile(data) {
             document.getElementById('profile-name').textContent = data.displayName || 'Unnamed User';
             document.getElementById('profile-emoji').textContent = data.status || '❓';
-            const bioText = data.bio && (isPublicView ? data.bio : (data.privacy?.bio !== 'private' ? data.bio : 'No message set.'));
+            // Bio check simplified as there are no 'friends' anymore
+            const bioText = data.bio && (isPublicView ? data.bio : (data.privacy?.bio === 'public' ? data.bio : 'No message set.'));
             document.getElementById('profile-message').textContent = bioText || data.message || 'No message set.';
             
             updateTimer(data, document.getElementById('profile-timer'));
@@ -1099,13 +758,8 @@
             const localTimeData = getLocalTimeAndZone(offset);
             const privacyLevel = data.privacy?.timezone;
             
-            let isFriend = false;
-            // Simplified friend check for display purposes (full check is complex and happens in renderPersonalDetails)
-            if (App.currentUser && App.currentProfileData && App.currentUser.userId !== App.currentProfileData.userId) {
-                isFriend = true; // Assume true if not owner for simple placeholder logic
-            }
-
-            const isTimeVisible = isPublicView ? (privacyLevel === 'public' || (privacyLevel === 'friends' && isFriend)) : true;
+            // isFriend is always false now in public view, only check 'public'
+            const isTimeVisible = isPublicView ? (privacyLevel === 'public') : true; 
             
             const timeInfoEl = document.getElementById('local-time-info');
             if (timeInfoEl) {
@@ -1128,22 +782,15 @@
             
             const profileOwnerId = profileData.userId;
             const isOwner = App.currentUser && App.currentUser.userId === profileOwnerId;
-            let isFriend = false;
-            
-            if (App.currentUser && !isOwner) {
-                const friendStatusRes = await fetch(`${DATABASE_URL}/friends/${App.currentUser.userId}/${profileOwnerId}.json`);
-                const friendStatus = await friendStatusRes.json();
-                isFriend = friendStatus === 'accepted';
-            }
+            // Removed isFriend check
 
             const getDetailHTML = (label, value, field, fallback = '🔒 Private') => {
                 const privacyLevel = profileData.privacy ? profileData.privacy[field] : 'public';
                 
                 if (isOwner) return `<div class="personal-detail-item"><strong>${label}:</strong> ${value || 'N/A'}</div>`;
                 
+                // Only checking for 'public' access
                 if (privacyLevel === 'public' && value) return `<div class="personal-detail-item"><strong>${label}:</strong> ${value}</div>`;
-
-                if (privacyLevel === 'friends' && isFriend && value) return `<div class="personal-detail-item"><strong>${label}:</strong> ${value}</div>`;
                 
                 return `<div class="personal-detail-item" style="opacity: 0.6;"><strong>${label}:</strong> ${fallback}</div>`;
             };
@@ -1151,7 +798,8 @@
             let html = '';
             
             const emailValue = profileData.email || 'N/A';
-            const emailVisible = isOwner || (profileData.privacy?.email === 'public' || profileData.privacy?.email === 'friends' && isFriend);
+            // Simplified visibility check
+            const emailVisible = isOwner || (profileData.privacy?.email === 'public' && emailValue !== 'N/A');
             
             if (emailVisible && emailValue !== 'N/A') {
                 html += `<div class="personal-detail-item"><strong>Email:</strong> ${emailValue}</div>`;
@@ -1169,8 +817,6 @@
                     if (isOwner) {
                          html += `<div class="personal-detail-item"><strong>Age:</strong> ${age} (Born: ${profileData.birthday})</div>`;
                     } else if (ageVisibility === 'public') {
-                        html += `<div class="personal-detail-item"><strong>Age:</strong> ${age}</div>`;
-                    } else if (ageVisibility === 'friends' && isFriend) {
                         html += `<div class="personal-detail-item"><strong>Age:</strong> ${age}</div>`;
                     } else {
                         html += `<div class="personal-detail-item" style="opacity: 0.6;"><strong>Age:</strong> 🔒 Private</div>`;
@@ -1193,16 +839,10 @@
         async function renderActionLinks(profileData) {
             const container = document.getElementById('profile-action-links');
             if (!container) return;
-            container.innerHTML = ''; // FIX 1: Clear the container before adding new buttons
+            container.innerHTML = '';
             
-            const profileOwnerId = profileData.userId;
-            const isOwner = App.currentUser && App.currentUser.userId === profileOwnerId;
-            let friendshipStatus = null; 
-
-            if (App.currentUser && !isOwner) {
-                const friendStatusRes = await fetch(`${DATABASE_URL}/friends/${App.currentUser.userId}/${profileOwnerId}.json`);
-                friendshipStatus = await friendStatusRes.json();
-            }
+            const isOwner = App.currentUser && App.currentUser.userId === profileData.userId;
+            // Removed friendship check
 
             if (profileData.schedulingLink) {
                 container.innerHTML += `
@@ -1212,23 +852,7 @@
                     </a>`;
             }
             
-            if (App.currentUser && !isOwner) {
-                let friendBtnHTML;
-                if (friendshipStatus === 'accepted') {
-                    friendBtnHTML = `<button class="btn" style="max-width: 250px; background-color: #10b981;">✅ Friends</button>`;
-                } else if (friendshipStatus === 'pending') {
-                    friendBtnHTML = `<button class="btn" style="max-width: 250px; background-color: #f59e0b;" disabled>⏳ Request Sent</button>`;
-                } else {
-                    friendBtnHTML = `
-                        <button id="public-friend-request-btn" class="btn" style="max-width: 250px;">
-                            🤝 Send Friend Request
-                        </button>`;
-                }
-                container.innerHTML += friendBtnHTML;
-                // Note: handleSendFriendRequestDirectly defined below, but added listener here for non-owner viewing
-                document.getElementById('public-friend-request-btn')?.addEventListener('click', () => handleSendFriendRequestDirectly(profileOwnerId, container));
-            }
-
+            // Removed Friend Request Button logic
 
             const vCardButtonHTML = `
                 <button id="download-vcard-btn" class="btn secondary" style="max-width: 250px;">
@@ -1241,40 +865,7 @@
             document.getElementById('download-vcard-btn')?.addEventListener('click', handleVCardDownload);
         }
 
-        async function handleSendFriendRequestDirectly(friendId, container) {
-            const userId = App.currentUser.userId;
-            const loginRes = await fetch(`${DATABASE_URL}/logins/${friendId}.json`);
-            const loginData = await loginRes.json();
-            
-            if (!loginData) {
-                showToast('Error: Target user not found.'); return;
-            }
-            
-            const currentStatusRes = await fetch(`${DATABASE_URL}/friends/${friendId}/${userId}.json`);
-            const currentStatus = await currentStatusRes.json();
-
-            if (currentStatus === 'accepted') {
-                showToast(`${loginData.displayName} is already your friend.`); return;
-            }
-            if (currentStatus === 'pending') {
-                showToast(`A request is already pending for ${loginData.displayName}.`); return;
-            }
-
-
-            await fetch(`${DATABASE_URL}/friends/${friendId}/${userId}.json`, { method: 'PUT', body: JSON.stringify('pending') });
-            showToast(`Request sent to ${loginData.displayName}.`);
-            
-            const profileRes = await fetch(`${DATABASE_URL}/users/${friendId}.json`);
-            const profileData = await profileRes.json();
-            profileData.userId = friendId; 
-            renderActionLinks(profileData);
-            
-            // Re-render HAP Connect search results if we're on that page
-            if (window.location.hash.substring(1) === 'hapConnectPage') {
-                handleSearchUsers();
-            }
-        }
-
+        // Removed handleSendFriendRequestDirectly
 
         function populateSettings(data) {
             if (!document.getElementById('display-name')) return;
@@ -1291,14 +882,14 @@
             document.getElementById('country').value = data.country || '';
             document.getElementById('school').value = data.school || '';
             
-            // Privacy Controls
+            // Privacy Controls - Removed 'friends' option
             document.getElementById('privacy-bio').value = data.privacy?.bio || 'public';
             document.getElementById('privacy-age').value = data.privacy?.age || 'public';
-            document.getElementById('privacy-gender').value = data.privacy?.gender || 'friends';
+            document.getElementById('privacy-gender').value = data.privacy?.gender || 'public';
             document.getElementById('privacy-hobbies').value = data.privacy?.hobbies || 'public';
             
             document.getElementById('privacy-email').value = data.privacy?.email || 'public';
-            document.getElementById('privacy-phone').value = data.privacy?.phone || 'friends';
+            document.getElementById('privacy-phone').value = data.privacy?.phone || 'public';
             document.getElementById('privacy-school').value = data.privacy?.school || 'public';
             
             // NEW PRIVACY FIELDS
@@ -1378,7 +969,7 @@
                 if (userData && loginData) {
                     userData.userId = userId;
                     userData.email = loginData.email; 
-                    App.currentProfileData = userData; // CRITICAL FIX: Set this data for friend checks in renderPersonalDetails
+                    App.currentProfileData = userData; 
                     applyVisuals(userData);
                     renderProfile(userData);
                 }
@@ -1569,160 +1160,10 @@
         }
 
 
-        // --- Friends System Logic ---
-        
-        async function fetchAndRenderFriends() {
-            const userId = App.currentUser.userId;
-            const friendsRes = await fetch(`${DATABASE_URL}/friends/${userId}.json`);
-            const friendsData = await friendsRes.json() || {};
-            
-            const pendingList = document.getElementById('pending-requests-list');
-            const friendsList = document.getElementById('friends-list');
-            
-            if (!pendingList || !friendsList) return;
-
-            pendingList.innerHTML = '';
-            friendsList.innerHTML = '';
-            
-            let hasPending = false;
-            let hasFriends = false;
-
-            for (const fId in friendsData) {
-                const status = friendsData[fId];
-                
-                const loginRes = await fetch(`${DATABASE_URL}/logins/${fId}.json`);
-                const loginData = await loginRes.json();
-                const displayName = loginData ? loginData.displayName : 'Unknown User';
-
-                if (status === 'pending') {
-                    hasPending = true;
-                    pendingList.innerHTML += `
-                        <div class="request-item">
-                            <span>${displayName} wants to be friends.</span>
-                            <div>
-                                <button class="btn" style="width: auto; padding: 5px 10px;" onclick="handleFriendAction('${fId}', 'accept')">Accept</button>
-                                <button class="btn secondary" style="width: auto; padding: 5px 10px; margin-left: 5px;" onclick="handleFriendAction('${fId}', 'reject')">Reject</button>
-                            </div>
-                        </div>`;
-                } else if (status === 'accepted') {
-                    hasFriends = true;
-                    friendsList.innerHTML += `
-                        <div class="request-item">
-                            <span>${displayName}</span>
-                            <button class="btn secondary" style="width: auto; padding: 5px 10px;" onclick="handleFriendAction('${fId}', 'remove')">Remove</button>
-                        </div>`;
-                }
-            }
-            
-            if (!hasPending) pendingList.innerHTML = '<p class="muted">No pending requests.</p>';
-            if (!hasFriends) friendsList.innerHTML = '<p class="muted">You have no accepted friends.</p>';
-        }
-
-        async function handleFriendAction(friendId, action) {
-            const userId = App.currentUser.userId;
-            
-            if (action === 'accept') {
-                await fetch(`${DATABASE_URL}/friends/${userId}/${friendId}.json`, { method: 'PUT', body: JSON.stringify('accepted') });
-                await fetch(`${DATABASE_URL}/friends/${friendId}/${userId}.json`, { method: 'PUT', body: JSON.stringify('accepted') });
-                triggerConfetti(); // Trigger animation on successful acceptance
-                showToast(`Friend request from accepted! 🎉`);
-            } else if (action === 'reject' || action === 'remove') {
-                await fetch(`${DATABASE_URL}/friends/${userId}/${friendId}.json`, { method: 'DELETE' });
-                await fetch(`${DATABASE_URL}/friends/${friendId}/${userId}.json`, { method: 'DELETE' });
-                showToast(`Friend removed.`);
-            }
-            fetchAndRenderFriends();
-        }
+        // --- Removed Friends System Logic ---
 
 
-        // --- Search (Integrated into HAP Connect page) ---
-        async function handleSearchUsers() {
-            const searchTerm = document.getElementById('user-search-input')?.value.trim().toLowerCase();
-            const resultsList = document.getElementById('search-results-list');
-            if (!resultsList) return;
-
-            resultsList.innerHTML = '<p class="muted">Searching...</p>';
-            
-            if (searchTerm.length < 2) {
-                resultsList.innerHTML = '<p class="muted">Enter at least 2 characters to search.</p>';
-                return;
-            }
-            
-            // Check if current user is logged in
-            if (!App.currentUser) {
-                resultsList.innerHTML = '<p class="muted">Please log in to search for users.</p>';
-                return;
-            }
-            const currentUserId = App.currentUser.userId;
-
-            try {
-                const response = await fetch(`${DATABASE_URL}/users.json`);
-                const allUsersData = await response.json(); 
-                const friendsRes = await fetch(`${DATABASE_URL}/friends/${currentUserId}.json`);
-                const friendsData = await friendsRes.json() || {};
-                
-                let foundResults = 0;
-                let resultsHTML = '';
-                
-                if (allUsersData) {
-                    for (const userId in allUsersData) {
-                        if (userId === currentUserId) continue; // Don't show current user
-                        
-                        const user = allUsersData[userId];
-                        const displayName = (user.displayName || '').toLowerCase();
-                        
-                        if (displayName.includes(searchTerm)) {
-                            foundResults++;
-                            const publicUrl = `${window.location.origin}${window.location.pathname}?user=${userId}`;
-                            
-                            const friendStatus = friendsData[userId];
-                            let actionButton = '';
-                            
-                            if (friendStatus === 'accepted') {
-                                actionButton = `<button class="btn secondary" style="width: auto; padding: 8px 12px; opacity: 0.8; cursor: default;" disabled>Friends ✅</button>`;
-                            } else if (friendStatus === 'pending') {
-                                actionButton = `<button class="btn secondary" style="width: auto; padding: 8px 12px; background: #f59e0b;" disabled>Pending ⏳</button>`;
-                            } else if (friendsData[userId] === undefined) {
-                                // Check if the OTHER user sent a request to ME (if the key exists on my side as 'pending', it's an incoming request)
-                                const incomingRequestRes = await fetch(`${DATABASE_URL}/friends/${userId}.json`); // Fetch the OTHER user's friend status
-                                const otherUserFriends = await incomingRequestRes.json() || {};
-                                
-                                if (otherUserFriends[currentUserId] === 'pending') { // I have an incoming request from them
-                                    actionButton = `<a href="#friendsPage" onclick="navigateTo('friendsPage')" class="btn" style="width: auto; padding: 8px 12px; background: #fbbf24;">Respond!</a>`;
-                                } else {
-                                    // Not friends, not pending either way
-                                    actionButton = `
-                                        <button class="btn" style="width: auto; padding: 8px 12px;" onclick="handleSendFriendRequestDirectly('${userId}', this.closest('.card'))">
-                                            Connect 🤝
-                                        </button>`;
-                                }
-                            }
-                            
-                            resultsHTML += `
-                                <div class="search-result-item">
-                                    <a href="${publicUrl}" style="text-decoration: none; color: var(--text); display: flex; align-items: center; justify-content: space-between; flex-grow: 1;">
-                                        <div>
-                                            <div style="font-size: 1.2rem; font-weight: 600;">${user.status || '❓'} ${user.displayName || 'Unnamed User'}</div>
-                                            <p style="font-size: 0.9rem; margin-top: 4px;">${user.message || 'No message set.'}</p>
-                                        </div>
-                                    </a>
-                                    <div style="margin-left: 15px;">${actionButton}</div>
-                                </div>`;
-                        }
-                    }
-                }
-                
-                if (foundResults > 0) {
-                    resultsList.innerHTML = `<div style="margin-top: 15px;">${resultsHTML}</div>`;
-                } else {
-                    resultsList.innerHTML = '<p class="muted">No users found matching your search term.</p>';
-                }
-
-            } catch (error) {
-                console.error("Search error:", error);
-                resultsList.innerHTML = '<p class="muted" style="color: #ef4444;">Error fetching user data for search.</p>';
-            }
-        }
+        // --- Removed Search (Integrated into HAP Connect page) ---
 
         // --- Authentication & Session ---
         
@@ -1770,11 +1211,11 @@
                 timeZoneOffset: new Date().getTimezoneOffset() * -1, // Capture initial client UTC offset
                 privacy: { 
                     email: 'public', 
-                    phone: 'friends', 
+                    phone: 'public', 
                     school: 'public',
                     bio: 'public',
                     age: 'public',
-                    gender: 'friends',
+                    gender: 'public',
                     hobbies: 'public',
                     country: 'public',
                     timezone: 'public'
@@ -1826,7 +1267,7 @@
         }
         
         function handleLogout() {
-            teardownHAPConnect(); // Ensure presence is removed on logout
+            // Removed teardownHAPConnect()
             localStorage.removeItem('hapUser');
             // Clear URL query parameter if present, and force router reset
             const url = window.location.origin + window.location.pathname;
@@ -1942,29 +1383,81 @@
         }
 
         // --- VCard & Share ---
-        function handleVCardDownload() {
+        async function handleVCardDownload() {
+            // Determine the user whose profile we are viewing/downloading
+            const profileData = App.currentProfileData;
             const user = App.currentUser;
-            if (!user) { showToast('Must be logged in to generate contact card.'); return; }
+            
+            if (!profileData || !user) { 
+                showToast('Must be logged in or viewing a public profile to generate contact card.'); 
+                return; 
+            }
+
+            const profileOwnerId = profileData.userId || user.userId;
+            const isOwner = user && user.userId === profileOwnerId;
+            // Removed isFriend check
+
+            // Helper to check visibility based on privacy settings (only public/private context remains)
+            const isVisible = (field) => {
+                const privacyLevel = profileData.privacy?.[field] || 'public';
+                if (isOwner) return true;
+                if (privacyLevel === 'public') return true;
+                return false;
+            };
 
             const vcard = [
                 'BEGIN:VCARD',
                 'VERSION:3.0',
-                `FN:${user.displayName}`,
-                `EMAIL;TYPE=internet,work:${user.email}`,
-                `UID:${user.userId}`,
-                'END:VCARD'
-            ].join('\n');
+                `N:;${profileData.displayName || user.displayName};;;`,
+                `FN:${profileData.displayName || user.displayName}`,
+                `UID:${profileOwnerId}`, // Use the profile's ID as UID
+            ];
 
-            const blob = new Blob([vcard], { type: 'text/vcard;charset=utf-8' });
+            // 1. Email
+            if (isOwner || isVisible('email')) {
+                vcard.push(`EMAIL;TYPE=internet,work:${user.email || profileData.email || 'N/A'}`);
+            }
+
+            // 2. Phone Number
+            if (profileData.phone && isVisible('phone')) {
+                vcard.push(`TEL;TYPE=cell:${profileData.phone}`);
+            }
+            
+            // 3. Bio (Note: VCard traditionally uses NOTE for this)
+            if (profileData.bio && isVisible('bio')) {
+                vcard.push(`NOTE:${profileData.bio.replace(/(\r\n|\n|\r)/gm, " ")}`);
+            }
+
+            // 4. Country/Address
+            if (profileData.country && isVisible('country')) {
+                vcard.push(`ADR;TYPE=home:;;;;;;${profileData.country}`);
+            }
+
+            // 5. URL (Scheduling Link - use URL type)
+            if (profileData.schedulingLink) {
+                vcard.push(`URL;TYPE=scheduling:${profileData.schedulingLink}`);
+            }
+            
+            // 6. Profile Picture (Include as a URI/URL if present)
+            if (profileData.pfpUrl) {
+                vcard.push(`PHOTO;VALUE=URI:${profileData.pfpUrl}`);
+            }
+
+            vcard.push('END:VCARD');
+
+            const vcardText = vcard.join('\n');
+            
+            // Download logic
+            const blob = new Blob([vcardText], { type: 'text/vcard;charset=utf-8' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `${user.displayName.replace(/\s/g, '_')}_contact.vcf`;
+            a.download = `${(profileData.displayName || user.displayName).replace(/\s/g, '_')}_hap_contact.vcf`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-            showToast('Contact Card downloaded!');
+            showToast('Contact Card downloaded! 💾');
         }
 
         async function handleShareStatus() {
@@ -2064,21 +1557,13 @@
             // Settings & Profile Actions
             document.getElementById('save-settings-btn')?.addEventListener('click', handleSaveSettings);
             document.getElementById('share-status-btn')?.addEventListener('click', handleShareStatus);
-            document.getElementById('show-hap-connect-btn')?.addEventListener('click', () => navigateTo('hapConnectPage')); // Connect button listener
+            // Removed show-hap-connect-btn listener
             
-            // HAP Connect/Search
-            document.getElementById('run-search-btn')?.addEventListener('click', handleSearchUsers);
-            document.getElementById('user-search-input')?.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    handleSearchUsers();
-                }
-            });
+            // Removed HAP Connect/Search listeners
 
-            // Timetable & Friends
+            // Timetable 
             document.getElementById('add-timetable-entry-btn')?.addEventListener('click', handleAddTimetableEntry);
             
-
             document.getElementById('pfp-upload')?.addEventListener('change', (e) => {
                 const file = e.target.files[0];
                 const previewEl = document.getElementById('pfp-preview-text');
