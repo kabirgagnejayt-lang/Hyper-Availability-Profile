@@ -670,13 +670,12 @@
 
             if (wasPublicView && App.currentUser) {
                 await setupUserSession();
-                // After reloading our session, we need to ensure the correct page is shown
                 const hash = window.location.hash.substring(1);
                 const targetPageId = App.pages.includes(hash) ? hash : 'profilePage';
                 App.pages.forEach(pId => App.elements[pId]?.classList.toggle('active', pId === targetPageId));
                 document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.page === targetPageId));
                 App.elements.mainHeader?.classList.remove('hidden');
-                return; // End here to prevent double-rendering
+                return;
             }
 
             const hash = window.location.hash.substring(1);
@@ -711,11 +710,12 @@
             document.documentElement.style.setProperty('--link-text-color', data.linkTextColor || '#0369a1');
             document.documentElement.style.setProperty('--display-font', data.displayNameFont || 'Inter, sans-serif');
             
-            let bgStyle = 'var(--card)';
+            const rootStyle = document.documentElement.style;
             if (data.profileBgType === 'custom' && data.profileBgValue && data.profileBgValue.trim() !== '') {
-                bgStyle = data.profileBgValue;
+                rootStyle.setProperty('--profile-header-bg-style', data.profileBgValue);
+            } else {
+                rootStyle.removeProperty('--profile-header-bg-style');
             }
-            document.documentElement.style.setProperty('--profile-header-bg-style', bgStyle);
 
             const pfpElement = document.getElementById('profile-pfp');
             if(pfpElement) {
@@ -1254,8 +1254,6 @@
             const resultsList = document.getElementById('search-results-list');
             if (!query) return;
             resultsList.innerHTML = '<p class="muted">Searching...</p>';
-            // SECURITY NOTE: In a production app, never download your entire user/login list.
-            // This search should be handled by a secure server-side function.
             try {
                 if (!allUsersCache) {
                     const loginsRes = await fetch(`${DATABASE_URL}/logins.json`);
@@ -1274,7 +1272,6 @@
                         const userProfileRes = await fetch(`${DATABASE_URL}/users/${user.userId}.json`);
                         const userProfile = await userProfileRes.json();
                         if(!userProfile) return;
-
                         const activeSchedule = findActiveSchedule(userProfile);
                         const displayStatus = activeSchedule ? activeSchedule.status : userProfile.status;
                         const displayMessage = activeSchedule ? activeSchedule.message : userProfile.message;
@@ -1294,7 +1291,7 @@
 
         async function handleVCardDownload(data) {
             if (!data) return;
-            const nameParts = data.displayName.split(' ');
+            const nameParts = (data.displayName || '').split(' ');
             const lastName = nameParts.length > 1 ? nameParts.pop() : '';
             const firstName = nameParts.join(' ');
             let vCardStr = `BEGIN:VCARD\nVERSION:3.0\nFN:${data.displayName}\nN:${lastName};${firstName};;;\n`;
@@ -1306,9 +1303,7 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url; a.download = `${data.displayName.replace(/\s/g, '_')}.vcf`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
             URL.revokeObjectURL(url); 
             showToast("Contact card downloaded!");
         }
