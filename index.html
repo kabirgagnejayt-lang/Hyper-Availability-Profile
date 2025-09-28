@@ -130,7 +130,6 @@
 
         .timetable-entry-card { background: var(--input-bg); border-radius: 8px; padding: 12px; margin-bottom: 8px; }
 
-        /* Country Dropdown Styles */
         .country-select-wrapper { position: relative; }
         .country-dropdown {
             position: absolute; top: 100%; left: 0; right: 0;
@@ -194,7 +193,7 @@
                 <span>Analytics</span>
             </button>
             <button class="nav-btn" data-page="settingsPage">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M11.64 3.023a.75.75 0 0 1 .72 0l1.517.65a.75.75 0 0 0 .841-.252l1.11-1.48A.75.75 0 0 1 17 2.25a.75.75 0 0 1 .633.368l1.11 1.48a.75.75 0 0 0 .84.253l1.518-.65a.75.75 0 0 1 .72 0l1.016.436a.75.75 0 0 1 .45 1.033l-.74 1.385a.75.75 0 0 0 .14.925l1.28.96a.75.75 0 0 1 0 1.302l-1.28.96a.75.75 0 0 0-.14.925l.74 1.385a.75.75 0 0 1-.45 1.033l-1.017.436a.75.75 0 0 1-.72 0l-1.517-.65a.75.75 0 0 0-.84.252l-1.11 1.48A.75.75 0 0 1 17 21.75a.75.75 0 0 1-.633-.368l-1.11-1.48a.75.75 0 0 0-.84-.253l-1.518.65a.75.75 0 0 1-.72 0l-1.016-.436a.75.75 0 0 1-.45-1.033l.74-1.385a.75.75 0 0 0-.14-.925l-1.28-.96a.75.75 0 0 1 0-1.302l1.28-.96a.75.75 0 0 0 .14-.925l-.74-1.385a.75.75 0 0 1 .45-1.033l1.017-.436ZM12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"></path></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M11.64 3.023a.75.75 0 0 1 .72 0l1.517.65a.75.75 0 0 0 .841-.252l1.11-1.48A.75.75 0 0 1 17 2.25a.75.75 0 0 1 .633.368l1.11 1.48a.75.75 0 0 0 .84.253l1.518-.65a.75.75 0 0 1 .72 0l1.016.436a.75.75 0 0 1 .45 1.033l-.74 1.385a.75.75 0 0 0 .14.925l1.28.96a.75.75 0 0 1 0 1.302l-1.28.96a.75.75 0 0 0-.14.925l.74 1.385a.75.75 0 0 1-.45 1.033l-1.017.436a.75.75 0 0 1-.72 0l-1.517-.65a.75.75 0 0 0-.84.252l-1.11 1.48A.75.75 0 0 1 17 21.75a.75.75 0 0 1-.633-.368l-1.11-1.48a.75.75 0 0 0-.84-.253l-1.518.65a.75.75 0 0 1-.72 0l-1.016-.436a.75.75 0 0 1-.45-1.033l.74-1.385a.75.75 0 0 0-.14-.925l-1.28-.96a.75.75 0 0 1 0-1.302l1.28.96a.75.75 0 0 0 .14-.925l-.74-1.385a.75.75 0 0 1 .45-1.033l1.017-.436ZM12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"></path></svg>
                 <span>Settings</span>
             </button>
         </nav>
@@ -203,9 +202,17 @@
     <div class="container">
 
         <div id="loginPage" class="page">
-            <div class="card">
+             <div class="card">
                 <h1>Hyper Availability</h1>
-                <p style="text-align: center; margin-bottom: 24px;">Your real-time public status page.</p>
+                <p style="text-align: center;">Your real-time public status page.</p>
+                
+                <button id="google-login-btn" class="btn" style="margin-top: 20px;">
+                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4C12.955 4 4 12.955 4 24s8.955 20 20 20s20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"></path><path fill="#FF3D00" d="m6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4C16.318 4 9.656 8.337 6.306 14.691z"></path><path fill="#4CAF50" d="m24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238A11.91 11.91 0 0 1 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"></path><path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303a12.04 12.04 0 0 1-4.087 5.571l6.19 5.238C44.434 36.333 48 30.651 48 24c0-1.341-.138-2.65-.389-3.917z"></path></svg>
+                    <span>Sign in with Google</span>
+                </button>
+
+                <div style="text-align: center; color: var(--muted); margin: 20px 0; font-weight: 500;">OR</div>
+
                 <div class="auth-tabs">
                     <div class="tab active" data-tab="login">Login</div>
                     <div class="tab" data-tab="signup">Sign Up</div>
@@ -214,14 +221,14 @@
                 <form id="login-form">
                     <div class="form-group"><input type="email" id="login-email" placeholder="Email" required></div>
                     <div class="form-group"><input type="password" id="login-password" placeholder="Password" required></div>
-                    <button type="submit" class="btn">Login</button>
+                    <button type="submit" class="btn secondary">Login</button>
                 </form>
 
                 <form id="signup-form" class="hidden">
                     <div class="form-group"><input type="text" id="signup-name" placeholder="Display Name" required></div>
                     <div class="form-group"><input type="email" id="signup-email" placeholder="Email" required></div>
-                    <div class="form-group"><input type="password" id="signup-password" placeholder="Password" required></div>
-                    <button type="submit" class="btn">Create Account</button>
+                    <div class="form-group"><input type="password" id="signup-password" placeholder="Password (min. 6 chars)" required></div>
+                    <button type="submit" class="btn secondary">Create Account</button>
                 </form>
                 <p id="error-message"></p>
             </div>
@@ -519,8 +526,48 @@
 
     <div id="toast"></div>
 
-    <script>
-        'use strict';
+    <script type="module">
+        // Import the functions you need from the SDKs
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+        import { 
+            getAuth, 
+            GoogleAuthProvider, 
+            signInWithPopup, 
+            createUserWithEmailAndPassword, 
+            signInWithEmailAndPassword, 
+            onAuthStateChanged, 
+            signOut 
+        } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+        import { 
+            getDatabase, 
+            ref, 
+            set, 
+            get, 
+            update,
+            push, 
+            query, 
+            orderByChild,
+            equalTo,
+            orderByKey, 
+            limitToLast 
+        } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-database.js";
+
+        // Your web app's Firebase configuration
+        // IMPORTANT: For a real application, secure your API key.
+        const firebaseConfig = {
+            apiKey: "AIzaSyChwjwXFgIj9f64zGeIoS-q_odZm2ogFMw",
+            authDomain: "happp-96438.firebaseapp.com",
+            databaseURL: "https://happp-96438-default-rtdb.firebaseio.com",
+            projectId: "happp-96438",
+            storageBucket: "happp-96438.appspot.com",
+            messagingSenderId: "703348367691",
+            appId: "1:703348367691:web:376cd50d08d94bccf588ce"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
 
         // --- GLOBAL ERROR CATCH ---
         window.onerror = function(message, source, lineno, colno, error) {
@@ -533,16 +580,11 @@
             return false;
         };
 
-        const DATABASE_URL = "https://happp-96438-default-rtdb.firebaseio.com/";
-        
-        const TIMEZONE_MAP = { 'auto': new Date().getTimezoneOffset() * -1, 'UTC-12:00': -720, 'UTC-11:00': -660, 'UTC-10:00': -600, 'UTC-09:30': -570, 'UTC-09:00': -540, 'UTC-08:00': -480, 'UTC-07:00': -420, 'UTC-06:00': -360, 'UTC-05:00': -300, 'UTC-04:00': -240, 'UTC-03:30': -210, 'UTC-03:00': -180, 'UTC-02:00': -120, 'UTC-01:00': -60, 'UTC+00:00': 0, 'UTC+01:00': 60, 'UTC+02:00': 120, 'UTC+03:00': 180, 'UTC+03:30': 210, 'UTC+04:00': 240, 'UTC+04:30': 270, 'UTC+05:00': 300, 'UTC+05:30': 330, 'UTC+05:45': 345, 'UTC+06:00': 360, 'UTC+06:30': 390, 'UTC+07:00': 420, 'UTC+08:00': 480, 'UTC+08:45': 525, 'UTC+09:00': 540, 'UTC+09:30': 570, 'UTC+10:00': 600, 'UTC+10:30': 630, 'UTC+11:00': 660, 'UTC+12:00': 720, 'UTC+12:45': 765, 'UTC+13:00': 780, 'UTC+14:00': 840 };
-        const COUNTRY_LIST = [ {name: "Afghanistan", code: "AF"}, {name: "Åland Islands", code: "AX"}, {name: "Albania", code: "AL"}, {name: "Algeria", code: "DZ"}, {name: "American Samoa", code: "AS"}, {name: "Andorra", code: "AD"}, {name: "Angola", code: "AO"}, {name: "Anguilla", code: "AI"}, {name: "Antarctica", code: "AQ"}, {name: "Antigua and Barbuda", code: "AG"}, {name: "Argentina", code: "AR"}, {name: "Armenia", code: "AM"}, {name: "Aruba", code: "AW"}, {name: "Australia", code: "AU"}, {name: "Austria", code: "AT"}, {name: "Azerbaijan", code: "AZ"}, {name: "Bahamas", code: "BS"}, {name: "Bahrain", code: "BH"}, {name: "Bangladesh", code: "BD"}, {name: "Barbados", code: "BB"}, {name: "Belarus", code: "BY"}, {name: "Belgium", code: "BE"}, {name: "Belize", code: "BZ"}, {name: "Benin", code: "BJ"}, {name: "Bermuda", code: "BM"}, {name: "Bhutan", code: "BT"}, {name: "Bolivia", code: "BO"}, {name: "Bosnia and Herzegovina", code: "BA"}, {name: "Botswana", code: "BW"}, {name: "Bouvet Island", code: "BV"}, {name: "Brazil", code: "BR"}, {name: "British Indian Ocean Territory", code: "IO"}, {name: "Brunei Darussalam", code: "BN"}, {name: "Bulgaria", code: "BG"}, {name: "Burkina Faso", code: "BF"}, {name: "Burundi", code: "BI"}, {name: "Cambodia", code: "KH"}, {name: "Cameroon", code: "CM"}, {name: "Canada", code: "CA"}, {name: "Cape Verde", code: "CV"}, {name: "Cayman Islands", code: "KY"}, {name: "Central African Republic", code: "CF"}, {name: "Chad", code: "TD"}, {name: "Chile", code: "CL"}, {name: "China", code: "CN"}, {name: "Christmas Island", code: "CX"}, {name: "Cocos (Keeling) Islands", code: "CC"}, {name: "Colombia", code: "CO"}, {name: "Comoros", code: "KM"}, {name: "Congo", code: "CG"}, {name: "Congo, The Democratic Republic of the", code: "CD"}, {name: "Cook Islands", code: "CK"}, {name: "Costa Rica", code: "CR"}, {name: "Cote D'Ivoire", code: "CI"}, {name: "Croatia", code: "HR"}, {name: "Cuba", code: "CU"}, {name: "Cyprus", code: "CY"}, {name: "Czech Republic", code: "CZ"}, {name: "Denmark", code: "DK"}, {name: "Djibouti", code: "DJ"}, {name: "Dominica", code: "DM"}, {name: "Dominican Republic", code: "DO"}, {name: "Ecuador", code: "EC"}, {name: "Egypt", code: "EG"}, {name: "El Salvador", code: "SV"}, {name: "Equatorial Guinea", code: "GQ"}, {name: "Eritrea", code: "ER"}, {name: "Estonia", code: "EE"}, {name: "Ethiopia", code: "ET"}, {name: "Falkland Islands (Malvinas)", code: "FK"}, {name: "Faroe Islands", code: "FO"}, {name: "Fiji", code: "FJ"}, {name: "Finland", code: "FI"}, {name: "France", code: "FR"}, {name: "French Guiana", code: "GF"}, {name: "French Polynesia", code: "PF"}, {name: "French Southern Territories", code: "TF"}, {name: "Gabon", code: "GA"}, {name: "Gambia", code: "GM"}, {name: "Georgia", code: "GE"}, {name: "Germany", code: "DE"}, {name: "Ghana", code: "GH"}, {name: "Gibraltar", code: "GI"}, {name: "Greece", code: "GR"}, {name: "Greenland", code: "GL"}, {name: "Grenada", code: "GD"}, {name: "Guadeloupe", code: "GP"}, {name: "Guam", code: "GU"}, {name: "Guatemala", code: "GT"}, {name: "Guernsey", code: "GG"}, {name: "Guinea", code: "GN"}, {name: "Guinea-Bissau", code: "GW"}, {name: "Guyana", code: "GY"}, {name: "Haiti", code: "HT"}, {name: "Heard Island and Mcdonald Islands", code: "HM"}, {name: "Holy See (Vatican City State)", code: "VA"}, {name: "Honduras", code: "HN"}, {name: "Hong Kong", code: "HK"}, {name: "Hungary", code: "HU"}, {name: "Iceland", code: "IS"}, {name: "India", code: "IN"}, {name: "Indonesia", code: "ID"}, {name: "Iran, Islamic Republic Of", code: "IR"}, {name: "Iraq", code: "IQ"}, {name: "Ireland", code: "IE"}, {name: "Isle of Man", code: "IM"}, {name: "Israel", code: "IL"}, {name: "Italy", code: "IT"}, {name: "Jamaica", code: "JM"}, {name: "Japan", code: "JP"}, {name: "Jersey", code: "JE"}, {name: "Jordan", code: "JO"}, {name: "Kazakhstan", code: "KZ"}, {name: "Kenya", code: "KE"}, {name: "Kiribati", code: "KI"}, {name: "Korea, Democratic People'S Republic of", code: "KP"}, {name: "Korea, Republic of", code: "KR"}, {name: "Kuwait", code: "KW"}, {name: "Kyrgyzstan", code: "KG"}, {name: "Lao People'S Democratic Republic", code: "LA"}, {name: "Latvia", code: "LV"}, {name: "Lebanon", code: "LB"}, {name: "Lesotho", code: "LS"}, {name: "Liberia", code: "LR"}, {name: "Libyan Arab Jamahiriya", code: "LY"}, {name: "Liechtenstein", code: "LI"}, {name: "Lithuania", code: "LT"}, {name: "Luxembourg", code: "LU"}, {name: "Macao", code: "MO"}, {name: "Macedonia, The Former Yugoslav Republic of", code: "MK"}, {name: "Madagascar", code: "MG"}, {name: "Malawi", code: "MW"}, {name: "Malaysia", code: "MY"}, {name: "Maldives", code: "MV"}, {name: "Mali", code: "ML"}, {name: "Malta", code: "MT"}, {name: "Marshall Islands", code: "MH"}, {name: "Martinique", code: "MQ"}, {name: "Mauritania", code: "MR"}, {name: "Mauritius", code: "MU"}, {name: "Mayotte", code: "YT"}, {name: "Mexico", code: "MX"}, {name: "Micronesia, Federated States of", code: "FM"}, {name: "Moldova, Republic of", code: "MD"}, {name: "Monaco", code: "MC"}, {name: "Mongolia", code: "MN"}, {name: "Montserrat", code: "MS"}, {name: "Morocco", code: "MA"}, {name: "Mozambique", code: "MZ"}, {name: "Myanmar", code: "MM"}, {name: "Namibia", code: "NA"}, {name: "Nauru", code: "NR"}, {name: "Nepal", code: "NP"}, {name: "Netherlands", code: "NL"}, {name: "Netherlands Antilles", code: "AN"}, {name: "New Caledonia", code: "NC"}, {name: "New Zealand", code: "NZ"}, {name: "Nicaragua", code: "NI"}, {name: "Niger", code: "NE"}, {name: "Nigeria", code: "NG"}, {name: "Niue", code: "NU"}, {name: "Norfolk Island", code: "NF"}, {name: "Northern Mariana Islands", code: "MP"}, {name: "Norway", code: "NO"}, {name: "Oman", code: "OM"}, {name: "Pakistan", code: "PK"}, {name: "Palau", code: "PW"}, {name: "Palestinian Territory, Occupied", code: "PS"}, {name: "Panama", code: "PA"}, {name: "Papua New Guinea", code: "PG"}, {name: "Paraguay", code: "PY"}, {name: "Peru", code: "PE"}, {name: "Philippines", code: "PH"}, {name: "Pitcairn", code: "PN"}, {name: "Poland", code: "PL"}, {name: "Portugal", code: "PT"}, {name: "Puerto Rico", code: "PR"}, {name: "Qatar", code: "QA"}, {name: "Reunion", code: "RE"}, {name: "Romania", code: "RO"}, {name: "Russian Federation", code: "RU"}, {name: "RWANDA", code: "RW"}, {name: "Saint Helena", code: "SH"}, {name: "Saint Kitts and Nevis", code: "KN"}, {name: "Saint Lucia", code: "LC"}, {name: "Saint Pierre and Miquelon", code: "PM"}, {name: "Saint Vincent and the Grenadines", code: "VC"}, {name: "Samoa", code: "WS"}, {name: "San Marino", code: "SM"}, {name: "Sao Tome and Principe", code: "ST"}, {name: "Saudi Arabia", code: "SA"}, {name: "Senegal", code: "SN"}, {name: "Serbia and Montenegro", code: "CS"}, {name: "Seychelles", code: "SC"}, {name: "Sierra Leone", code: "SL"}, {name: "Singapore", code: "SG"}, {name: "Slovakia", code: "SK"}, {name: "Slovenia", code: "SI"}, {name: "Solomon Islands", code: "SB"}, {name: "Somalia", code: "SO"}, {name: "South Africa", code: "ZA"}, {name: "South Georgia and the South Sandwich Islands", code: "GS"}, {name: "Spain", code: "ES"}, {name: "Sri Lanka", code: "LK"}, {name: "Sudan", code: "SD"}, {name: "Suriname", code: "SR"}, {name: "Svalbard and Jan Mayen", code: "SJ"}, {name: "Swaziland", code: "SZ"}, {name: "Sweden", code: "SE"}, {name: "Switzerland", code: "CH"}, {name: "Syrian Arab Republic", code: "SY"}, {name: "Taiwan", code: "TW"}, {name: "Tajikistan", code: "TJ"}, {name: "Tanzania, United Republic of", code: "TZ"}, {name: "Thailand", code: "TH"}, {name: "Timor-Leste", code: "TL"}, {name: "Togo", code: "TG"}, {name: "Tokelau", code: "TK"}, {name: "Tonga", code: "TO"}, {name: "Trinidad and Tobago", code: "TT"}, {name: "Tunisia", code: "TN"}, {name: "Turkey", code: "TR"}, {name: "Turkmenistan", code: "TM"}, {name: "Turks and Caicos Islands", code: "TC"}, {name: "Tuvalu", code: "TV"}, {name: "Uganda", code: "UG"}, {name: "Ukraine", code: "UA"}, {name: "United Arab Emirates", code: "AE"}, {name: "United Kingdom", code: "GB"}, {name: "United States", code: "US"}, {name: "United States Minor Outlying Islands", code: "UM"}, {name: "Uruguay", code: "UY"}, {name: "Uzbekistan", code: "UZ"}, {name: "Vanuatu", code: "VU"}, {name: "Venezuela", code: "VE"}, {name: "Viet Nam", code: "VN"}, {name: "Virgin Islands, British", code: "VG"}, {name: "Virgin Islands, U.S.", code: "VI"}, {name: "Wallis and Futuna", code: "WF"}, {name: "Western Sahara", code: "EH"}, {name: "Yemen", code: "YE"}, {name: "Zambia", code: "ZM"}, {name: "Zimbabwe", code: "ZW"} ];
-        
+        // --- GLOBAL STATE & CONSTANTS ---
         let countdownInterval;
         let timetableCheckInterval;
         let travelInterval;
         let isPublicView = false;
-        let allUsersCache = null;
         let publicViewInterval = null;
 
         const App = {
@@ -553,9 +595,10 @@
         };
 
         const DAYS_OF_WEEK = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+        const TIMEZONE_MAP = { 'auto': new Date().getTimezoneOffset() * -1, 'UTC-12:00': -720, 'UTC-11:00': -660, 'UTC-10:00': -600, 'UTC-09:30': -570, 'UTC-09:00': -540, 'UTC-08:00': -480, 'UTC-07:00': -420, 'UTC-06:00': -360, 'UTC-05:00': -300, 'UTC-04:00': -240, 'UTC-03:30': -210, 'UTC-03:00': -180, 'UTC-02:00': -120, 'UTC-01:00': -60, 'UTC+00:00': 0, 'UTC+01:00': 60, 'UTC+02:00': 120, 'UTC+03:00': 180, 'UTC+03:30': 210, 'UTC+04:00': 240, 'UTC+04:30': 270, 'UTC+05:00': 300, 'UTC+05:30': 330, 'UTC+05:45': 345, 'UTC+06:00': 360, 'UTC+06:30': 390, 'UTC+07:00': 420, 'UTC+08:00': 480, 'UTC+08:45': 525, 'UTC+09:00': 540, 'UTC+09:30': 570, 'UTC+10:00': 600, 'UTC+10:30': 630, 'UTC+11:00': 660, 'UTC+12:00': 720, 'UTC+12:45': 765, 'UTC+13:00': 780, 'UTC+14:00': 840 };
+        const COUNTRY_LIST = [ {name: "Afghanistan", code: "AF"}, {name: "Åland Islands", code: "AX"}, {name: "Albania", code: "AL"}, {name: "Algeria", code: "DZ"}, {name: "American Samoa", code: "AS"}, {name: "Andorra", code: "AD"}, {name: "Angola", code: "AO"}, {name: "Anguilla", code: "AI"}, {name: "Antarctica", code: "AQ"}, {name: "Antigua and Barbuda", code: "AG"}, {name: "Argentina", code: "AR"}, {name: "Armenia", code: "AM"}, {name: "Aruba", code: "AW"}, {name: "Australia", code: "AU"}, {name: "Austria", code: "AT"}, {name: "Azerbaijan", code: "AZ"}, {name: "Bahamas", code: "BS"}, {name: "Bahrain", code: "BH"}, {name: "Bangladesh", code: "BD"}, {name: "Barbados", code: "BB"}, {name: "Belarus", code: "BY"}, {name: "Belgium", code: "BE"}, {name: "Belize", code: "BZ"}, {name: "Benin", code: "BJ"}, {name: "Bermuda", code: "BM"}, {name: "Bhutan", code: "BT"}, {name: "Bolivia", code: "BO"}, {name: "Bosnia and Herzegovina", code: "BA"}, {name: "Botswana", code: "BW"}, {name: "Bouvet Island", code: "BV"}, {name: "Brazil", code: "BR"}, {name: "British Indian Ocean Territory", code: "IO"}, {name: "Brunei Darussalam", code: "BN"}, {name: "Bulgaria", code: "BG"}, {name: "Burkina Faso", code: "BF"}, {name: "Burundi", code: "BI"}, {name: "Cambodia", code: "KH"}, {name: "Cameroon", code: "CM"}, {name: "Canada", code: "CA"}, {name: "Cape Verde", code: "CV"}, {name: "Cayman Islands", code: "KY"}, {name: "Central African Republic", code: "CF"}, {name: "Chad", code: "TD"}, {name: "Chile", code: "CL"}, {name: "China", code: "CN"}, {name: "Christmas Island", code: "CX"}, {name: "Cocos (Keeling) Islands", code: "CC"}, {name: "Colombia", code: "CO"}, {name: "Comoros", code: "KM"}, {name: "Congo", code: "CG"}, {name: "Congo, The Democratic Republic of the", code: "CD"}, {name: "Cook Islands", code: "CK"}, {name: "Costa Rica", code: "CR"}, {name: "Cote D'Ivoire", code: "CI"}, {name: "Croatia", code: "HR"}, {name: "Cuba", code: "CU"}, {name: "Cyprus", code: "CY"}, {name: "Czech Republic", code: "CZ"}, {name: "Denmark", code: "DK"}, {name: "Djibouti", code: "DJ"}, {name: "Dominica", code: "DM"}, {name: "Dominican Republic", code: "DO"}, {name: "Ecuador", code: "EC"}, {name: "Egypt", code: "EG"}, {name: "El Salvador", code: "SV"}, {name: "Equatorial Guinea", code: "GQ"}, {name: "Eritrea", code: "ER"}, {name: "Estonia", code: "EE"}, {name: "Ethiopia", code: "ET"}, {name: "Falkland Islands (Malvinas)", code: "FK"}, {name: "Faroe Islands", code: "FO"}, {name: "Fiji", code: "FJ"}, {name: "Finland", code: "FI"}, {name: "France", code: "FR"}, {name: "French Guiana", code: "GF"}, {name: "French Polynesia", code: "PF"}, {name: "French Southern Territories", code: "TF"}, {name: "Gabon", code: "GA"}, {name: "Gambia", code: "GM"}, {name: "Georgia", code: "GE"}, {name: "Germany", code: "DE"}, {name: "Ghana", code: "GH"}, {name: "Gibraltar", code: "GI"}, {name: "Greece", code: "GR"}, {name: "Greenland", code: "GL"}, {name: "Grenada", code: "GD"}, {name: "Guadeloupe", code: "GP"}, {name: "Guam", code: "GU"}, {name: "Guatemala", code: "GT"}, {name: "Guernsey", code: "GG"}, {name: "Guinea", code: "GN"}, {name: "Guinea-Bissau", code: "GW"}, {name: "Guyana", code: "GY"}, {name: "Haiti", code: "HT"}, {name: "Heard Island and Mcdonald Islands", code: "HM"}, {name: "Holy See (Vatican City State)", code: "VA"}, {name: "Honduras", code: "HN"}, {name: "Hong Kong", code: "HK"}, {name: "Hungary", code: "HU"}, {name: "Iceland", code: "IS"}, {name: "India", code: "IN"}, {name: "Indonesia", code: "ID"}, {name: "Iran, Islamic Republic Of", code: "IR"}, {name: "Iraq", code: "IQ"}, {name: "Ireland", code: "IE"}, {name: "Isle of Man", code: "IM"}, {name: "Israel", code: "IL"}, {name: "Italy", code: "IT"}, {name: "Jamaica", code: "JM"}, {name: "Japan", code: "JP"}, {name: "Jersey", code: "JE"}, {name: "Jordan", code: "JO"}, {name: "Kazakhstan", code: "KZ"}, {name: "Kenya", code: "KE"}, {name: "Kiribati", code: "KI"}, {name: "Korea, Democratic People'S Republic of", code: "KP"}, {name: "Korea, Republic of", code: "KR"}, {name: "Kuwait", code: "KW"}, {name: "Kyrgyzstan", code: "KG"}, {name: "Lao People'S Democratic Republic", code: "LA"}, {name: "Latvia", code: "LV"}, {name: "Lebanon", code: "LB"}, {name: "Lesotho", code: "LS"}, {name: "Liberia", code: "LR"}, {name: "Libyan Arab Jamahiriya", code: "LY"}, {name: "Liechtenstein", code: "LI"}, {name: "Lithuania", code: "LT"}, {name: "Luxembourg", code: "LU"}, {name: "Macao", code: "MO"}, {name: "Macedonia, The Former Yugoslav Republic of", code: "MK"}, {name: "Madagascar", code: "MG"}, {name: "Malawi", code: "MW"}, {name: "Malaysia", code: "MY"}, {name: "Maldives", code: "MV"}, {name: "Mali", code: "ML"}, {name: "Malta", code: "MT"}, {name: "Marshall Islands", code: "MH"}, {name: "Martinique", code: "MQ"}, {name: "Mauritania", code: "MR"}, {name: "Mauritius", code: "MU"}, {name: "Mayotte", code: "YT"}, {name: "Mexico", code: "MX"}, {name: "Micronesia, Federated States of", code: "FM"}, {name: "Moldova, Republic of", code: "MD"}, {name: "Monaco", code: "MC"}, {name: "Mongolia", code: "MN"}, {name: "Montserrat", code: "MS"}, {name: "Morocco", code: "MA"}, {name: "Mozambique", code: "MZ"}, {name: "Myanmar", code: "MM"}, {name: "Namibia", code: "NA"}, {name: "Nauru", code: "NR"}, {name: "Nepal", code: "NP"}, {name: "Netherlands", code: "NL"}, {name: "Netherlands Antilles", code: "AN"}, {name: "New Caledonia", code: "NC"}, {name: "New Zealand", code: "NZ"}, {name: "Nicaragua", code: "NI"}, {name: "Niger", code: "NE"}, {name: "Nigeria", code: "NG"}, {name: "Niue", code: "NU"}, {name: "Norfolk Island", code: "NF"}, {name: "Northern Mariana Islands", code: "MP"}, {name: "Norway", code: "NO"}, {name: "Oman", code: "OM"}, {name: "Pakistan", code: "PK"}, {name: "Palau", code: "PW"}, {name: "Palestinian Territory, Occupied", code: "PS"}, {name: "Panama", code: "PA"}, {name: "Papua New Guinea", code: "PG"}, {name: "Paraguay", code: "PY"}, {name: "Peru", code: "PE"}, {name: "Philippines", code: "PH"}, {name: "Pitcairn", code: "PN"}, {name: "Poland", code: "PL"}, {name: "Portugal", code: "PT"}, {name: "Puerto Rico", code: "PR"}, {name: "Qatar", code: "QA"}, {name: "Reunion", code: "RE"}, {name: "Romania", code: "RO"}, {name: "Russian Federation", code: "RU"}, {name: "RWANDA", code: "RW"}, {name: "Saint Helena", code: "SH"}, {name: "Saint Kitts and Nevis", code: "KN"}, {name: "Saint Lucia", code: "LC"}, {name: "Saint Pierre and Miquelon", code: "PM"}, {name: "Saint Vincent and the Grenadines", code: "VC"}, {name: "Samoa", code: "WS"}, {name: "San Marino", code: "SM"}, {name: "Sao Tome and Principe", code: "ST"}, {name: "Saudi Arabia", code: "SA"}, {name: "Senegal", code: "SN"}, {name: "Serbia and Montenegro", code: "CS"}, {name: "Seychelles", code: "SC"}, {name: "Sierra Leone", code: "SL"}, {name: "Singapore", code: "SG"}, {name: "Slovakia", code: "SK"}, {name: "Slovenia", code: "SI"}, {name: "Solomon Islands", code: "SB"}, {name: "Somalia", code: "SO"}, {name: "South Africa", code: "ZA"}, {name: "South Georgia and the South Sandwich Islands", code: "GS"}, {name: "Spain", code: "ES"}, {name: "Sri Lanka", code: "LK"}, {name: "Sudan", code: "SD"}, {name: "Suriname", code: "SR"}, {name: "Svalbard and Jan Mayen", code: "SJ"}, {name: "Swaziland", code: "SZ"}, {name: "Sweden", code: "SE"}, {name: "Switzerland", code: "CH"}, {name: "Syrian Arab Republic", code: "SY"}, {name: "Taiwan", code: "TW"}, {name: "Tajikistan", code: "TJ"}, {name: "Tanzania, United Republic of", code: "TZ"}, {name: "Thailand", code: "TH"}, {name: "Timor-Leste", code: "TL"}, {name: "Togo", code: "TG"}, {name: "Tokelau", code: "TK"}, {name: "Tonga", code: "TO"}, {name: "Trinidad and Tobago", code: "TT"}, {name: "Tunisia", code: "TN"}, {name: "Turkey", code: "TR"}, {name: "Turkmenistan", code: "TM"}, {name: "Turks and Caicos Islands", code: "TC"}, {name: "Tuvalu", code: "TV"}, {name: "Uganda", code: "UG"}, {name: "Ukraine", code: "UA"}, {name: "United Arab Emirates", code: "AE"}, {name: "United Kingdom", code: "GB"}, {name: "United States", code: "US"}, {name: "United States Minor Outlying Islands", code: "UM"}, {name: "Uruguay", code: "UY"}, {name: "Uzbekistan", code: "UZ"}, {name: "Vanuatu", code: "VU"}, {name: "Venezuela", code: "VE"}, {name: "Viet Nam", code: "VN"}, {name: "Virgin Islands, British", code: "VG"}, {name: "Virgin Islands, U.S.", code: "VI"}, {name: "Wallis and Futuna", code: "WF"}, {name: "Western Sahara", code: "EH"}, {name: "Yemen", code: "YE"}, {name: "Zambia", code: "ZM"}, {name: "Zimbabwe", code: "ZW"} ];
 
         // --- UTILITIES ---
-        function emailToId(email) { return btoa(email.toLowerCase()).replace(/=/g, ''); }
         function showToast(message) {
             const toast = App.elements.toast;
             if (!toast) return;
@@ -582,8 +625,6 @@
             const codePoints = countryCode.toUpperCase().split('').map(char => 127397 + char.charCodeAt());
             return String.fromCodePoint(...codePoints);
         }
-
-        // --- TIMEZONE & DAY/NIGHT UTILITIES ---
         function getTzOffsetMinutes(timezoneId) {
             if (timezoneId === 'auto') return new Date().getTimezoneOffset() * -1;
             const offsetValue = parseInt(timezoneId, 10);
@@ -600,6 +641,171 @@
             const hours = String(Math.floor(absOffset / 60)).padStart(2, '0');
             const minutes = String(absOffset % 60).padStart(2, '0');
             return { time: timeStr, offset: `UTC${sign}${hours}:${minutes}`, hour: localTime.getHours() };
+        }
+
+        // --- FIREBASE AUTHENTICATION ---
+        async function handleGoogleLogin() {
+            const provider = new GoogleAuthProvider();
+            try {
+                const result = await signInWithPopup(auth, provider);
+                const user = result.user;
+                const userRef = ref(db, `users/${user.uid}`);
+                const snapshot = await get(userRef);
+
+                if (!snapshot.exists()) {
+                    const initialProfile = { displayName: user.displayName, email: user.email, pfpUrl: user.photoURL, status: '🟢', message: 'Ready for the day!', theme: 'auto', privacy: { email: 'public', phone: 'private', school: 'private', bio: 'public', age: 'public', gender: 'private', hobbies: 'public', country: 'public', timezone: 'public' }, updatedAt: new Date().toISOString() };
+                    await set(userRef, initialProfile);
+                }
+            } catch (error) {
+                document.getElementById('error-message').textContent = error.message;
+            }
+        }
+
+        async function handleEmailSignup(e) {
+            e.preventDefault();
+            const displayName = document.getElementById('signup-name').value.trim();
+            const email = document.getElementById('signup-email').value.trim();
+            const password = document.getElementById('signup-password').value;
+            const errorMsg = document.getElementById('error-message');
+            errorMsg.textContent = '';
+
+            if (!displayName || !email || password.length < 6) {
+                errorMsg.textContent = 'Please fill all fields. Password must be at least 6 characters.';
+                return;
+            }
+
+            try {
+                const result = await createUserWithEmailAndPassword(auth, email, password);
+                const user = result.user;
+                const userRef = ref(db, `users/${user.uid}`);
+                const initialProfile = { displayName: displayName, email: user.email, status: '🟢', message: 'Ready for the day!', theme: 'auto', updatedAt: new Date().toISOString(), privacy: { email: 'public', phone: 'private', school: 'private', bio: 'public', age: 'public', gender: 'private', hobbies: 'public', country: 'public', timezone: 'public' } };
+                await set(userRef, initialProfile);
+            } catch (error) {
+                errorMsg.textContent = error.message;
+            }
+        }
+
+        async function handleEmailLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value;
+            const errorMsg = document.getElementById('error-message');
+            errorMsg.textContent = '';
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+            } catch (error) {
+                errorMsg.textContent = error.message;
+            }
+        }
+
+        function handleLogout() {
+            signOut(auth);
+            window.location.hash = 'loginPage';
+            window.location.search = '';
+        }
+
+        onAuthStateChanged(auth, user => {
+            if (user) {
+                App.currentUser = { email: user.email, displayName: user.displayName, userId: user.uid, pfpUrl: user.photoURL };
+                const params = new URLSearchParams(window.location.search);
+                if (!params.has('user')) {
+                    setupUserSession();
+                    navigateTo('profilePage');
+                }
+            } else {
+                App.currentUser = null;
+                const params = new URLSearchParams(window.location.search);
+                if (!params.has('user')) {
+                     navigateTo('loginPage');
+                }
+            }
+        });
+
+
+        // --- FIREBASE DATABASE & CORE LOGIC ---
+        async function updateStatus(statusUpdate) {
+            if (!App.currentUser) return;
+            const dataToPatch = { ...statusUpdate, updatedAt: new Date().toISOString() };
+            const userRef = ref(db, `users/${App.currentUser.userId}`);
+            const historyRef = ref(db, `history/${App.currentUser.userId}`);
+            
+            await update(userRef, dataToPatch);
+            await push(historyRef, dataToPatch);
+            
+            const snapshot = await get(userRef);
+            App.currentProfileData = snapshot.val() || {};
+            renderProfile(App.currentProfileData);
+        }
+
+        async function saveAndLogStatus(data) {
+            const dataWithTimestamp = { ...data, updatedAt: new Date().toISOString() };
+            const userRef = ref(db, `users/${App.currentUser.userId}`);
+            const historyRef = ref(db, `history/${App.currentUser.userId}`);
+            
+            await update(userRef, dataWithTimestamp);
+            await push(historyRef, { status: data.status, message: data.message, endTime: data.endTime, timestamp: dataWithTimestamp.updatedAt });
+
+            const snapshot = await get(userRef);
+            App.currentProfileData = snapshot.val() || {};
+            applyVisuals(App.currentProfileData);
+            renderProfile(App.currentProfileData);
+            showToast('Settings Saved & Status Updated!');
+            navigateTo('profilePage');
+        }
+        
+        async function setupUserSession() {
+            if (!App.currentUser) return;
+            if (timetableCheckInterval) clearInterval(timetableCheckInterval);
+            try {
+                const userRef = ref(db, `users/${App.currentUser.userId}`);
+                const snapshot = await get(userRef);
+                const data = snapshot.val();
+                if (data) {
+                    App.currentProfileData = data;
+                    applyVisuals(data);
+                    renderProfile(data);
+                    populateSettings(data);
+                    await checkTimetableAndApplyStatus();
+                    timetableCheckInterval = setInterval(checkTimetableAndApplyStatus, 60000);
+                }
+            } catch (error) {
+                console.error("Failed to load user data:", error);
+                showToast("Failed to load user data.", "error");
+            }
+        }
+        
+        async function displayPublicProfile(userId) {
+            try {
+                const userRef = ref(db, `users/${userId}`);
+                const snapshot = await get(userRef);
+                let userData = snapshot.val();
+                if (userData) {
+                    userData.userId = userId;
+                    const activeSchedule = findActiveSchedule(userData);
+                    if (activeSchedule) {
+                        userData.status = activeSchedule.status;
+                        userData.message = activeSchedule.message;
+                        const [endHour, endMinute] = activeSchedule.end.split(':').map(Number);
+                        const endTime = new Date();
+                        endTime.setHours(endHour, endMinute, 0, 0);
+                        if (endTime < new Date()) endTime.setDate(endTime.getDate() + 1);
+                        userData.endTime = endTime.toISOString();
+                    }
+                    App.currentProfileData = userData;
+                    applyVisuals(userData);
+                    renderProfile(userData);
+                } else {
+                    document.getElementById('profile-name').textContent = 'User Not Found';
+                }
+            } catch (error) {
+                document.getElementById('profile-name').textContent = 'Error loading profile.';
+                console.error("Error loading public profile:", error);
+            }
+        }
+
+        async function resetStatusToDefault() {
+            await updateStatus({ status: '🟢', message: 'Available again.', endTime: null, autoResetStatus: false });
+            showToast('Status automatically reset to Available.');
         }
         
         // --- ROUTING & STATE MANAGEMENT ---
@@ -672,11 +878,11 @@
             
             App.pages.forEach(pId => App.elements[pId]?.classList.toggle('active', pId === targetPageId));
             document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.page === targetPageId));
-            App.elements.mainHeader?.classList.toggle('hidden', !App.currentUser);
+            App.elements.mainHeader?.classList.toggle('hidden', !App.currentUser || targetPageId === 'loginPage');
             window.scrollTo(0, 0);
         }
 
-        // --- CORE LOGIC & RENDERING ---
+        // --- RENDERING & DOM MANIPULATION ---
         function applyVisuals(data) {
             if (!data) return;
             const theme = data.theme || 'auto';
@@ -737,7 +943,7 @@
                 trackProfileView(data.userId);
             }
         }
-        
+
         function findActiveSchedule(user) {
             if (!user || !user.timetable || user.timetable.length === 0) return null;
             const now = new Date();
@@ -746,32 +952,6 @@
             return user.timetable.find(entry => entry.day === currentDay && currentTimeInMinutes >= timeToMinutes(entry.start) && currentTimeInMinutes < timeToMinutes(entry.end));
         }
         
-        async function displayPublicProfile(userId) {
-            try {
-                const userRes = await fetch(`${DATABASE_URL}/users/${userId}.json`);
-                let userData = await userRes.json(); 
-                if (userData) {
-                    userData.userId = userId;
-                    const activeSchedule = findActiveSchedule(userData);
-                    if (activeSchedule) {
-                        userData.status = activeSchedule.status;
-                        userData.message = activeSchedule.message;
-                        const [endHour, endMinute] = activeSchedule.end.split(':').map(Number);
-                        const endTime = new Date();
-                        endTime.setHours(endHour, endMinute, 0, 0);
-                        if (endTime < new Date()) endTime.setDate(endTime.getDate() + 1);
-                        userData.endTime = endTime.toISOString();
-                    }
-                    App.currentProfileData = userData;
-                    applyVisuals(userData);
-                    renderProfile(userData); 
-                } else { document.getElementById('profile-name').textContent = 'User Not Found'; }
-            } catch (error) {
-                document.getElementById('profile-name').textContent = 'Error loading profile.';
-                console.error("Error loading public profile:", error);
-            }
-        }
-
         function renderPersonalDetails(data) {
             const container = document.getElementById('personal-details-list');
             if (!container) return;
@@ -848,46 +1028,6 @@
             travelInterval = setInterval(renderTime, 1000);
         }
         
-        async function resetStatusToDefault() {
-            await updateStatus({ status: '🟢', message: 'Available again.', endTime: null, autoResetStatus: false });
-            showToast('Status automatically reset to Available.');
-        }
-
-        function renderCustomLinks(links, container) {
-            if (!container) return;
-            container.innerHTML = '';
-            if (!links || links.filter(l => l && l.url).length === 0) {
-                container.innerHTML = '<p class="muted">No links provided.</p>';
-                return;
-            }
-            links.forEach(link => {
-                if (link && link.label && link.url) {
-                    container.innerHTML += `<a href="${link.url}" target="_blank" class="custom-link"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72"></path></svg><span>${link.label}</span></a>`;
-                }
-            });
-        }
-        
-        function renderActionLinks(data) {
-            const container = document.getElementById('profile-action-links');
-            if (!container) return;
-            container.innerHTML = '';
-            let html = '';
-            if (data.schedulingLink) html += `<a href="${data.schedulingLink}" target="_blank" class="btn secondary" style="max-width: 250px;">Book a Meeting</a>`;
-            html += `<button id="download-vcard-btn" class="btn secondary" style="max-width: 250px;">Get Contact Card</button>`;
-            container.innerHTML = html;
-            document.getElementById('download-vcard-btn')?.addEventListener('click', () => handleVCardDownload(data));
-        }
-
-        async function updateStatus(statusUpdate) {
-             if (!App.currentUser) return;
-             const dataToPatch = { ...statusUpdate, updatedAt: new Date().toISOString() };
-             await fetch(`${DATABASE_URL}/users/${App.currentUser.userId}.json`, { method: 'PATCH', body: JSON.stringify(dataToPatch) });
-             await fetch(`${DATABASE_URL}/history/${App.currentUser.userId}.json`, { method: 'POST', body: JSON.stringify(dataToPatch) });
-             const updatedDataRes = await fetch(`${DATABASE_URL}/users/${App.currentUser.userId}.json`);
-             App.currentProfileData = await updatedDataRes.json() || {};
-             renderProfile(App.currentProfileData);
-        }
-
         async function checkTimetableAndApplyStatus() {
             if (!App.currentUser) return;
             const data = App.currentProfileData;
@@ -906,40 +1046,34 @@
                  if(data.autoResetStatus && data.endTime && new Date(data.endTime).getTime() < Date.now()) await resetStatusToDefault();
             }
         }
-
-        async function setupUserSession() {
-            if (!App.currentUser) return;
-            if (timetableCheckInterval) clearInterval(timetableCheckInterval);
-            try {
-                const response = await fetch(`${DATABASE_URL}/users/${App.currentUser.userId}.json`);
-                const data = await response.json();
-                if (data) {
-                    App.currentProfileData = data;
-                    applyVisuals(data); renderProfile(data); populateSettings(data);
-                    await checkTimetableAndApplyStatus();
-                    timetableCheckInterval = setInterval(checkTimetableAndApplyStatus, 60000);
-                }
-            } catch (error) { showToast("Failed to load user data.", "error"); }
-        }
         
-        function handlePageLoad() {
-            App.pages.forEach(pId => App.elements[pId] = document.getElementById(pId));
-            App.elements.mainHeader = document.getElementById('mainHeader');
-            App.elements.toast = document.getElementById('toast');
-            const params = new URLSearchParams(window.location.search);
-            const isPublicProfileView = params.has('user');
-            const user = JSON.parse(localStorage.getItem('hapUser'));
-            if (user) {
-                App.currentUser = user;
-                if (!isPublicProfileView) {
-                    setupUserSession();
-                }
+        function renderCustomLinks(links, container) {
+            if (!container) return;
+            container.innerHTML = '';
+            if (!links || links.filter(l => l && l.url).length === 0) {
+                container.innerHTML = '<p class="muted">No links provided.</p>';
+                return;
             }
-            window.addEventListener('hashchange', hashChangeRouter);
-            hashChangeRouter(); 
-            addEventListeners();
+            let html = '';
+            links.forEach(link => {
+                if (link && link.label && link.url) {
+                    html += `<a href="${link.url}" target="_blank" class="custom-link"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72"></path></svg><span>${link.label}</span></a>`;
+                }
+            });
+            container.innerHTML = html;
         }
         
+        function renderActionLinks(data) {
+            const container = document.getElementById('profile-action-links');
+            if (!container) return;
+            container.innerHTML = '';
+            let html = '';
+            if (data.schedulingLink) html += `<a href="${data.schedulingLink}" target="_blank" class="btn secondary" style="max-width: 250px;">Book a Meeting</a>`;
+            html += `<button id="download-vcard-btn" class="btn secondary" style="max-width: 250px;">Get Contact Card</button>`;
+            container.innerHTML = html;
+            document.getElementById('download-vcard-btn')?.addEventListener('click', () => handleVCardDownload(data));
+        }
+
         function populateSettings(data) {
             if (!data || !document.getElementById('display-name')) return;
             document.getElementById('display-name').value = data.displayName || '';
@@ -986,47 +1120,16 @@
             }
             renderTimetableSettings(data.timetable);
         }
-
-        async function handleSignup(e) {
-            e.preventDefault();
-            const email = document.getElementById('signup-email').value.trim(), password = document.getElementById('signup-password').value, displayName = document.getElementById('signup-name').value.trim();
-            const errorMsg = document.getElementById('error-message');
-            errorMsg.textContent = '';
-            if (!email || !password || !displayName) { errorMsg.textContent = 'All fields are required.'; return; }
-            const userId = emailToId(email);
-            const res = await fetch(`${DATABASE_URL}/logins/${userId}.json`);
-            if (await res.json()) { errorMsg.textContent = 'Account with this email already exists.'; return; }
-            const initialProfile = { displayName, email, password, status: '🟢', message: 'Ready for the day!', theme: 'auto', privacy: { email: 'public', phone: 'public', school: 'public', bio: 'public', age: 'public', gender: 'public', hobbies: 'public', country: 'public', timezone: 'public' }, updatedAt: new Date().toISOString() };
-            await Promise.all([
-                fetch(`${DATABASE_URL}/logins/${userId}.json`, { method: 'PUT', body: JSON.stringify({ email, password, displayName }) }),
-                fetch(`${DATABASE_URL}/users/${userId}.json`, { method: 'PUT', body: JSON.stringify(initialProfile) })
-            ]);
-            App.currentUser = { email, displayName, userId };
-            localStorage.setItem('hapUser', JSON.stringify(App.currentUser));
-            await setupUserSession();
-            navigateTo('profilePage');
-        }
-
-        async function handleLogin(e) {
-            e.preventDefault();
-            const email = document.getElementById('login-email').value.trim(), password = document.getElementById('login-password').value;
-            const errorMsg = document.getElementById('error-message');
-            errorMsg.textContent = '';
-            if (!email || !password) { errorMsg.textContent = 'Email and password cannot be empty.'; return; }
-            const userId = emailToId(email);
-            const res = await fetch(`${DATABASE_URL}/logins/${userId}.json`);
-            const data = await res.json();
-            if (data && data.password === password) {
-                App.currentUser = { email, displayName: data.displayName, userId };
-                localStorage.setItem('hapUser', JSON.stringify(App.currentUser));
-                await setupUserSession();
-                navigateTo('profilePage');
-            } else { errorMsg.textContent = 'Invalid email or password.'; }
-        }
         
-        function handleLogout() {
-            localStorage.removeItem('hapUser'); App.currentUser = null; App.currentProfileData = null;
-            window.location.search = ''; navigateTo('loginPage');
+        // --- EVENT HANDLERS & LOGIC ---
+        function handlePageLoad() {
+            App.pages.forEach(pId => App.elements[pId] = document.getElementById(pId));
+            App.elements.mainHeader = document.getElementById('mainHeader');
+            App.elements.toast = document.getElementById('toast');
+            
+            window.addEventListener('hashchange', hashChangeRouter);
+            hashChangeRouter(); 
+            addEventListeners();
         }
         
         async function handleDeleteAccount() {
@@ -1034,50 +1137,21 @@
             const confirmation = prompt(`To CONFIRM permanent deletion, please type your Display Name: "${App.currentProfileData.displayName}"`);
             if (confirmation !== App.currentProfileData.displayName) return showToast("Deletion cancelled.");
             const userId = App.currentUser.userId;
-            await Promise.all([
-                fetch(`${DATABASE_URL}/logins/${userId}.json`, { method: 'DELETE' }),
-                fetch(`${DATABASE_URL}/users/${userId}.json`, { method: 'DELETE' }),
-                fetch(`${DATABASE_URL}/history/${userId}.json`, { method: 'DELETE' }),
-                fetch(`${DATABASE_URL}/analytics/${userId}.json`, { method: 'DELETE' })
-            ]);
-            showToast("Account successfully deleted."); handleLogout();
+            
+            const userRef = ref(db, `users/${userId}`);
+            const historyRef = ref(db, `history/${userId}`);
+            const analyticsRef = ref(db, `analytics/${userId}`);
+            // Note: We don't delete from auth here, user must re-authenticate to delete.
+            // A more robust solution involves Cloud Functions for full cleanup.
+            
+            await set(userRef, null);
+            await set(historyRef, null);
+            await set(analyticsRef, null);
+
+            showToast("Account data successfully deleted.");
+            handleLogout();
         }
 
-        function addEventListeners() {
-            document.querySelector('.auth-tabs')?.addEventListener('click', e => {
-                if (e.target.classList.contains('tab')) {
-                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                    e.target.classList.add('active');
-                    const isLogin = e.target.dataset.tab === 'login';
-                    document.getElementById('login-form').classList.toggle('hidden', !isLogin);
-                    document.getElementById('signup-form').classList.toggle('hidden', isLogin);
-                }
-            });
-            document.getElementById('signup-form').addEventListener('submit', handleSignup);
-            document.getElementById('login-form').addEventListener('submit', handleLogin);
-            document.getElementById('logout-btn').addEventListener('click', handleLogout);
-            document.getElementById('delete-account-btn').addEventListener('click', handleDeleteAccount);
-            document.getElementById('save-settings-btn').addEventListener('click', handleSaveSettings);
-            document.getElementById('share-status-btn').addEventListener('click', handleShareStatus);
-            document.getElementById('add-timetable-entry-btn').addEventListener('click', handleAddTimetableEntry);
-            document.getElementById('run-search-btn').addEventListener('click', handleSearchUsers);
-            document.getElementById('generate-qrcode-btn').addEventListener('click', handleGenerateQrCode);
-            document.getElementById('status-time-type').addEventListener('change', (e) => toggleTimeInputs(e.target.value));
-            document.getElementById('suggest-status-btn').addEventListener('click', suggestStatusBasedOnTime);
-            App.elements.mainHeader.addEventListener('click', e => {
-                const navBtn = e.target.closest('.nav-btn');
-                if (navBtn) navigateTo(navBtn.dataset.page);
-            });
-            document.querySelectorAll('.preset-btn').forEach(btn => btn.addEventListener('click', handlePresetClick));
-            const countrySearch = document.getElementById('country-search');
-            const countryDropdown = document.getElementById('country-dropdown');
-            countrySearch?.addEventListener('focus', () => { countryDropdown.classList.remove('hidden'); filterCountries(); });
-            countrySearch?.addEventListener('keyup', filterCountries);
-            document.addEventListener('click', (e) => {
-                if (!e.target.closest('.country-select-wrapper')) countryDropdown.classList.add('hidden');
-            });
-        }
-        
         async function handleSaveSettings() {
             if (!App.currentUser) return;
             const customLinks = Array.from({length: 5}, (_, i) => ({ label: document.getElementById(`link-label-${i}`).value.trim(), url: document.getElementById(`link-url-${i}`).value.trim() })).filter(l => l.label && l.url);
@@ -1118,22 +1192,12 @@
             } else { await saveAndLogStatus(dataToSave); }
         }
 
-        async function saveAndLogStatus(data) {
-            const dataWithTimestamp = { ...data, updatedAt: new Date().toISOString() };
-            await fetch(`${DATABASE_URL}/users/${App.currentUser.userId}.json`, { method: 'PATCH', body: JSON.stringify(dataWithTimestamp) });
-            await fetch(`${DATABASE_URL}/history/${App.currentUser.userId}.json`, { method: 'POST', body: JSON.stringify({ status: data.status, message: data.message, endTime: data.endTime, timestamp: dataWithTimestamp.updatedAt }) });
-            const updatedDataRes = await fetch(`${DATABASE_URL}/users/${App.currentUser.userId}.json`);
-            App.currentProfileData = await updatedDataRes.json() || {};
-            applyVisuals(App.currentProfileData); renderProfile(App.currentProfileData);
-            showToast('Settings Saved & Status Updated!'); navigateTo('profilePage');
-        }
-
         async function handlePresetClick(e) {
              const { emoji, message, duration } = e.currentTarget.dataset;
              const endTime = duration > 0 ? new Date(Date.now() + duration * 60000).toISOString() : null;
              await updateStatus({ status: emoji, message: message, endTime: endTime, autoResetStatus: true });
              showToast(`Status updated: ${emoji}`);
-         }
+        }
 
         function toggleTimeInputs(type) {
             document.getElementById('status-duration-group').classList.toggle('hidden', type !== 'duration');
@@ -1185,14 +1249,20 @@
             if (!start || !end || !status) return showToast("All fields required.");
             const newEntry = { day, start, end, status, message: prompt("Message:") || '' };
             const newTimetable = [...(App.currentProfileData.timetable || []), newEntry];
-            await fetch(`${DATABASE_URL}/users/${App.currentUser.userId}.json`, { method: 'PATCH', body: JSON.stringify({ timetable: newTimetable }) });
+            
+            const userRef = ref(db, `users/${App.currentUser.userId}`);
+            await update(userRef, { timetable: newTimetable });
+            
             App.currentProfileData.timetable = newTimetable;
             renderTimetableSettings(newTimetable); showToast("Schedule added!");
         }
         async function handleRemoveTimetableEntry(e) {
             const index = parseInt(e.currentTarget.dataset.index, 10);
             const newTimetable = App.currentProfileData.timetable.filter((_, i) => i !== index);
-            await fetch(`${DATABASE_URL}/users/${App.currentUser.userId}.json`, { method: 'PATCH', body: JSON.stringify({ timetable: newTimetable }) });
+
+            const userRef = ref(db, `users/${App.currentUser.userId}`);
+            await update(userRef, { timetable: newTimetable });
+
             App.currentProfileData.timetable = newTimetable;
             renderTimetableSettings(newTimetable); showToast("Schedule removed.");
         }
@@ -1201,8 +1271,9 @@
             if (!App.currentUser) return;
             const userId = App.currentUser.userId, historyLog = document.getElementById('history-log'), viewGrid = document.getElementById('view-analytics-grid');
             try {
-                const historyRes = await fetch(`${DATABASE_URL}/history/${userId}.json?orderBy="$key"&limitToLast=10`);
-                const historyData = await historyRes.json();
+                const historyQuery = query(ref(db, `history/${userId}`), orderByKey(), limitToLast(10));
+                const snapshot = await get(historyQuery);
+                const historyData = snapshot.val();
                 if (historyData) {
                     const historyList = Object.values(historyData).sort((a, b) => new Date(b.updatedAt || b.timestamp) - new Date(a.updatedAt || a.timestamp));
                     historyLog.innerHTML = '';
@@ -1213,39 +1284,42 @@
                 } else { historyLog.innerHTML = '<p class="muted">No history found.</p>'; }
             } catch (error) { historyLog.innerHTML = '<p class="muted">Error loading history.</p>'; }
             try {
-                const analyticsRes = await fetch(`${DATABASE_URL}/analytics/${userId}/totalViews.json`);
-                const totalViews = await analyticsRes.json() || 0;
+                const analyticsRef = ref(db, `analytics/${userId}/totalViews`);
+                const snapshot = await get(analyticsRef);
+                const totalViews = snapshot.val() || 0;
                 viewGrid.innerHTML = `<div class="analytics-metric"><p class="metric-value">${totalViews}</p><p class="metric-label">Total Views</p></div><div class="analytics-metric"><p class="metric-value">--</p><p class="metric-label">Today</p></div><div class="analytics-metric"><p class="metric-value">--</p><p class="metric-label">This Week</p></div>`;
             } catch (error) { viewGrid.innerHTML = '<p class="muted" style="grid-column: 1 / -1; text-align: center;">Error loading view data.</p>'; }
         }
 
         async function handleSearchUsers() {
-            const query = document.getElementById('user-search-input').value.toLowerCase().trim();
+            const queryText = document.getElementById('user-search-input').value.toLowerCase().trim();
             const resultsList = document.getElementById('search-results-list');
-            if (!query) return;
+            if (!queryText) return;
             resultsList.innerHTML = '<p class="muted">Searching...</p>';
             try {
-                if (!allUsersCache) {
-                    const loginsRes = await fetch(`${DATABASE_URL}/logins.json`);
-                    allUsersCache = await loginsRes.json();
-                }
+                const usersRef = ref(db, 'users');
+                // Firebase RTDB doesn't support case-insensitive or "contains" queries directly.
+                // A common approach is to fetch all and filter client-side, or use a dedicated search service like Algolia.
+                // For this app's scale, we'll fetch all.
+                const snapshot = await get(usersRef);
+                const allUsers = snapshot.val();
                 const results = [];
-                for (const userId in allUsersCache) {
-                    const user = allUsersCache[userId];
-                    if (user.displayName?.toLowerCase().includes(query)) {
-                        results.push({ userId, ...user });
+                if(allUsers){
+                     for (const userId in allUsers) {
+                        const user = allUsers[userId];
+                        if (user.displayName?.toLowerCase().includes(queryText)) {
+                            results.push({ userId, ...user });
+                        }
                     }
                 }
+               
                 if (results.length > 0) {
                     resultsList.innerHTML = '';
-                    results.forEach(async (user) => {
-                        const userProfileRes = await fetch(`${DATABASE_URL}/users/${user.userId}.json`);
-                        const userProfile = await userProfileRes.json();
-                        if(!userProfile) return;
-                        const activeSchedule = findActiveSchedule(userProfile);
-                        const displayStatus = activeSchedule ? activeSchedule.status : userProfile.status;
-                        const displayMessage = activeSchedule ? activeSchedule.message : userProfile.message;
-                        resultsList.innerHTML += `<div class="search-result-item"><div><strong>${userProfile.displayName}</strong><p style="margin: 0;">${displayStatus} ${displayMessage || ''}</p></div><a href="?user=${user.userId}#profilePage">View Profile</a></div>`;
+                    results.forEach(user => {
+                        const activeSchedule = findActiveSchedule(user);
+                        const displayStatus = activeSchedule ? activeSchedule.status : user.status;
+                        const displayMessage = activeSchedule ? activeSchedule.message : user.message;
+                        resultsList.innerHTML += `<div class="search-result-item"><div><strong>${user.displayName}</strong><p style="margin: 0;">${displayStatus} ${displayMessage || ''}</p></div><a href="?user=${user.userId}#profilePage">View Profile</a></div>`;
                     });
                 } else { resultsList.innerHTML = '<p class="muted">No users found.</p>'; }
             } catch(e) { resultsList.innerHTML = '<p class="muted">Error performing search.</p>'; }
@@ -1253,13 +1327,14 @@
 
         async function trackProfileView(profileId) {
             try {
-                const viewCountRes = await fetch(`${DATABASE_URL}/analytics/${profileId}/totalViews.json`);
-                const currentViews = await viewCountRes.json() || 0;
-                await fetch(`${DATABASE_URL}/analytics/${profileId}/totalViews.json`, { method: 'PUT', body: JSON.stringify(currentViews + 1) });
+                const viewCountRef = ref(db, `analytics/${profileId}/totalViews`);
+                const snapshot = await get(viewCountRef);
+                const currentViews = snapshot.val() || 0;
+                await set(viewCountRef, currentViews + 1);
             } catch (error) { console.error("Failed to track profile view:", error); }
         }
 
-        async function handleVCardDownload(data) {
+        function handleVCardDownload(data) {
             if (!data) return;
             const nameParts = (data.displayName || '').split(' ');
             const lastName = nameParts.length > 1 ? nameParts.pop() : '';
@@ -1295,6 +1370,42 @@
             });
         }
         
+        function addEventListeners() {
+            document.querySelector('.auth-tabs')?.addEventListener('click', e => {
+                if (e.target.classList.contains('tab')) {
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    e.target.classList.add('active');
+                    const isLogin = e.target.dataset.tab === 'login';
+                    document.getElementById('login-form').classList.toggle('hidden', !isLogin);
+                    document.getElementById('signup-form').classList.toggle('hidden', isLogin);
+                }
+            });
+            document.getElementById('google-login-btn')?.addEventListener('click', handleGoogleLogin);
+            document.getElementById('signup-form')?.addEventListener('submit', handleEmailSignup);
+            document.getElementById('login-form')?.addEventListener('submit', handleEmailLogin);
+            document.getElementById('logout-btn').addEventListener('click', handleLogout);
+            document.getElementById('delete-account-btn').addEventListener('click', handleDeleteAccount);
+            document.getElementById('save-settings-btn').addEventListener('click', handleSaveSettings);
+            document.getElementById('share-status-btn').addEventListener('click', handleShareStatus);
+            document.getElementById('add-timetable-entry-btn').addEventListener('click', handleAddTimetableEntry);
+            document.getElementById('run-search-btn').addEventListener('click', handleSearchUsers);
+            document.getElementById('generate-qrcode-btn').addEventListener('click', handleGenerateQrCode);
+            document.getElementById('status-time-type').addEventListener('change', (e) => toggleTimeInputs(e.target.value));
+            document.getElementById('suggest-status-btn').addEventListener('click', suggestStatusBasedOnTime);
+            App.elements.mainHeader.addEventListener('click', e => {
+                const navBtn = e.target.closest('.nav-btn');
+                if (navBtn) navigateTo(navBtn.dataset.page);
+            });
+            document.querySelectorAll('.preset-btn').forEach(btn => btn.addEventListener('click', handlePresetClick));
+            const countrySearch = document.getElementById('country-search');
+            const countryDropdown = document.getElementById('country-dropdown');
+            countrySearch?.addEventListener('focus', () => { countryDropdown.classList.remove('hidden'); filterCountries(); });
+            countrySearch?.addEventListener('keyup', filterCountries);
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.country-select-wrapper')) countryDropdown.classList.add('hidden');
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', handlePageLoad);
     </script>
 </body>
