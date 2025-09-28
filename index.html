@@ -72,7 +72,7 @@
         .page.active { display: block; }
         .card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px; margin-bottom: 20px; transition: background-color 0.4s; }
 
-        h1 { font-size: 2rem; font-weight: 700; margin: 0 0 8px 0; text-align: center; }
+        h1 { font-size: 2.25rem; font-weight: 700; margin: 0 0 8px 0; text-align: center; }
         h2 { font-size: 1.5rem; font-weight: 600; margin: 0 0 16px 0; padding-bottom: 12px; border-bottom: 1px solid var(--border-color); }
         p { color: var(--muted); line-height: 1.6; margin: 4px 0; }
         label { display: block; margin-bottom: 8px; font-weight: 500; color: var(--muted); }
@@ -110,11 +110,34 @@
             border: 3px solid var(--pfp-border-day); transition: all 0.4s;
         }
         .profile-emoji { font-size: 4rem; line-height: 1; margin: 16px 0; }
-        .profile-name { font-size: 2.25rem; font-weight: 700; color: var(--text); margin: 0; font-family: var(--display-font); display: flex; justify-content: center; align-items: center; }
-        .profile-message { font-size: 1.2rem; color: var(--muted); min-height: 28px; }
-        .profile-timer { font-size: 2.5rem; color: var(--primary); font-weight: 700; margin-top: 24px; min-height: 40px; }
-        .profile-country { display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 500; margin-top: 10px; }
-        .profile-country .flag-emoji { font-size: 1.5rem; }
+        
+        /* Updated Profile Name Styling */
+        .profile-name { 
+            font-weight: 700; margin: 0; font-family: var(--display-font); 
+            display: flex; justify-content: center; align-items: center; 
+            font-size: 2.25rem;
+            color: var(--text); /* Default Text Color */
+        }
+        .profile-name.is-owner {
+            color: #ef4444; /* Red color for Owners */
+        }
+        
+        /* Updated Role Display Container */
+        .role-badge-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin: 5px auto 16px auto;
+        }
+        
+        .role-badge {
+            font-size: 0.8rem; 
+            font-weight: 700; 
+            padding: 4px 10px; 
+            border-radius: 6px; 
+            width: fit-content;
+        }
 
         /* --- ADDED ROLE STYLES --- */
         .role-owner { 
@@ -125,6 +148,24 @@
             background-color: #3b82f6; /* Blue BG */
             color: white !important; 
         }
+
+        /* Verified Badge Style */
+        .verified-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background-color: #1e3a8a; /* Dark Blue */
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+
+        .profile-message { font-size: 1.2rem; color: var(--muted); min-height: 28px; }
+        .profile-timer { font-size: 2.5rem; color: var(--primary); font-weight: 700; margin-top: 24px; min-height: 40px; }
+        .profile-country { display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 500; margin-top: 10px; }
+        .profile-country .flag-emoji { font-size: 1.5rem; }
 
         .custom-link {
             display: inline-flex; align-items: center; gap: 8px; background: var(--primary-light);
@@ -264,14 +305,19 @@
             <div class="card profile-header">
                 <div id="profile-pfp"></div> 
                 <div class="profile-emoji" id="profile-emoji">❓</div>
-                <h1 class="profile-name" id="profile-name">Loading...
-                    <!-- Verified Checkmark Icon (Initially Hidden) -->
-                    <span id="verified-checkmark" class="hidden" style="color: var(--primary); font-size: 1.2rem; margin-left: 5px;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M2.5 12a9.5 9.5 0 1 1 19 0 9.5 9.5 0 0 1-19 0ZM15 10.5a.75.75 0 0 0-1.06-1.06l-4.72 4.72-2.84-2.84a.75.75 0 0 0-1.06 1.06l3.375 3.375a.75.75 0 0 0 1.06 0l5.25-5.25Z" clip-rule="evenodd"></path></svg>
-                    </span>
-                </h1>
-                <!-- User Role Display -->
-                <div id="user-role-display" style="font-size: 0.8rem; font-weight: 700; padding: 4px 10px; border-radius: 6px; margin: 5px auto 16px auto; width: fit-content;"></div>
+                
+                <h1 class="profile-name" id="profile-name">Loading...</h1>
+                
+                <div id="role-and-verified-container" class="role-badge-container">
+                    <!-- User Role Display -->
+                    <div id="user-role-display" class="role-badge">Loading Role</div>
+                    <!-- Verified Status Badge -->
+                    <div id="verified-badge" class="verified-badge hidden">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="display: block;"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+                        <span>Verified</span>
+                    </div>
+                </div>
+
                 <p class="profile-message" id="profile-message">Fetching status...</p>
                 <div class="profile-timer" id="profile-timer"></div>
                 <p class="local-time-display" id="local-time-info" style="font-size: 1rem; margin-top: 10px; font-weight: 500;"></p>
@@ -691,10 +737,9 @@
                         updatedAt: new Date().toISOString() 
                     };
                     await set(userRef, initialProfile);
-                    App.currentProfileData = initialProfile; // Load fresh data immediately (BUG FIX part 1)
+                    App.currentProfileData = initialProfile;
                 }
                 
-                // BUG FIX part 2: Force navigation after successful sign-in to kickstart the UI
                 navigateTo('profilePage', true); 
 
             } catch (error) {
@@ -731,9 +776,8 @@
                     privacy: { email: 'public', phone: 'private', school: 'private', bio: 'public', age: 'public', gender: 'private', hobbies: 'public', country: 'public', timezone: 'public' } 
                 };
                 await set(userRef, initialProfile);
-                App.currentProfileData = initialProfile; // Load fresh data immediately (BUG FIX part 1)
+                App.currentProfileData = initialProfile;
                 
-                // BUG FIX part 2: Force navigation after successful sign-up
                 navigateTo('profilePage', true); 
 
             } catch (error) {
@@ -749,7 +793,6 @@
             errorMsg.textContent = '';
             try {
                 await signInWithEmailAndPassword(auth, email, password);
-                // Navigating relies on onAuthStateChanged handler
             } catch (error) {
                 errorMsg.textContent = error.message;
             }
@@ -766,10 +809,8 @@
                 App.currentUser = { email: user.email, displayName: user.displayName, userId: user.uid, pfpUrl: user.photoURL };
                 const params = new URLSearchParams(window.location.search);
                 if (!params.has('user')) {
-                    // This call ensures the UI loads quickly if the user was already signed in 
-                    // or if they just finished a non-redirecting login/signup flow.
                     setupUserSession(); 
-                    navigateTo('profilePage');
+                    // Do NOT call navigateTo here, let setupUserSession or hashChangeRouter handle it
                 }
             } else {
                 App.currentUser = null;
@@ -992,29 +1033,27 @@
             updatePageTitle(data);
             const profileNameEl = document.getElementById('profile-name');
             const roleEl = document.getElementById('user-role-display');
-            const verifiedEl = document.getElementById('verified-checkmark');
+            const verifiedBadgeEl = document.getElementById('verified-badge');
 
-            // 1. Display Name and Verified Status
-            profileNameEl.innerHTML = (data.displayName || 'Unnamed User') + (data.verified ? verifiedEl.outerHTML : '');
-            if (data.verified) {
-                // Since we replaced innerHTML, we need to re-fetch the new element and show it
-                document.getElementById('verified-checkmark').classList.remove('hidden');
-            } else {
-                verifiedEl.classList.add('hidden');
-            }
+            // 1. Display Name and Color
+            profileNameEl.textContent = data.displayName || 'Unnamed User';
+            profileNameEl.classList.toggle('is-owner', (data.role || '').toLowerCase() === 'owner');
 
             // 2. Role Display
             const role = data.role || 'Member';
             roleEl.textContent = role.toUpperCase();
-            roleEl.className = 'role-display'; // Reset classes
+            roleEl.className = 'role-badge'; // Reset classes
             roleEl.classList.add(`role-${role.toLowerCase()}`);
             
-            // 3. Status and Timer
+            // 3. Verified Badge
+            verifiedBadgeEl.classList.toggle('hidden', !data.verified);
+            
+            // 4. Status and Timer
             document.getElementById('profile-emoji').textContent = data.status || '❓';
             document.getElementById('profile-message').textContent = data.message || 'No message set.';
             updateTimer(data);
             
-            // 4. Timezone
+            // 5. Timezone
             renderPersonalDetails(data);
             const timeData = getLocalTimeData(data.timezoneOverride || 'auto');
             const timeInfoEl = document.getElementById('local-time-info');
@@ -1302,7 +1341,6 @@
                 timezoneOverride: document.getElementById('timezone-selector').value, status: document.getElementById('status-emoji').value,
                 message: document.getElementById('status-message').value, autoResetStatus: document.getElementById('auto-reset').checked,
                 links: customLinks, endTime: endTime, statusTimeType: timeType,
-                // Role and verified are NOT updated via settings for security/control reasons
                 privacy: {
                     email: document.getElementById('privacy-email').value, bio: document.getElementById('privacy-bio').value,
                     age: document.getElementById('privacy-age').value, gender: document.getElementById('privacy-gender').value,
