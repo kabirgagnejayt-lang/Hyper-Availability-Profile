@@ -1003,8 +1003,13 @@
                     promoCard.classList.remove('hidden');
                     const promoBtn = document.getElementById('promo-action-btn');
                     if (App.currentUser) {
-                        promoBtn.textContent = 'Go to My Dashboard';
-                        navigateTo('profilePage', true); // Navigate to profile if logged in
+                        // FIX: Check if viewing own profile and assign navigation to onclick event.
+                        if (App.currentUser.userId === userIdFromUrl) {
+                            promoCard.classList.add('hidden');
+                        } else {
+                            promoBtn.textContent = 'Go to My Dashboard';
+                            promoBtn.onclick = () => navigateTo('profilePage', true);
+                        }
                     } else {
                         promoBtn.textContent = 'Get Started Now';
                         promoBtn.onclick = () => navigateTo('loginPage', true);
@@ -1781,3 +1786,4 @@
     </script>
 </body>
 </html>
+
