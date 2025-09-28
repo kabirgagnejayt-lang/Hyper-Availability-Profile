@@ -929,6 +929,10 @@
                 let userData = snapshot.val();
                 if (userData) {
                     userData.userId = userId;
+                    
+                    // Apply Visuals immediately to ensure correct background/theme is loaded from settings
+                    applyVisuals(userData); 
+
                     const activeSchedule = findActiveSchedule(userData);
                     if (activeSchedule) {
                         userData.status = activeSchedule.status;
@@ -940,9 +944,11 @@
                         userData.endTime = endTime.toISOString();
                     }
                     App.currentProfileData = userData;
-                    applyVisuals(userData);
+                    
                     renderProfile(userData);
                 } else {
+                    // Fallback theme for non-existent user
+                    document.body.className = '';
                     document.getElementById('profile-name').textContent = 'User Not Found';
                 }
             } catch (error) {
@@ -975,10 +981,10 @@
             if (userIdFromUrl) {
                 isPublicView = true;
                 
-                // --- FIX APPLIED HERE: Ensure the profile page is active immediately ---
+                // --- FIX APPLIED: Ensure the profile page is active immediately and clears old classes ---
                 App.pages.forEach(pId => App.elements[pId]?.classList.remove('active'));
                 App.elements.profilePage?.classList.add('active');
-                // ----------------------------------------------------------------------
+                // -----------------------------------------------------------------------------------------
 
                 document.body.style.paddingBottom = "20px";
                 App.elements.mainHeader?.classList.add('hidden');
@@ -992,7 +998,7 @@
                     const promoBtn = document.getElementById('promo-action-btn');
                     if (App.currentUser) {
                         promoBtn.textContent = 'Go to My Dashboard';
-                        promoBtn.onclick = () => navigateTo('profilePage', true);
+                        navigateTo('profilePage', true); // Navigate to profile if logged in
                     } else {
                         promoBtn.textContent = 'Get Started Now';
                         promoBtn.onclick = () => navigateTo('loginPage', true);
@@ -1047,6 +1053,7 @@
             
             const accent = data.profileAccentColor || '#0ea5e9';
             document.documentElement.style.setProperty('--primary', accent);
+            // This needs to check the body's class for correct dark mode rendering of --primary-dark
             document.documentElement.style.setProperty('--primary-dark', document.body.classList.contains('dark') ? '#7dd3fc' : accent);
             document.documentElement.style.setProperty('--link-text-color', data.linkTextColor || '#0369a1');
             document.documentElement.style.setProperty('--display-font', data.displayNameFont || 'Inter, sans-serif');
@@ -1454,6 +1461,7 @@
 
         function handleGenerateQrCode() {
             if (!App.currentUser) return;
+            // FIX: Remove hash from the generated share URL
             const shareUrl = `${window.location.origin}${window.location.pathname}?user=${App.currentUser.userId}`;
             const img = document.getElementById('profile-qrcode-img'), placeholder = document.getElementById('qrcode-placeholder');
             img.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(shareUrl)}`;
@@ -1461,6 +1469,7 @@
         }
         function handleShareStatus() {
             if (!App.currentUser) return;
+            // FIX: Remove hash from the generated share URL
             const shareUrl = `${window.location.origin}${window.location.pathname}?user=${App.currentUser.userId}`;
             navigator.clipboard.writeText(shareUrl).then(() => showToast('Profile link copied to clipboard! 🔗'));
         }
@@ -1665,7 +1674,7 @@
                                         <span style="font-size: 0.9rem; color: var(--muted);">${displayStatus} ${displayMessage}</span>
                                     </div>
                                 </div>
-                                <a href="?user=${user.userId}#profilePage" class="btn secondary" style="padding: 8px 12px; margin: 0; width: auto; font-size: 0.9rem; flex-shrink: 0;">View Profile</a>
+                                <a href="?user=${user.userId}" class="btn secondary" style="padding: 8px 12px; margin: 0; width: auto; font-size: 0.9rem; flex-shrink: 0;">View Profile</a>
                             </div>
                         `;
                     });
