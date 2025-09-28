@@ -156,6 +156,7 @@
         .history-status { font-weight: 600; color: var(--text); display: block; }
         .history-time { font-size: 0.8rem; color: var(--muted); }
         .search-result-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid var(--border-color); }
+        .search-result-item a { text-decoration: none; font-weight: 600; color: var(--primary); }
 
         footer { margin-top: 40px; text-align: center; color: var(--muted); font-size: 0.9rem; padding: 20px 0; border-top: 1px solid var(--border-color); }
         footer a { color: var(--primary); text-decoration: none; margin: 0 5px; }
@@ -970,10 +971,6 @@
             addEventListeners();
         }
         
-        // ALL OTHER FUNCTIONS ARE PLACED HERE
-        // This includes signup, login, settings population, event handlers, etc.
-        // It's a large block, but this ensures everything is defined.
-
         function populateSettings(data) {
             if (!data || !document.getElementById('display-name')) return;
             
@@ -1110,7 +1107,6 @@
             handleLogout();
         }
 
-        // The rest of the functions...
         function addEventListeners() {
             document.querySelector('.auth-tabs')?.addEventListener('click', e => {
                 if (e.target.classList.contains('tab')) {
@@ -1260,17 +1256,18 @@
              const { emoji, message, duration } = e.currentTarget.dataset;
              const endTime = duration > 0 ? new Date(Date.now() + duration * 60000).toISOString() : null;
              
-             await saveAndLogStatus({
-                 ...App.currentProfileData,
+             const dataToSave = { ...App.currentProfileData,
                  status: emoji,
                  message: message,
                  endTime: endTime,
                  autoResetStatus: true
-             });
+             };
+             // Use PATCH method for preset clicks to only update status fields
+             const { status, message: msg, endTime: end, autoResetStatus, updatedAt } = dataToSave;
+             await updateStatus({ status, message: msg, endTime: end, autoResetStatus, updatedAt: new Date().toISOString() });
              showToast(`Status updated: ${emoji}`);
          }
 
-        // All other handlers and functions...
         function toggleTimeInputs(type) {
             document.getElementById('status-duration-group')?.classList.toggle('hidden', type !== 'duration');
             document.getElementById('status-until-group')?.classList.toggle('hidden', type !== 'until');
@@ -1327,10 +1324,149 @@
             renderTimetableSettings(newTimetable);
             showToast("Schedule removed.");
         }
-        async function fetchAndRenderAnalytics() { /* ... implementation ... */ }
-        async function handleSearchUsers() { /* ... implementation ... */ }
-        async function trackProfileView(profileId) { /* ... implementation ... */ }
-        async function handleVCardDownload(data) { /* ... implementation ... */ }
+        
+        // --- NEWLY IMPLEMENTED ANALYTICS FUNCTIONS ---
+
+        async function fetchAndRenderAnalytics() {
+            if (!App.currentUser) return;
+            const userId = App.currentUser.userId;
+            const historyLog = document.getElementById('history-log');
+            const viewGrid = document.getElementById('view-analytics-grid');
+
+            // Render Status History
+            try {
+                const historyRes = await fetch(`${DATABASE_URL}/history/${userId}.json?orderBy="$key"&limitToLast=10`);
+                const historyData = await historyRes.json();
+                if (historyData) {
+                    const historyList = Object.values(historyData)
+                        .sort((a, b) => new Date(b.updatedAt || b.timestamp) - new Date(a.updatedAt || a.timestamp));
+                    
+                    historyLog.innerHTML = '';
+                    historyList.forEach(item => {
+                        const date = new Date(item.updatedAt || item.timestamp);
+                        const timeString = date.toLocaleString();
+                        historyLog.innerHTML += `
+                            <div class="history-item">
+                                <span class="history-status">${item.status} ${item.message || ''}</span>
+                                <span class="history-time">${timeString}</span>
+                            </div>
+                        `;
+                    });
+                } else {
+                    historyLog.innerHTML = '<p class="muted">No history found.</p>';
+                }
+            } catch (error) {
+                historyLog.innerHTML = '<p class="muted">Error loading history.</p>';
+            }
+
+            // Render View Analytics
+            try {
+                const analyticsRes = await fetch(`${DATABASE_URL}/analytics/${userId}/totalViews.json`);
+                const totalViews = await analyticsRes.json() || 0;
+                viewGrid.innerHTML = `
+                    <div class="analytics-metric">
+                        <p class="metric-value">${totalViews}</p>
+                        <p class="metric-label">Total Views</p>
+                    </div>
+                    <div class="analytics-metric">
+                        <p class="metric-value">--</p>
+                        <p class="metric-label">Today</p>
+                    </div>
+                     <div class="analytics-metric">
+                        <p class="metric-value">--</p>
+                        <p class="metric-label">This Week</p>
+                    </div>
+                `;
+            } catch (error) {
+                viewGrid.innerHTML = '<p class="muted" style="grid-column: 1 / -1; text-align: center;">Error loading view data.</p>';
+            }
+        }
+
+        async function handleSearchUsers() {
+            const query = document.getElementById('user-search-input').value.toLowerCase().trim();
+            const resultsList = document.getElementById('search-results-list');
+            if (!query) {
+                resultsList.innerHTML = '<p class="muted">Please enter a name or email to search.</p>';
+                return;
+            }
+            resultsList.innerHTML = '<p class="muted">Searching...</p>';
+            
+            try {
+                // In a real app, this should be a server-side search for security and performance.
+                // Here we fetch all users, which is not scalable or secure.
+                if (!allUsersCache) {
+                    const usersRes = await fetch(`${DATABASE_URL}/users.json`);
+                    allUsersCache = await usersRes.json();
+                }
+                
+                const results = [];
+                for (const userId in allUsersCache) {
+                    const user = allUsersCache[userId];
+                    if (user.displayName?.toLowerCase().includes(query) || user.email?.toLowerCase().includes(query)) {
+                        results.push({ userId, ...user });
+                    }
+                }
+                
+                if (results.length > 0) {
+                    resultsList.innerHTML = '';
+                    results.forEach(user => {
+                        resultsList.innerHTML += `
+                            <div class="search-result-item">
+                                <div>
+                                    <strong>${user.displayName}</strong>
+                                    <p style="margin: 0;">${user.status} ${user.message || ''}</p>
+                                </div>
+                                <a href="?user=${user.userId}">View Profile</a>
+                            </div>
+                        `;
+                    });
+                } else {
+                    resultsList.innerHTML = '<p class="muted">No users found matching your query.</p>';
+                }
+
+            } catch(e) {
+                resultsList.innerHTML = '<p class="muted">Error performing search.</p>';
+            }
+        }
+
+        async function trackProfileView(profileId) {
+            try {
+                // This is a simple client-side increment, which is not race-condition-safe.
+                // A server-side Cloud Function would be the proper way to handle this atomically.
+                const viewCountRes = await fetch(`${DATABASE_URL}/analytics/${profileId}/totalViews.json`);
+                const currentViews = await viewCountRes.json() || 0;
+                await fetch(`${DATABASE_URL}/analytics/${profileId}/totalViews.json`, {
+                    method: 'PUT',
+                    body: JSON.stringify(currentViews + 1)
+                });
+            } catch (error) {
+                console.error("Failed to track profile view:", error);
+            }
+        }
+
+        async function handleVCardDownload(data) {
+            if (!data) return;
+            let vCardStr = `BEGIN:VCARD\nVERSION:3.0\n`;
+            vCardStr += `FN:${data.displayName}\n`;
+            vCardStr += `N:${data.displayName};;;\n`;
+            if (data.email && data.privacy?.email !== 'private') vCardStr += `EMAIL;TYPE=INTERNET:${data.email}\n`;
+            if (data.phone && data.privacy?.phone !== 'private') vCardStr += `TEL;TYPE=CELL:${data.phone}\n`;
+            if (data.school && data.privacy?.school !== 'private') vCardStr += `ORG:${data.school}\n`;
+            if (data.bio && data.privacy?.bio !== 'private') vCardStr += `NOTE:${data.bio}\n`;
+            vCardStr += `END:VCARD`;
+
+            const blob = new Blob([vCardStr], { type: 'text/vcard' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${data.displayName.replace(/\s/g, '_')}_contact.vcf`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast("Contact card downloaded!");
+        }
+
         function filterCountries() {
             const searchTerm = document.getElementById('country-search').value.toLowerCase();
             const dropdown = document.getElementById('country-dropdown');
