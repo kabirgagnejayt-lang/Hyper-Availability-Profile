@@ -403,6 +403,7 @@
                     <label for="profile-bg-value">Custom Background (CSS Color/Gradient/Image URL)</label>
                     <input type="text" id="profile-bg-value" placeholder="e.g., #ffdeae, linear-gradient(...)"/>
                 </div>
+
                 <div class="form-group">
                     <label for="scheduling-link">Scheduling Link (e.g., Calendly)</label>
                     <input type="url" id="scheduling-link" placeholder="https://calendly.com/yourname">
@@ -444,6 +445,7 @@
                 <div class="form-group">
                     <label for="status-message">Message</label>
                     <input type="text" id="status-message" placeholder="e.g., Drafting 2026 Strategy">
+                    <button class="btn secondary" id="suggest-status-btn" style="margin-top: 10px; width: auto; font-size: 0.9rem; padding: 8px 12px;">Get Status Suggestion 💡</button>
                 </div>
                 <div class="form-group">
                     <label for="travel-destination">✈️ Destination (Optional)</label>
@@ -591,6 +593,7 @@
             return age >= 0 ? age : null;
         }
         function timeToMinutes(timeStr) {
+            if (!timeStr || !timeStr.includes(':')) return 0;
             const [hours, minutes] = timeStr.split(':').map(Number);
             return hours * 60 + minutes;
         }
@@ -619,7 +622,7 @@
             return { time: timeStr, offset: `UTC${sign}${hours}:${minutes}`, hour: localTime.getHours() };
         }
         
-        // --- NAVIGATION & ROUTING ---
+        // --- ROUTING & STATE MANAGEMENT ---
         function navigateTo(pageId, isInternal = false) {
             if (isInternal) {
                 const cleanUrl = window.location.origin + window.location.pathname;
@@ -653,22 +656,26 @@
                     const promoBtn = document.getElementById('promo-action-btn');
                     if (localStorage.getItem('hapUser')) {
                         promoBtn.textContent = 'Go to My Dashboard';
-                        promoBtn.onclick = () => { isPublicView = false; navigateTo('profilePage', true); };
+                        promoBtn.onclick = () => { navigateTo('profilePage', true); };
                     } else {
                         promoBtn.textContent = 'Get Started Now';
-                        promoBtn.onclick = () => { isPublicView = false; navigateTo('loginPage', true); };
+                        promoBtn.onclick = () => { navigateTo('loginPage', true); };
                     }
                 }
                 return;
             }
             
+            // This block now handles returning to your own dashboard
+            const wasPublicView = isPublicView;
             isPublicView = false;
             if(publicViewInterval) { clearInterval(publicViewInterval); publicViewInterval = null; }
-            const cleanUrl = window.location.origin + window.location.pathname + window.location.hash;
-            window.history.replaceState({}, '', cleanUrl);
-            
             document.getElementById('create-hap-promo')?.classList.add('hidden');
             document.body.style.paddingBottom = "100px";
+
+            // If we were just on a public profile, we MUST reload our own data.
+            if (wasPublicView && App.currentUser) {
+                await setupUserSession();
+            }
 
             const hash = window.location.hash.substring(1);
             let targetPageId = App.pages.includes(hash) ? hash : (App.currentUser ? 'profilePage' : 'loginPage');
@@ -678,7 +685,9 @@
                 window.location.hash = 'loginPage';
             }
 
-            if (targetPageId === 'analyticsPage' && App.currentUser) await fetchAndRenderAnalytics();
+            if (targetPageId === 'analyticsPage' && App.currentUser) {
+                await fetchAndRenderAnalytics();
+            }
             
             App.pages.forEach(pId => {
                 const pageEl = App.elements[pId];
@@ -690,7 +699,7 @@
             window.scrollTo(0, 0);
         }
 
-        // --- CORE RENDERING ---
+        // --- CORE LOGIC & RENDERING ---
         function applyVisuals(data) {
             if (!data) return;
             const theme = data.theme || 'light';
@@ -705,9 +714,8 @@
             document.documentElement.style.setProperty('--link-text-color', data.linkTextColor || '#0369a1');
             document.documentElement.style.setProperty('--display-font', data.displayNameFont || 'Inter, sans-serif');
             
-            // NEW LOGIC for background style
-            let bgStyle = 'var(--card)'; // Default to auto/theme-based
-            if (data.profileBgType === 'custom' && data.profileBgValue) {
+            let bgStyle = 'var(--card)';
+            if (data.profileBgType === 'custom' && data.profileBgValue && data.profileBgValue.trim() !== '') {
                 bgStyle = data.profileBgValue;
             }
             document.documentElement.style.setProperty('--profile-header-bg-style', bgStyle);
@@ -745,52 +753,34 @@
             }
         }
         
-        // --- NEW HELPER FUNCTION for timetable logic ---
         function findActiveSchedule(user) {
-            if (!user || !user.timetable || user.timetable.length === 0) {
-                return null;
-            }
+            if (!user || !user.timetable || user.timetable.length === 0) return null;
             const now = new Date();
             const currentDay = now.getDay();
             const currentTimeInMinutes = now.getHours() * 60 + now.getMinutes();
-            
-            const activeSchedule = user.timetable.find(entry =>
-                entry.day === currentDay &&
-                currentTimeInMinutes >= timeToMinutes(entry.start) &&
-                currentTimeInMinutes < timeToMinutes(entry.end)
-            );
-            return activeSchedule;
+            return user.timetable.find(entry => entry.day === currentDay && currentTimeInMinutes >= timeToMinutes(entry.start) && currentTimeInMinutes < timeToMinutes(entry.end));
         }
         
         async function displayPublicProfile(userId) {
             try {
                 const userRes = await fetch(`${DATABASE_URL}/users/${userId}.json`);
                 let userData = await userRes.json(); 
-
                 if (userData) {
                     userData.userId = userId;
-
                     const activeSchedule = findActiveSchedule(userData);
-                    
                     if (activeSchedule) {
                         userData.status = activeSchedule.status;
                         userData.message = activeSchedule.message;
-                        
                         const [endHour, endMinute] = activeSchedule.end.split(':').map(Number);
                         const endTime = new Date();
                         endTime.setHours(endHour, endMinute, 0, 0);
-                        if (endTime < new Date()) {
-                            endTime.setDate(endTime.getDate() + 1);
-                        }
+                        if (endTime < new Date()) endTime.setDate(endTime.getDate() + 1);
                         userData.endTime = endTime.toISOString();
                     }
-
                     App.currentProfileData = userData;
                     applyVisuals(userData);
                     renderProfile(userData); 
-                } else {
-                    document.getElementById('profile-name').textContent = 'User Not Found';
-                }
+                } else { document.getElementById('profile-name').textContent = 'User Not Found'; }
             } catch (error) {
                 document.getElementById('profile-name').textContent = 'Error loading profile.';
                 console.error("Error loading public profile:", error);
@@ -801,19 +791,15 @@
             const container = document.getElementById('personal-details-list');
             if (!container) return;
             container.innerHTML = '';
-
             const isOwner = App.currentUser && App.currentUser.userId === data.userId;
             let detailsHtml = '';
-
             const getDetailHTML = (label, value, field) => {
                 if (!value) return '';
-                const isPublic = data.privacy?.[field] === 'public';
-                if (isOwner || isPublic) {
+                if (isOwner || data.privacy?.[field] === 'public') {
                     return `<div class="personal-detail-item"><strong>${label}:</strong> ${value}</div>`;
                 }
                 return '';
             };
-            
             if (data.countryCode) {
                 const country = COUNTRY_LIST.find(c => c.code === data.countryCode);
                 if (country && (isOwner || data.privacy?.country === 'public')) {
@@ -821,16 +807,15 @@
                     detailsHtml += `<div class="personal-detail-item profile-country"><span class="flag-emoji">${flag}</span> ${country.name}</div>`;
                 }
             }
-            if (data.bio) detailsHtml += getDetailHTML('Bio', data.bio, 'bio');
+            detailsHtml += getDetailHTML('Bio', data.bio, 'bio');
             if (data.birthday) {
                 const age = calculateAge(data.birthday);
                 if (age !== null) detailsHtml += getDetailHTML('Age', age, 'age');
             }
             if(data.gender) detailsHtml += getDetailHTML('Gender', data.gender.charAt(0).toUpperCase() + data.gender.slice(1), 'gender');
-            if(data.hobbies) detailsHtml += getDetailHTML('Hobbies', data.hobbies, 'hobbies');
-            if(data.school) detailsHtml += getDetailHTML('School/Affiliation', data.school, 'school');
-            if(data.phone) detailsHtml += getDetailHTML('Phone', data.phone, 'phone');
-
+            detailsHtml += getDetailHTML('Hobbies', data.hobbies, 'hobbies');
+            detailsHtml += getDetailHTML('School/Affiliation', data.school, 'school');
+            detailsHtml += getDetailHTML('Phone', data.phone, 'phone');
             container.innerHTML = detailsHtml || '<p class="muted">No public details shared.</p>';
         }
 
@@ -839,7 +824,6 @@
             if (countdownInterval) clearInterval(countdownInterval);
             if (!timerEl) return;
             timerEl.textContent = '';
-
             if (data && data.endTime) {
                 const endTime = new Date(data.endTime).getTime();
                 countdownInterval = setInterval(() => {
@@ -865,9 +849,7 @@
             if (!timeInfoEl) return;
             timeInfoEl.textContent = '';
             if (travelInterval) clearInterval(travelInterval);
-
             if (data.status !== '✈️' || !data.travelDestination || !data.destinationTimezone) return;
-
             const renderTime = () => {
                 const currentData = App.currentProfileData;
                 if (!currentData || currentData.status !== '✈️') {
@@ -883,12 +865,7 @@
         }
         
         async function resetStatusToDefault() {
-            await updateStatus({
-                status: '🟢',
-                message: 'Available again.',
-                endTime: null,
-                autoResetStatus: false,
-            });
+            await updateStatus({ status: '🟢', message: 'Available again.', endTime: null, autoResetStatus: false });
             showToast('Status automatically reset to Available.');
         }
 
@@ -901,11 +878,7 @@
             }
             links.forEach(link => {
                 if (link && link.label && link.url) {
-                    container.innerHTML += `
-                        <a href="${link.url}" target="_blank" class="custom-link">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72"></path></svg>
-                            <span>${link.label}</span>
-                        </a>`;
+                    container.innerHTML += `<a href="${link.url}" target="_blank" class="custom-link"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72"></path></svg><span>${link.label}</span></a>`;
                 }
             });
         }
@@ -915,26 +888,17 @@
             if (!container) return;
             container.innerHTML = '';
             let html = '';
-            if (data.schedulingLink) {
-                html += `<a href="${data.schedulingLink}" target="_blank" class="btn secondary" style="max-width: 250px;">Book a Meeting</a>`;
-            }
+            if (data.schedulingLink) html += `<a href="${data.schedulingLink}" target="_blank" class="btn secondary" style="max-width: 250px;">Book a Meeting</a>`;
             html += `<button id="download-vcard-btn" class="btn secondary" style="max-width: 250px;">Get Contact Card</button>`;
             container.innerHTML = html;
             document.getElementById('download-vcard-btn')?.addEventListener('click', () => handleVCardDownload(data));
         }
 
-        // --- CORE LOGIC (STATUS, TIMETABLE, ETC.) ---
         async function updateStatus(statusUpdate) {
              if (!App.currentUser) return;
-             
-             const dataToPatch = {
-                 ...statusUpdate,
-                 updatedAt: new Date().toISOString()
-             };
-
+             const dataToPatch = { ...statusUpdate, updatedAt: new Date().toISOString() };
              await fetch(`${DATABASE_URL}/users/${App.currentUser.userId}.json`, { method: 'PATCH', body: JSON.stringify(dataToPatch) });
              await fetch(`${DATABASE_URL}/history/${App.currentUser.userId}.json`, { method: 'POST', body: JSON.stringify(dataToPatch) });
-
              const updatedDataRes = await fetch(`${DATABASE_URL}/users/${App.currentUser.userId}.json`);
              App.currentProfileData = await updatedDataRes.json() || {};
              renderProfile(App.currentProfileData);
@@ -944,29 +908,18 @@
             if (!App.currentUser) return;
             const data = App.currentProfileData;
             if (!data) return;
-
             if (data.endTime && new Date(data.endTime).getTime() > Date.now()) return;
-
             const activeSchedule = findActiveSchedule(data);
-
             if (activeSchedule) {
                 if (data.status !== activeSchedule.status || data.message !== activeSchedule.message) {
                     const [endHour, endMinute] = activeSchedule.end.split(':').map(Number);
                     const endTime = new Date();
                     endTime.setHours(endHour, endMinute, 0, 0);
-                    
-                    await updateStatus({
-                        status: activeSchedule.status,
-                        message: activeSchedule.message,
-                        endTime: endTime.toISOString(),
-                        autoResetStatus: true,
-                    });
+                    await updateStatus({ status: activeSchedule.status, message: activeSchedule.message, endTime: endTime.toISOString(), autoResetStatus: true });
                     showToast(`Timetable activated: ${activeSchedule.status}`);
                 }
             } else {
-                 if(data.autoResetStatus && data.endTime && new Date(data.endTime).getTime() < Date.now()){
-                     await resetStatusToDefault();
-                 }
+                 if(data.autoResetStatus && data.endTime && new Date(data.endTime).getTime() < Date.now()) await resetStatusToDefault();
             }
         }
 
@@ -974,34 +927,31 @@
         async function setupUserSession() {
             if (!App.currentUser) return;
             if (timetableCheckInterval) clearInterval(timetableCheckInterval);
-
             try {
                 const response = await fetch(`${DATABASE_URL}/users/${App.currentUser.userId}.json`);
                 const data = await response.json();
                 if (data) {
                     App.currentProfileData = data;
-                    applyVisuals(data);
-                    renderProfile(data);
-                    populateSettings(data);
+                    applyVisuals(data); renderProfile(data); populateSettings(data);
                     await checkTimetableAndApplyStatus();
                     timetableCheckInterval = setInterval(checkTimetableAndApplyStatus, 60000);
                 }
-            } catch (error) {
-                showToast("Failed to load user data.", "error");
-            }
+            } catch (error) { showToast("Failed to load user data.", "error"); }
         }
         
         function handlePageLoad() {
             App.pages.forEach(pId => App.elements[pId] = document.getElementById(pId));
             App.elements.mainHeader = document.getElementById('mainHeader');
             App.elements.toast = document.getElementById('toast');
-
+            const params = new URLSearchParams(window.location.search);
+            const isPublicProfileView = params.has('user');
             const user = JSON.parse(localStorage.getItem('hapUser'));
             if (user) {
                 App.currentUser = user;
-                setupUserSession();
+                if (!isPublicProfileView) {
+                    setupUserSession();
+                }
             }
-
             window.addEventListener('hashchange', hashChangeRouter);
             hashChangeRouter(); 
             addEventListeners();
@@ -1009,7 +959,6 @@
         
         function populateSettings(data) {
             if (!data || !document.getElementById('display-name')) return;
-            
             document.getElementById('display-name').value = data.displayName || '';
             document.getElementById('themeSelect').value = data.theme || 'auto';
             document.getElementById('display-font').value = data.displayNameFont || 'Inter, sans-serif';
@@ -1024,19 +973,15 @@
             document.getElementById('phone-number').value = data.phone || '';
             document.getElementById('school').value = data.school || '';
             document.getElementById('travel-destination').value = data.travelDestination || '';
-
-            // Populate new background type selector
             const bgType = data.profileBgType || 'auto';
             document.getElementById(`profile-bg-type-${bgType}`).checked = true;
             document.getElementById('custom-bg-group').classList.toggle('hidden', bgType !== 'custom');
             document.getElementById('profile-bg-value').value = data.profileBgValue || '';
-
             const privacy = data.privacy || {};
             Object.keys(privacy).forEach(key => {
                 const el = document.getElementById(`privacy-${key}`);
                 if (el) el.value = privacy[key] || 'public';
             });
-            
             [document.getElementById('timezone-selector'), document.getElementById('destination-timezone')].forEach(selector => {
                 if (!selector) return;
                 const isDest = selector.id.includes('destination');
@@ -1046,24 +991,15 @@
                     if(label !== 'auto') selector.innerHTML += `<option value="${offset}" ${String(offset) === String(selectedValue) ? 'selected' : ''}>${label}</option>`;
                 });
             });
-
             document.getElementById('status-emoji').value = data.status || '🟢';
             document.getElementById('status-message').value = data.message || '';
             document.getElementById('auto-reset').checked = !!data.autoResetStatus;
-
             const countrySearch = document.getElementById('country-search');
             const countryCodeInput = document.getElementById('country-code');
             if(data.countryCode) {
                 const country = COUNTRY_LIST.find(c => c.code === data.countryCode);
-                if (country) {
-                    countrySearch.value = `${getCountryFlagEmoji(country.code)} ${country.name}`;
-                    countryCodeInput.value = country.code;
-                }
-            } else {
-                countrySearch.value = '';
-                countryCodeInput.value = '';
-            }
-
+                if (country) { countrySearch.value = `${getCountryFlagEmoji(country.code)} ${country.name}`; countryCodeInput.value = country.code; }
+            } else { countrySearch.value = ''; countryCodeInput.value = ''; }
             const linksContainer = document.getElementById('custom-links-container');
             linksContainer.innerHTML = '';
             for (let i = 0; i < 5; i++) {
@@ -1075,22 +1011,16 @@
 
         async function handleSignup(e) {
             e.preventDefault();
-            const email = document.getElementById('signup-email').value.trim();
-            const password = document.getElementById('signup-password').value;
-            const displayName = document.getElementById('signup-name').value.trim();
+            const email = document.getElementById('signup-email').value.trim(), password = document.getElementById('signup-password').value, displayName = document.getElementById('signup-name').value.trim();
             const errorMsg = document.getElementById('error-message');
             errorMsg.textContent = '';
             if (!email || !password || !displayName) { errorMsg.textContent = 'All fields are required.'; return; }
-
             const userId = emailToId(email);
             const res = await fetch(`${DATABASE_URL}/logins/${userId}.json`);
             if (await res.json()) { errorMsg.textContent = 'Account with this email already exists.'; return; }
-
             const initialProfile = { displayName, email, password, status: '🟢', message: 'Ready for the day!', theme: 'auto', privacy: { email: 'public', phone: 'public', school: 'public', bio: 'public', age: 'public', gender: 'public', hobbies: 'public', country: 'public', timezone: 'public' }, updatedAt: new Date().toISOString() };
-            
             await fetch(`${DATABASE_URL}/logins/${userId}.json`, { method: 'PUT', body: JSON.stringify({ email, password, displayName }) });
             await fetch(`${DATABASE_URL}/users/${userId}.json`, { method: 'PUT', body: JSON.stringify(initialProfile) });
-
             App.currentUser = { email, displayName, userId };
             localStorage.setItem('hapUser', JSON.stringify(App.currentUser));
             await setupUserSession();
@@ -1099,39 +1029,30 @@
 
         async function handleLogin(e) {
             e.preventDefault();
-            const email = document.getElementById('login-email').value.trim();
-            const password = document.getElementById('login-password').value;
+            const email = document.getElementById('login-email').value.trim(), password = document.getElementById('login-password').value;
             const errorMsg = document.getElementById('error-message');
             errorMsg.textContent = '';
             if (!email || !password) { errorMsg.textContent = 'Email and password cannot be empty.'; return; }
-
             const userId = emailToId(email);
             const res = await fetch(`${DATABASE_URL}/logins/${userId}.json`);
             const data = await res.json();
-
             if (data && data.password === password) {
                 App.currentUser = { email, displayName: data.displayName, userId };
                 localStorage.setItem('hapUser', JSON.stringify(App.currentUser));
                 await setupUserSession();
                 navigateTo('profilePage');
-            } else {
-                errorMsg.textContent = 'Invalid email or password.';
-            }
+            } else { errorMsg.textContent = 'Invalid email or password.'; }
         }
         
         function handleLogout() {
-            localStorage.removeItem('hapUser');
-            App.currentUser = null;
-            App.currentProfileData = null;
-            window.location.search = ''; 
-            navigateTo('loginPage');
+            localStorage.removeItem('hapUser'); App.currentUser = null; App.currentProfileData = null;
+            window.location.search = ''; navigateTo('loginPage');
         }
         
         async function handleDeleteAccount() {
             if (!App.currentUser) return;
             const confirmation = prompt(`To CONFIRM permanent deletion, please type your Display Name: "${App.currentProfileData.displayName}"`);
             if (confirmation !== App.currentProfileData.displayName) { return showToast("Deletion cancelled."); }
-            
             const userId = App.currentUser.userId;
             await Promise.all([
                 fetch(`${DATABASE_URL}/logins/${userId}.json`, { method: 'DELETE' }),
@@ -1139,8 +1060,7 @@
                 fetch(`${DATABASE_URL}/history/${userId}.json`, { method: 'DELETE' }),
                 fetch(`${DATABASE_URL}/analytics/${userId}.json`, { method: 'DELETE' })
             ]);
-            showToast("Account successfully deleted.");
-            handleLogout();
+            showToast("Account successfully deleted."); handleLogout();
         }
 
         function addEventListeners() {
@@ -1153,168 +1073,120 @@
                     document.getElementById('signup-form')?.classList.toggle('hidden', isLogin);
                 }
             });
-            document.getElementById('signup-form')?.addEventListener('submit', handleSignup);
-            document.getElementById('login-form')?.addEventListener('submit', handleLogin);
-            document.getElementById('logout-btn')?.addEventListener('click', handleLogout);
-            document.getElementById('delete-account-btn')?.addEventListener('click', handleDeleteAccount);
-            document.getElementById('save-settings-btn')?.addEventListener('click', handleSaveSettings);
-            document.getElementById('share-status-btn')?.addEventListener('click', handleShareStatus);
-            document.getElementById('add-timetable-entry-btn')?.addEventListener('click', handleAddTimetableEntry);
-            document.getElementById('run-search-btn')?.addEventListener('click', handleSearchUsers);
-            document.getElementById('generate-qrcode-btn')?.addEventListener('click', handleGenerateQrCode);
-            document.getElementById('status-time-type')?.addEventListener('change', (e) => toggleTimeInputs(e.target.value));
-            App.elements.mainHeader?.addEventListener('click', e => {
+            document.getElementById('signup-form').addEventListener('submit', handleSignup);
+            document.getElementById('login-form').addEventListener('submit', handleLogin);
+            document.getElementById('logout-btn').addEventListener('click', handleLogout);
+            document.getElementById('delete-account-btn').addEventListener('click', handleDeleteAccount);
+            document.getElementById('save-settings-btn').addEventListener('click', handleSaveSettings);
+            document.getElementById('share-status-btn').addEventListener('click', handleShareStatus);
+            document.getElementById('add-timetable-entry-btn').addEventListener('click', handleAddTimetableEntry);
+            document.getElementById('run-search-btn').addEventListener('click', handleSearchUsers);
+            document.getElementById('generate-qrcode-btn').addEventListener('click', handleGenerateQrCode);
+            document.getElementById('status-time-type').addEventListener('change', (e) => toggleTimeInputs(e.target.value));
+            document.getElementById('suggest-status-btn').addEventListener('click', suggestStatusBasedOnTime);
+            App.elements.mainHeader.addEventListener('click', e => {
                 const navBtn = e.target.closest('.nav-btn');
                 if (navBtn) navigateTo(navBtn.dataset.page);
             });
             document.querySelectorAll('.preset-btn').forEach(btn => btn.addEventListener('click', handlePresetClick));
-            
-            // Listener for new background type radio buttons
             document.querySelectorAll('input[name="profile-bg-type"]').forEach(radio => {
                 radio.addEventListener('change', (e) => {
                     document.getElementById('custom-bg-group').classList.toggle('hidden', e.target.value !== 'custom');
                 });
             });
-
             const countrySearch = document.getElementById('country-search');
             const countryDropdown = document.getElementById('country-dropdown');
             countrySearch?.addEventListener('focus', () => { countryDropdown.classList.remove('hidden'); filterCountries(); });
             countrySearch?.addEventListener('keyup', filterCountries);
             document.addEventListener('click', (e) => {
-                if (!e.target.closest('.country-select-wrapper')) {
-                    countryDropdown.classList.add('hidden');
-                }
+                if (!e.target.closest('.country-select-wrapper')) countryDropdown.classList.add('hidden');
             });
         }
         
         async function handleSaveSettings() {
             if (!App.currentUser) return;
-
-            const customLinks = Array.from({length: 5}, (_, i) => ({
-                label: document.getElementById(`link-label-${i}`)?.value.trim(),
-                url: document.getElementById(`link-url-${i}`)?.value.trim()
-            })).filter(l => l.label && l.url);
-
+            const customLinks = Array.from({length: 5}, (_, i) => ({ label: document.getElementById(`link-label-${i}`).value.trim(), url: document.getElementById(`link-url-${i}`).value.trim() })).filter(l => l.label && l.url);
             let endTime = null;
-            const timeType = document.getElementById('status-time-type')?.value;
+            const timeType = document.getElementById('status-time-type').value;
             if (timeType === 'duration') {
-                const duration = parseInt(document.getElementById('status-duration')?.value, 10);
+                const duration = parseInt(document.getElementById('status-duration').value, 10);
                 if (duration > 0) endTime = new Date(Date.now() + duration * 60 * 1000).toISOString();
             } else if (timeType === 'until') {
-                const timeString = document.getElementById('status-until')?.value;
-                if (timeString) {
-                    const [hours, minutes] = timeString.split(':');
-                    const d = new Date();
-                    d.setHours(hours, minutes, 0, 0);
-                    if (d < new Date()) d.setDate(d.getDate() + 1);
-                    endTime = d.toISOString();
-                }
+                const timeString = document.getElementById('status-until').value;
+                if (timeString) { const [hours, minutes] = timeString.split(':'); const d = new Date(); d.setHours(hours, minutes, 0, 0); if (d < new Date()) d.setDate(d.getDate() + 1); endTime = d.toISOString(); }
             }
-
             const dataToSave = {
-                displayName: document.getElementById('display-name').value,
-                theme: document.getElementById('themeSelect').value,
-                displayNameFont: document.getElementById('display-font').value,
-                dynamicTitleTemplate: document.getElementById('dynamic-title-template').value,
-                profileAccentColor: document.getElementById('accent-color').value,
-                linkTextColor: document.getElementById('link-text-color').value,
-                profileBgType: document.querySelector('input[name="profile-bg-type"]:checked').value,
-                profileBgValue: document.getElementById('profile-bg-value').value,
-                schedulingLink: document.getElementById('scheduling-link').value,
-                bio: document.getElementById('bio').value,
-                birthday: document.getElementById('birthday').value,
-                gender: document.getElementById('gender').value,
-                countryCode: document.getElementById('country-code').value,
-                hobbies: document.getElementById('hobbies').value,
-                phone: document.getElementById('phone-number').value,
-                school: document.getElementById('school').value,
-                travelDestination: document.getElementById('travel-destination').value,
-                destinationTimezone: document.getElementById('destination-timezone').value,
-                timezoneOverride: document.getElementById('timezone-selector').value,
-                status: document.getElementById('status-emoji').value,
-                message: document.getElementById('status-message').value,
-                autoResetStatus: document.getElementById('auto-reset').checked,
-                links: customLinks,
-                endTime: endTime,
+                displayName: document.getElementById('display-name').value, theme: document.getElementById('themeSelect').value,
+                displayNameFont: document.getElementById('display-font').value, dynamicTitleTemplate: document.getElementById('dynamic-title-template').value,
+                profileAccentColor: document.getElementById('accent-color').value, linkTextColor: document.getElementById('link-text-color').value,
+                profileBgType: document.querySelector('input[name="profile-bg-type"]:checked').value, profileBgValue: document.getElementById('profile-bg-value').value,
+                schedulingLink: document.getElementById('scheduling-link').value, bio: document.getElementById('bio').value,
+                birthday: document.getElementById('birthday').value, gender: document.getElementById('gender').value,
+                countryCode: document.getElementById('country-code').value, hobbies: document.getElementById('hobbies').value,
+                phone: document.getElementById('phone-number').value, school: document.getElementById('school').value,
+                travelDestination: document.getElementById('travel-destination').value, destinationTimezone: document.getElementById('destination-timezone').value,
+                timezoneOverride: document.getElementById('timezone-selector').value, status: document.getElementById('status-emoji').value,
+                message: document.getElementById('status-message').value, autoResetStatus: document.getElementById('auto-reset').checked,
+                links: customLinks, endTime: endTime,
                 privacy: {
-                    email: document.getElementById('privacy-email').value,
-                    bio: document.getElementById('privacy-bio').value,
-                    age: document.getElementById('privacy-age').value,
-                    gender: document.getElementById('privacy-gender').value,
-                    country: document.getElementById('privacy-country').value,
-                    hobbies: document.getElementById('privacy-hobbies').value,
-                    phone: document.getElementById('privacy-phone').value,
-                    school: document.getElementById('privacy-school').value,
+                    email: document.getElementById('privacy-email').value, bio: document.getElementById('privacy-bio').value,
+                    age: document.getElementById('privacy-age').value, gender: document.getElementById('privacy-gender').value,
+                    country: document.getElementById('privacy-country').value, hobbies: document.getElementById('privacy-hobbies').value,
+                    phone: document.getElementById('privacy-phone').value, school: document.getElementById('privacy-school').value,
                     timezone: document.getElementById('privacy-timezone').value,
                 }
             };
-
-            const pfpFile = document.getElementById('pfp-upload')?.files[0];
+            const pfpFile = document.getElementById('pfp-upload').files[0];
             if (pfpFile) {
                 const reader = new FileReader();
-                reader.onload = async (e) => {
-                    dataToSave.pfpUrl = e.target.result;
-                    await saveAndLogStatus(dataToSave);
-                };
+                reader.onload = async (e) => { dataToSave.pfpUrl = e.target.result; await saveAndLogStatus(dataToSave); };
                 reader.readAsDataURL(pfpFile);
-            } else {
-                await saveAndLogStatus(dataToSave);
-            }
+            } else { await saveAndLogStatus(dataToSave); }
         }
 
         async function saveAndLogStatus(data) {
             const dataWithTimestamp = { ...data, updatedAt: new Date().toISOString() };
-            await fetch(`${DATABASE_URL}/users/${App.currentUser.userId}.json`, { 
-                method: 'PATCH', 
-                body: JSON.stringify(dataWithTimestamp) 
-            });
-            await fetch(`${DATABASE_URL}/history/${App.currentUser.userId}.json`, { 
-                method: 'POST', 
-                body: JSON.stringify({ 
-                    status: data.status, 
-                    message: data.message, 
-                    endTime: data.endTime, 
-                    timestamp: dataWithTimestamp.updatedAt 
-                }) 
-            });
+            await fetch(`${DATABASE_URL}/users/${App.currentUser.userId}.json`, { method: 'PATCH', body: JSON.stringify(dataWithTimestamp) });
+            await fetch(`${DATABASE_URL}/history/${App.currentUser.userId}.json`, { method: 'POST', body: JSON.stringify({ status: data.status, message: data.message, endTime: data.endTime, timestamp: dataWithTimestamp.updatedAt }) });
             const updatedDataRes = await fetch(`${DATABASE_URL}/users/${App.currentUser.userId}.json`);
             App.currentProfileData = await updatedDataRes.json() || {};
-            applyVisuals(App.currentProfileData);
-            renderProfile(App.currentProfileData);
-            showToast('Settings Saved & Status Updated!');
-            navigateTo('profilePage');
+            applyVisuals(App.currentProfileData); renderProfile(App.currentProfileData);
+            showToast('Settings Saved & Status Updated!'); navigateTo('profilePage');
         }
 
         async function handlePresetClick(e) {
              const { emoji, message, duration } = e.currentTarget.dataset;
              const endTime = duration > 0 ? new Date(Date.now() + duration * 60000).toISOString() : null;
-             
-             const dataToPatch = {
-                 status: emoji,
-                 message: message,
-                 endTime: endTime,
-                 autoResetStatus: true
-             };
-             await updateStatus(dataToPatch);
+             await updateStatus({ status: emoji, message: message, endTime: endTime, autoResetStatus: true });
              showToast(`Status updated: ${emoji}`);
          }
 
         function toggleTimeInputs(type) {
-            document.getElementById('status-duration-group')?.classList.toggle('hidden', type !== 'duration');
-            document.getElementById('status-until-group')?.classList.toggle('hidden', type !== 'until');
+            document.getElementById('status-duration-group').classList.toggle('hidden', type !== 'duration');
+            document.getElementById('status-until-group').classList.toggle('hidden', type !== 'until');
+        }
+
+        function suggestStatusBasedOnTime() {
+            const hour = new Date().getHours();
+            const statusEmojiEl = document.getElementById('status-emoji');
+            const statusMessageEl = document.getElementById('status-message');
+            let suggestion = {};
+            if (hour >= 7 && hour < 12) { suggestion = { emoji: '🟢', message: 'Ready for the day!' };
+            } else if (hour >= 12 && hour < 14) { suggestion = { emoji: '🍽️', message: 'On a lunch break.' };
+            } else if (hour >= 14 && hour < 18) { suggestion = { emoji: '🧠', message: 'Deep work session.' };
+            } else if (hour >= 18 && hour < 22) { suggestion = { emoji: '🛋️', message: 'Winding down for the evening.' };
+            } else { suggestion = { emoji: '😴', message: 'Offline/Sleeping.' }; }
+            statusEmojiEl.value = suggestion.emoji;
+            statusMessageEl.value = suggestion.message;
+            showToast('Status suggestion applied!');
         }
 
         function handleGenerateQrCode() {
             if (!App.currentUser) return;
             const shareUrl = `${window.location.origin}${window.location.pathname}?user=${App.currentUser.userId}`;
-            const img = document.getElementById('profile-qrcode-img');
-            const placeholder = document.getElementById('qrcode-placeholder');
+            const img = document.getElementById('profile-qrcode-img'), placeholder = document.getElementById('qrcode-placeholder');
             img.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(shareUrl)}`;
-            img.onload = () => {
-                img.style.display = 'block';
-                placeholder.classList.add('hidden');
-                showToast('QR Code generated!');
-            };
+            img.onload = () => { img.style.display = 'block'; placeholder.classList.add('hidden'); showToast('QR Code generated!'); };
         }
         function handleShareStatus() {
             if (!App.currentUser) return;
@@ -1335,66 +1207,42 @@
         async function handleAddTimetableEntry() {
             const day = parseInt(prompt("Enter Day (0=Sun, 1=Mon...):"), 10);
             if (isNaN(day) || day < 0 || day > 6) return showToast("Invalid day.");
-            const start = prompt("Start Time (HH:MM 24hr):");
-            const end = prompt("End Time (HH:MM 24hr):");
-            const status = prompt("Status Emoji:");
+            const start = prompt("Start Time (HH:MM 24hr):"), end = prompt("End Time (HH:MM 24hr):"), status = prompt("Status Emoji:");
             if (!start || !end || !status) return showToast("All fields required.");
-
             const newEntry = { day, start, end, status, message: prompt("Message:") || '' };
             const newTimetable = [...(App.currentProfileData.timetable || []), newEntry];
             await fetch(`${DATABASE_URL}/users/${App.currentUser.userId}.json`, { method: 'PATCH', body: JSON.stringify({ timetable: newTimetable }) });
             App.currentProfileData.timetable = newTimetable;
-            renderTimetableSettings(newTimetable);
-            showToast("Schedule added!");
+            renderTimetableSettings(newTimetable); showToast("Schedule added!");
         }
         async function handleRemoveTimetableEntry(e) {
             const index = parseInt(e.currentTarget.dataset.index, 10);
             const newTimetable = App.currentProfileData.timetable.filter((_, i) => i !== index);
             await fetch(`${DATABASE_URL}/users/${App.currentUser.userId}.json`, { method: 'PATCH', body: JSON.stringify({ timetable: newTimetable }) });
             App.currentProfileData.timetable = newTimetable;
-            renderTimetableSettings(newTimetable);
-            showToast("Schedule removed.");
+            renderTimetableSettings(newTimetable); showToast("Schedule removed.");
         }
         
         async function fetchAndRenderAnalytics() {
             if (!App.currentUser) return;
-            const userId = App.currentUser.userId;
-            const historyLog = document.getElementById('history-log');
-            const viewGrid = document.getElementById('view-analytics-grid');
-
+            const userId = App.currentUser.userId, historyLog = document.getElementById('history-log'), viewGrid = document.getElementById('view-analytics-grid');
             try {
                 const historyRes = await fetch(`${DATABASE_URL}/history/${userId}.json?orderBy="$key"&limitToLast=10`);
                 const historyData = await historyRes.json();
                 if (historyData) {
-                    const historyList = Object.values(historyData)
-                        .sort((a, b) => new Date(b.updatedAt || b.timestamp) - new Date(a.updatedAt || a.timestamp));
-                    
+                    const historyList = Object.values(historyData).sort((a, b) => new Date(b.updatedAt || b.timestamp) - new Date(a.updatedAt || a.timestamp));
                     historyLog.innerHTML = '';
                     historyList.forEach(item => {
                         const date = new Date(item.updatedAt || item.timestamp);
-                        historyLog.innerHTML += `
-                            <div class="history-item">
-                                <span class="history-status">${item.status} ${item.message || ''}</span>
-                                <span class="history-time">${date.toLocaleString()}</span>
-                            </div>`;
+                        historyLog.innerHTML += `<div class="history-item"><span class="history-status">${item.status} ${item.message || ''}</span><span class="history-time">${date.toLocaleString()}</span></div>`;
                     });
-                } else {
-                    historyLog.innerHTML = '<p class="muted">No history found.</p>';
-                }
-            } catch (error) {
-                historyLog.innerHTML = '<p class="muted">Error loading history.</p>';
-            }
-
+                } else { historyLog.innerHTML = '<p class="muted">No history found.</p>'; }
+            } catch (error) { historyLog.innerHTML = '<p class="muted">Error loading history.</p>'; }
             try {
                 const analyticsRes = await fetch(`${DATABASE_URL}/analytics/${userId}/totalViews.json`);
                 const totalViews = await analyticsRes.json() || 0;
-                viewGrid.innerHTML = `
-                    <div class="analytics-metric"><p class="metric-value">${totalViews}</p><p class="metric-label">Total Views</p></div>
-                    <div class="analytics-metric"><p class="metric-value">--</p><p class="metric-label">Today</p></div>
-                    <div class="analytics-metric"><p class="metric-value">--</p><p class="metric-label">This Week</p></div>`;
-            } catch (error) {
-                viewGrid.innerHTML = '<p class="muted" style="grid-column: 1 / -1; text-align: center;">Error loading view data.</p>';
-            }
+                viewGrid.innerHTML = `<div class="analytics-metric"><p class="metric-value">${totalViews}</p><p class="metric-label">Total Views</p></div><div class="analytics-metric"><p class="metric-value">--</p><p class="metric-label">Today</p></div><div class="analytics-metric"><p class="metric-value">--</p><p class="metric-label">This Week</p></div>`;
+            } catch (error) { viewGrid.innerHTML = '<p class="muted" style="grid-column: 1 / -1; text-align: center;">Error loading view data.</p>'; }
         }
 
         async function handleSearchUsers() {
@@ -1402,13 +1250,11 @@
             const resultsList = document.getElementById('search-results-list');
             if (!query) return;
             resultsList.innerHTML = '<p class="muted">Searching...</p>';
-            
             try {
                 if (!allUsersCache) {
                     const usersRes = await fetch(`${DATABASE_URL}/users.json`);
                     allUsersCache = await usersRes.json();
                 }
-                
                 const results = [];
                 for (const userId in allUsersCache) {
                     const user = allUsersCache[userId];
@@ -1416,82 +1262,55 @@
                         results.push({ userId, ...user });
                     }
                 }
-                
                 if (results.length > 0) {
                     resultsList.innerHTML = '';
                     results.forEach(user => {
                         const activeSchedule = findActiveSchedule(user);
                         const displayStatus = activeSchedule ? activeSchedule.status : user.status;
                         const displayMessage = activeSchedule ? activeSchedule.message : user.message;
-
-                        resultsList.innerHTML += `
-                            <div class="search-result-item">
-                                <div>
-                                    <strong>${user.displayName}</strong>
-                                    <p style="margin: 0;">${displayStatus} ${displayMessage || ''}</p>
-                                </div>
-                                <a href="?user=${user.userId}" onclick="event.preventDefault(); window.location.hash='profilePage'; window.location.search='?user=${user.userId}';">View Profile</a>
-                            </div>`;
+                        resultsList.innerHTML += `<div class="search-result-item"><div><strong>${user.displayName}</strong><p style="margin: 0;">${displayStatus} ${displayMessage || ''}</p></div><a href="?user=${user.userId}#profilePage">View Profile</a></div>`;
                     });
-                } else {
-                    resultsList.innerHTML = '<p class="muted">No users found.</p>';
-                }
-
-            } catch(e) {
-                resultsList.innerHTML = '<p class="muted">Error performing search.</p>';
-            }
+                } else { resultsList.innerHTML = '<p class="muted">No users found.</p>'; }
+            } catch(e) { resultsList.innerHTML = '<p class="muted">Error performing search.</p>'; }
         }
 
         async function trackProfileView(profileId) {
             try {
                 const viewCountRes = await fetch(`${DATABASE_URL}/analytics/${profileId}/totalViews.json`);
                 const currentViews = await viewCountRes.json() || 0;
-                await fetch(`${DATABASE_URL}/analytics/${profileId}/totalViews.json`, {
-                    method: 'PUT',
-                    body: JSON.stringify(currentViews + 1)
-                });
-            } catch (error) {
-                console.error("Failed to track profile view:", error);
-            }
+                await fetch(`${DATABASE_URL}/analytics/${profileId}/totalViews.json`, { method: 'PUT', body: JSON.stringify(currentViews + 1) });
+            } catch (error) { console.error("Failed to track profile view:", error); }
         }
 
         async function handleVCardDownload(data) {
             if (!data) return;
-            let vCardStr = `BEGIN:VCARD\nVERSION:3.0\n`;
-            vCardStr += `FN:${data.displayName}\n`;
+            let vCardStr = `BEGIN:VCARD\nVERSION:3.0\nFN:${data.displayName}\n`;
             if (data.email && data.privacy?.email !== 'private') vCardStr += `EMAIL;TYPE=INTERNET:${data.email}\n`;
             if (data.phone && data.privacy?.phone !== 'private') vCardStr += `TEL;TYPE=CELL:${data.phone}\n`;
             if (data.school && data.privacy?.school !== 'private') vCardStr += `ORG:${data.school}\n`;
             vCardStr += `END:VCARD`;
-
             const blob = new Blob([vCardStr], { type: 'text/vcard' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
-            a.href = url;
-            a.download = `${data.displayName.replace(/\s/g, '_')}.vcf`;
-            a.click();
-            URL.revokeObjectURL(url);
-            showToast("Contact card downloaded!");
+            a.href = url; a.download = `${data.displayName.replace(/\s/g, '_')}.vcf`;
+            a.click(); URL.revokeObjectURL(url); showToast("Contact card downloaded!");
         }
 
         function filterCountries() {
             const searchTerm = document.getElementById('country-search').value.toLowerCase();
             const dropdown = document.getElementById('country-dropdown');
             dropdown.innerHTML = '';
-            COUNTRY_LIST
-                .filter(c => c.name.toLowerCase().includes(searchTerm))
-                .slice(0, 50) 
-                .forEach(country => {
-                    const option = document.createElement('div');
-                    option.className = 'country-option';
-                    option.innerHTML = `<span class="flag-emoji">${getCountryFlagEmoji(country.code)}</span> <span>${country.name}</span>`;
-                    option.onclick = () => {
-                        document.getElementById('country-search').value = `${getCountryFlagEmoji(country.code)} ${country.name}`;
-                        document.getElementById('country-code').value = country.code;
-                        dropdown.classList.add('hidden');
-                    };
-                    dropdown.appendChild(option);
-                });
+            COUNTRY_LIST.filter(c => c.name.toLowerCase().includes(searchTerm)).slice(0, 50).forEach(country => {
+                const option = document.createElement('div');
+                option.className = 'country-option';
+                option.innerHTML = `<span class="flag-emoji">${getCountryFlagEmoji(country.code)}</span> <span>${country.name}</span>`;
+                option.onclick = () => {
+                    document.getElementById('country-search').value = `${getCountryFlagEmoji(country.code)} ${country.name}`;
+                    document.getElementById('country-code').value = country.code;
+                    dropdown.classList.add('hidden');
+                };
+                dropdown.appendChild(option);
+            });
         }
         
         document.addEventListener('DOMContentLoaded', handlePageLoad);
