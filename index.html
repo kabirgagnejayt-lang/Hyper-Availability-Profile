@@ -34,6 +34,7 @@
         /* --- ANIMATIONS --- */
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
         
         .page.active { animation: fadeIn 0.5s ease-out forwards; }
         .card, .history-item, .search-result-item { animation: fadeSlideUp 0.6s ease-out forwards; animation-delay: 0.1s; opacity: 0; transform: translateY(15px); }
@@ -176,6 +177,21 @@
             background: #f87171; color: white; text-align: center; font-weight: bold;
             z-index: 5000; display: none; border-bottom: 2px solid #ef4444;
         }
+        
+        /* Loading Spinner for Save Button */
+        .btn-loading {
+            pointer-events: none;
+            opacity: 0.8;
+        }
+        .btn-loading::after {
+            content: "";
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            animation: spin 1s linear infinite;
+        }
     </style>
 </head>
 <body>
@@ -203,35 +219,35 @@
 
         <div id="loginPage" class="page">
              <div class="card">
-                <h1>Hyper Availability</h1>
-                <p style="text-align: center;">Your real-time public status page.</p>
+                 <h1>Hyper Availability</h1>
+                 <p style="text-align: center;">Your real-time public status page.</p>
                 
-                <button id="google-login-btn" class="btn" style="margin-top: 20px;">
+                 <button id="google-login-btn" class="btn" style="margin-top: 20px;">
                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4C12.955 4 4 12.955 4 24s8.955 20 20 20s20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"></path><path fill="#FF3D00" d="m6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4C16.318 4 9.656 8.337 6.306 14.691z"></path><path fill="#4CAF50" d="m24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238A11.91 11.91 0 0 1 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"></path><path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303a12.04 12.04 0 0 1-4.087 5.571l6.19 5.238C44.434 36.333 48 30.651 48 24c0-1.341-.138-2.65-.389-3.917z"></path></svg>
-                    <span>Sign in with Google</span>
-                </button>
+                     <span>Sign in with Google</span>
+                 </button>
 
-                <div style="text-align: center; color: var(--muted); margin: 20px 0; font-weight: 500;">OR</div>
+                 <div style="text-align: center; color: var(--muted); margin: 20px 0; font-weight: 500;">OR</div>
 
-                <div class="auth-tabs">
-                    <div class="tab active" data-tab="login">Login</div>
-                    <div class="tab" data-tab="signup">Sign Up</div>
-                </div>
+                 <div class="auth-tabs">
+                     <div class="tab active" data-tab="login">Login</div>
+                     <div class="tab" data-tab="signup">Sign Up</div>
+                 </div>
 
-                <form id="login-form">
-                    <div class="form-group"><input type="email" id="login-email" placeholder="Email" required></div>
-                    <div class="form-group"><input type="password" id="login-password" placeholder="Password" required></div>
-                    <button type="submit" class="btn secondary">Login</button>
-                </form>
+                 <form id="login-form">
+                     <div class="form-group"><input type="email" id="login-email" placeholder="Email" required></div>
+                     <div class="form-group"><input type="password" id="login-password" placeholder="Password" required></div>
+                     <button type="submit" class="btn secondary">Login</button>
+                 </form>
 
-                <form id="signup-form" class="hidden">
-                    <div class="form-group"><input type="text" id="signup-name" placeholder="Display Name" required></div>
-                    <div class="form-group"><input type="email" id="signup-email" placeholder="Email" required></div>
-                    <div class="form-group"><input type="password" id="signup-password" placeholder="Password (min. 6 chars)" required></div>
-                    <button type="submit" class="btn secondary">Create Account</button>
-                </form>
-                <p id="error-message"></p>
-            </div>
+                 <form id="signup-form" class="hidden">
+                     <div class="form-group"><input type="text" id="signup-name" placeholder="Display Name" required></div>
+                     <div class="form-group"><input type="email" id="signup-email" placeholder="Email" required></div>
+                     <div class="form-group"><input type="password" id="signup-password" placeholder="Password (min. 6 chars)" required></div>
+                     <button type="submit" class="btn secondary">Create Account</button>
+                 </form>
+                 <p id="error-message"></p>
+             </div>
         </div>
 
         <div id="profilePage" class="page">
@@ -491,18 +507,18 @@
 
         <div id="analyticsPage" class="page">
              <div class="card">
-                <h2>Search Public HAP Profiles</h2>
-                <div class="form-group" style="margin-bottom: 0;">
-                    <input type="text" id="user-search-input" placeholder="Enter name to search">
-                </div>
-                <button id="run-search-btn" class="btn secondary" style="margin-top: 10px;">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path fill-rule="evenodd" d="M10.5 3.75a6.75 6.75 0 1 0 0 13.5 6.75 6.75 0 0 0 0-13.5ZM2.25 10.5a8.25 8.25 0 1 1 14.59 5.28l4.69 4.69a.75.75 0 1 1-1.06 1.06l-4.69-4.69A8.25 8.25 0 0 1 2.25 10.5Z" clip-rule="evenodd"></path></svg>
-                    Search
-                </button>
-                <div id="search-results-list" style="margin-top: 20px;">
-                    <p class="muted">Search by name to find users.</p>
-                </div>
-            </div>
+                 <h2>Search Public HAP Profiles</h2>
+                 <div class="form-group" style="margin-bottom: 0;">
+                     <input type="text" id="user-search-input" placeholder="Enter name to search">
+                 </div>
+                 <button id="run-search-btn" class="btn secondary" style="margin-top: 10px;">
+                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path fill-rule="evenodd" d="M10.5 3.75a6.75 6.75 0 1 0 0 13.5 6.75 6.75 0 0 0 0-13.5ZM2.25 10.5a8.25 8.25 0 1 1 14.59 5.28l4.69 4.69a.75.75 0 1 1-1.06 1.06l-4.69-4.69A8.25 8.25 0 0 1 2.25 10.5Z" clip-rule="evenodd"></path></svg>
+                     Search
+                 </button>
+                 <div id="search-results-list" style="margin-top: 20px;">
+                     <p class="muted">Search by name to find users.</p>
+                 </div>
+             </div>
 
             <div class="card">
                 <h2>Profile View Analytics 📈</h2>
@@ -599,10 +615,11 @@
         const COUNTRY_LIST = [ {name: "Afghanistan", code: "AF"}, {name: "Åland Islands", code: "AX"}, {name: "Albania", code: "AL"}, {name: "Algeria", code: "DZ"}, {name: "American Samoa", code: "AS"}, {name: "Andorra", code: "AD"}, {name: "Angola", code: "AO"}, {name: "Anguilla", code: "AI"}, {name: "Antarctica", code: "AQ"}, {name: "Antigua and Barbuda", code: "AG"}, {name: "Argentina", code: "AR"}, {name: "Armenia", code: "AM"}, {name: "Aruba", code: "AW"}, {name: "Australia", code: "AU"}, {name: "Austria", code: "AT"}, {name: "Azerbaijan", code: "AZ"}, {name: "Bahamas", code: "BS"}, {name: "Bahrain", code: "BH"}, {name: "Bangladesh", code: "BD"}, {name: "Barbados", code: "BB"}, {name: "Belarus", code: "BY"}, {name: "Belgium", code: "BE"}, {name: "Belize", code: "BZ"}, {name: "Benin", code: "BJ"}, {name: "Bermuda", code: "BM"}, {name: "Bhutan", code: "BT"}, {name: "Bolivia", code: "BO"}, {name: "Bosnia and Herzegovina", code: "BA"}, {name: "Botswana", code: "BW"}, {name: "Bouvet Island", code: "BV"}, {name: "Brazil", code: "BR"}, {name: "British Indian Ocean Territory", code: "IO"}, {name: "Brunei Darussalam", code: "BN"}, {name: "Bulgaria", code: "BG"}, {name: "Burkina Faso", code: "BF"}, {name: "Burundi", code: "BI"}, {name: "Cambodia", code: "KH"}, {name: "Cameroon", code: "CM"}, {name: "Canada", code: "CA"}, {name: "Cape Verde", code: "CV"}, {name: "Cayman Islands", code: "KY"}, {name: "Central African Republic", code: "CF"}, {name: "Chad", code: "TD"}, {name: "Chile", code: "CL"}, {name: "China", code: "CN"}, {name: "Christmas Island", code: "CX"}, {name: "Cocos (Keeling) Islands", code: "CC"}, {name: "Colombia", code: "CO"}, {name: "Comoros", code: "KM"}, {name: "Congo", code: "CG"}, {name: "Congo, The Democratic Republic of the", code: "CD"}, {name: "Cook Islands", code: "CK"}, {name: "Costa Rica", code: "CR"}, {name: "Cote D'Ivoire", code: "CI"}, {name: "Croatia", code: "HR"}, {name: "Cuba", code: "CU"}, {name: "Cyprus", code: "CY"}, {name: "Czech Republic", code: "CZ"}, {name: "Denmark", code: "DK"}, {name: "Djibouti", code: "DJ"}, {name: "Dominica", code: "DM"}, {name: "Dominican Republic", code: "DO"}, {name: "Ecuador", code: "EC"}, {name: "Egypt", code: "EG"}, {name: "El Salvador", code: "SV"}, {name: "Equatorial Guinea", code: "GQ"}, {name: "Eritrea", code: "ER"}, {name: "Estonia", code: "EE"}, {name: "Ethiopia", code: "ET"}, {name: "Falkland Islands (Malvinas)", code: "FK"}, {name: "Faroe Islands", code: "FO"}, {name: "Fiji", code: "FJ"}, {name: "Finland", code: "FI"}, {name: "France", code: "FR"}, {name: "French Guiana", code: "GF"}, {name: "French Polynesia", code: "PF"}, {name: "French Southern Territories", code: "TF"}, {name: "Gabon", code: "GA"}, {name: "Gambia", code: "GM"}, {name: "Georgia", code: "GE"}, {name: "Germany", code: "DE"}, {name: "Ghana", code: "GH"}, {name: "Gibraltar", code: "GI"}, {name: "Greece", code: "GR"}, {name: "Greenland", code: "GL"}, {name: "Grenada", code: "GD"}, {name: "Guadeloupe", code: "GP"}, {name: "Guam", code: "GU"}, {name: "Guatemala", code: "GT"}, {name: "Guernsey", code: "GG"}, {name: "Guinea", code: "GN"}, {name: "Guinea-Bissau", code: "GW"}, {name: "Guyana", code: "GY"}, {name: "Haiti", code: "HT"}, {name: "Heard Island and Mcdonald Islands", code: "HM"}, {name: "Holy See (Vatican City State)", code: "VA"}, {name: "Honduras", code: "HN"}, {name: "Hong Kong", code: "HK"}, {name: "Hungary", code: "HU"}, {name: "Iceland", code: "IS"}, {name: "India", code: "IN"}, {name: "Indonesia", code: "ID"}, {name: "Iran, Islamic Republic Of", code: "IR"}, {name: "Iraq", code: "IQ"}, {name: "Ireland", code: "IE"}, {name: "Isle of Man", code: "IM"}, {name: "Israel", code: "IL"}, {name: "Italy", code: "IT"}, {name: "Jamaica", code: "JM"}, {name: "Japan", code: "JP"}, {name: "Jersey", code: "JE"}, {name: "Jordan", code: "JO"}, {name: "Kazakhstan", code: "KZ"}, {name: "Kenya", code: "KE"}, {name: "Kiribati", code: "KI"}, {name: "Korea, Democratic People'S Republic of", code: "KP"}, {name: "Korea, Republic of", code: "KR"}, {name: "Kuwait", code: "KW"}, {name: "Kyrgyzstan", code: "KG"}, {name: "Lao People'S Democratic Republic", code: "LA"}, {name: "Latvia", code: "LV"}, {name: "Lebanon", code: "LB"}, {name: "Lesotho", code: "LS"}, {name: "Liberia", code: "LR"}, {name: "Libyan Arab Jamahiriya", code: "LY"}, {name: "Liechtenstein", code: "LI"}, {name: "Lithuania", code: "LT"}, {name: "Luxembourg", code: "LU"}, {name: "Macao", code: "MO"}, {name: "Macedonia, The Former Yugoslav Republic of", code: "MK"}, {name: "Madagascar", code: "MG"}, {name: "Malawi", code: "MW"}, {name: "Malaysia", code: "MY"}, {name: "Maldives", code: "MV"}, {name: "Mali", code: "ML"}, {name: "Malta", code: "MT"}, {name: "Marshall Islands", code: "MH"}, {name: "Martinique", code: "MQ"}, {name: "Mauritania", code: "MR"}, {name: "Mauritius", code: "MU"}, {name: "Mayotte", code: "YT"}, {name: "Mexico", code: "MX"}, {name: "Micronesia, Federated States of", code: "FM"}, {name: "Moldova, Republic of", code: "MD"}, {name: "Monaco", code: "MC"}, {name: "Mongolia", code: "MN"}, {name: "Montserrat", code: "MS"}, {name: "Morocco", code: "MA"}, {name: "Mozambique", code: "MZ"}, {name: "Myanmar", code: "MM"}, {name: "Namibia", code: "NA"}, {name: "Nauru", code: "NR"}, {name: "Nepal", code: "NP"}, {name: "Netherlands", code: "NL"}, {name: "Netherlands Antilles", code: "AN"}, {name: "New Caledonia", code: "NC"}, {name: "New Zealand", code: "NZ"}, {name: "Nicaragua", code: "NI"}, {name: "Niger", code: "NE"}, {name: "Nigeria", code: "NG"}, {name: "Niue", code: "NU"}, {name: "Norfolk Island", code: "NF"}, {name: "Northern Mariana Islands", code: "MP"}, {name: "Norway", code: "NO"}, {name: "Oman", code: "OM"}, {name: "Pakistan", code: "PK"}, {name: "Palau", code: "PW"}, {name: "Palestinian Territory, Occupied", code: "PS"}, {name: "Panama", code: "PA"}, {name: "Papua New Guinea", code: "PG"}, {name: "Paraguay", code: "PY"}, {name: "Peru", code: "PE"}, {name: "Philippines", code: "PH"}, {name: "Pitcairn", code: "PN"}, {name: "Poland", code: "PL"}, {name: "Portugal", code: "PT"}, {name: "Puerto Rico", code: "PR"}, {name: "Qatar", code: "QA"}, {name: "Reunion", code: "RE"}, {name: "Romania", code: "RO"}, {name: "Russian Federation", code: "RU"}, {name: "RWANDA", code: "RW"}, {name: "Saint Helena", code: "SH"}, {name: "Saint Kitts and Nevis", code: "KN"}, {name: "Saint Lucia", code: "LC"}, {name: "Saint Pierre and Miquelon", code: "PM"}, {name: "Saint Vincent and the Grenadines", code: "VC"}, {name: "Samoa", code: "WS"}, {name: "San Marino", code: "SM"}, {name: "Sao Tome and Principe", code: "ST"}, {name: "Saudi Arabia", code: "SA"}, {name: "Senegal", code: "SN"}, {name: "Serbia and Montenegro", code: "CS"}, {name: "Seychelles", code: "SC"}, {name: "Sierra Leone", code: "SL"}, {name: "Singapore", code: "SG"}, {name: "Slovakia", code: "SK"}, {name: "Slovenia", code: "SI"}, {name: "Solomon Islands", code: "SB"}, {name: "Somalia", code: "SO"}, {name: "South Africa", code: "ZA"}, {name: "South Georgia and the South Sandwich Islands", code: "GS"}, {name: "Spain", code: "ES"}, {name: "Sri Lanka", code: "LK"}, {name: "Sudan", code: "SD"}, {name: "Suriname", code: "SR"}, {name: "Svalbard and Jan Mayen", code: "SJ"}, {name: "Swaziland", code: "SZ"}, {name: "Sweden", code: "SE"}, {name: "Switzerland", code: "CH"}, {name: "Syrian Arab Republic", code: "SY"}, {name: "Taiwan", code: "TW"}, {name: "Tajikistan", code: "TJ"}, {name: "Tanzania, United Republic of", code: "TZ"}, {name: "Thailand", code: "TH"}, {name: "Timor-Leste", code: "TL"}, {name: "Togo", code: "TG"}, {name: "Tokelau", code: "TK"}, {name: "Tonga", code: "TO"}, {name: "Trinidad and Tobago", code: "TT"}, {name: "Tunisia", code: "TN"}, {name: "Turkey", code: "TR"}, {name: "Turkmenistan", code: "TM"}, {name: "Turks and Caicos Islands", code: "TC"}, {name: "Tuvalu", code: "TV"}, {name: "Uganda", code: "UG"}, {name: "Ukraine", code: "UA"}, {name: "United Arab Emirates", code: "AE"}, {name: "United Kingdom", code: "GB"}, {name: "United States", code: "US"}, {name: "United States Minor Outlying Islands", code: "UM"}, {name: "Uruguay", code: "UY"}, {name: "Uzbekistan", code: "UZ"}, {name: "Vanuatu", code: "VU"}, {name: "Venezuela", code: "VE"}, {name: "Viet Nam", code: "VN"}, {name: "Virgin Islands, British", code: "VG"}, {name: "Virgin Islands, U.S.", code: "VI"}, {name: "Wallis and Futuna", code: "WF"}, {name: "Western Sahara", code: "EH"}, {name: "Yemen", code: "YE"}, {name: "Zambia", code: "ZM"}, {name: "Zimbabwe", code: "ZW"} ];
 
         // --- UTILITIES ---
-        function showToast(message) {
+        function showToast(message, type = 'info') {
             const toast = App.elements.toast;
             if (!toast) return;
             toast.textContent = message;
+            toast.style.backgroundColor = type === 'error' ? '#ef4444' : '#0f172a';
             toast.classList.add('show');
             setTimeout(() => toast.classList.remove('show'), 3000);
         }
@@ -738,6 +755,10 @@
         }
 
         async function saveAndLogStatus(data) {
+            const saveBtn = document.getElementById('save-settings-btn');
+            saveBtn.textContent = 'Saving...';
+            saveBtn.classList.add('btn-loading');
+            
             const dataWithTimestamp = { ...data, updatedAt: new Date().toISOString() };
             const userRef = ref(db, `users/${App.currentUser.userId}`);
             const historyRef = ref(db, `history/${App.currentUser.userId}`);
@@ -749,7 +770,11 @@
             App.currentProfileData = snapshot.val() || {};
             applyVisuals(App.currentProfileData);
             renderProfile(App.currentProfileData);
-            showToast('Settings Saved & Status Updated!');
+            
+            saveBtn.textContent = 'Save & Update Status';
+            saveBtn.classList.remove('btn-loading');
+            
+            showToast('Settings Saved & Status Updated! 💾');
             navigateTo('profilePage');
         }
         
@@ -974,7 +999,7 @@
             detailsHtml += getDetailHTML('Bio', data.bio, 'bio');
             if (data.birthday) {
                 const age = calculateAge(data.birthday);
-                if (age !== null) detailsHtml += getDetailHTML('Age', age, 'age');
+                if (age !== null && (isOwner || data.privacy?.age === 'public')) detailsHtml += getDetailHTML('Age', age, 'age');
             }
             if(data.gender) detailsHtml += getDetailHTML('Gender', data.gender.charAt(0).toUpperCase() + data.gender.slice(1), 'gender');
             detailsHtml += getDetailHTML('Hobbies', data.hobbies, 'hobbies');
@@ -1032,17 +1057,28 @@
             if (!App.currentUser) return;
             const data = App.currentProfileData;
             if (!data) return;
-            if (data.endTime && new Date(data.endTime).getTime() > Date.now()) return;
+            // Only apply timetable status if a manual timed status has expired or was not set
+            if (data.endTime && new Date(data.endTime).getTime() > Date.now()) return; 
+            
             const activeSchedule = findActiveSchedule(data);
             if (activeSchedule) {
                 if (data.status !== activeSchedule.status || data.message !== activeSchedule.message) {
                     const [endHour, endMinute] = activeSchedule.end.split(':').map(Number);
                     const endTime = new Date();
+                    // Set end time for today. If end time is before now, set it for tomorrow.
                     endTime.setHours(endHour, endMinute, 0, 0);
-                    await updateStatus({ status: activeSchedule.status, message: activeSchedule.message, endTime: endTime.toISOString(), autoResetStatus: true });
+                    if (timeToMinutes(activeSchedule.end) <= (new Date().getHours() * 60 + new Date().getMinutes())) endTime.setDate(endTime.getDate() + 1);
+
+                    await updateStatus({ 
+                        status: activeSchedule.status, 
+                        message: activeSchedule.message, 
+                        endTime: endTime.toISOString(), 
+                        autoResetStatus: true 
+                    });
                     showToast(`Timetable activated: ${activeSchedule.status}`);
                 }
             } else {
+                // If there's no active schedule and the old status was auto-resetting, reset it.
                  if(data.autoResetStatus && data.endTime && new Date(data.endTime).getTime() < Date.now()) await resetStatusToDefault();
             }
         }
@@ -1057,7 +1093,8 @@
             let html = '';
             links.forEach(link => {
                 if (link && link.label && link.url) {
-                    html += `<a href="${link.url}" target="_blank" class="custom-link"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72"></path></svg><span>${link.label}</span></a>`;
+                    // Use target="_blank" and rel="noopener noreferrer" for security on external links
+                    html += `<a href="${link.url}" target="_blank" rel="noopener noreferrer" class="custom-link"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72"></path></svg><span>${link.label}</span></a>`;
                 }
             });
             container.innerHTML = html;
@@ -1068,7 +1105,7 @@
             if (!container) return;
             container.innerHTML = '';
             let html = '';
-            if (data.schedulingLink) html += `<a href="${data.schedulingLink}" target="_blank" class="btn secondary" style="max-width: 250px;">Book a Meeting</a>`;
+            if (data.schedulingLink) html += `<a href="${data.schedulingLink}" target="_blank" rel="noopener noreferrer" class="btn secondary" style="max-width: 250px;">Book a Meeting</a>`;
             html += `<button id="download-vcard-btn" class="btn secondary" style="max-width: 250px;">Get Contact Card</button>`;
             container.innerHTML = html;
             document.getElementById('download-vcard-btn')?.addEventListener('click', () => handleVCardDownload(data));
@@ -1090,6 +1127,8 @@
             document.getElementById('phone-number').value = data.phone || '';
             document.getElementById('school').value = data.school || '';
             document.getElementById('travel-destination').value = data.travelDestination || '';
+            document.getElementById('status-time-type').value = data.endTime ? (data.statusTimeType === 'until' ? 'until' : 'duration') : 'none'; // Re-calculate status type based on data.endTime
+            
             const privacy = data.privacy || {};
             Object.keys(privacy).forEach(key => {
                 const el = document.getElementById(`privacy-${key}`);
@@ -1107,11 +1146,15 @@
             document.getElementById('status-emoji').value = data.status || '🟢';
             document.getElementById('status-message').value = data.message || '';
             document.getElementById('auto-reset').checked = !!data.autoResetStatus;
+            
+            toggleTimeInputs(document.getElementById('status-time-type').value); // Set correct time inputs visibility
+
             const countrySearch = document.getElementById('country-search'), countryCodeInput = document.getElementById('country-code');
             if(data.countryCode) {
                 const country = COUNTRY_LIST.find(c => c.code === data.countryCode);
                 if (country) { countrySearch.value = `${getCountryFlagEmoji(country.code)} ${country.name}`; countryCodeInput.value = country.code; }
             } else { countrySearch.value = ''; countryCodeInput.value = ''; }
+            
             const linksContainer = document.getElementById('custom-links-container');
             linksContainer.innerHTML = '';
             for (let i = 0; i < 5; i++) {
@@ -1132,38 +1175,87 @@
             addEventListeners();
         }
         
+        // --- UPDATED DELETE ACCOUNT FUNCTION ---
         async function handleDeleteAccount() {
             if (!App.currentUser) return;
-            const confirmation = prompt(`To CONFIRM permanent deletion, please type your Display Name: "${App.currentProfileData.displayName}"`);
-            if (confirmation !== App.currentProfileData.displayName) return showToast("Deletion cancelled.");
-            const userId = App.currentUser.userId;
             
-            const userRef = ref(db, `users/${userId}`);
-            const historyRef = ref(db, `history/${userId}`);
-            const analyticsRef = ref(db, `analytics/${userId}`);
-            // Note: We don't delete from auth here, user must re-authenticate to delete.
-            // A more robust solution involves Cloud Functions for full cleanup.
-            
-            await set(userRef, null);
-            await set(historyRef, null);
-            await set(analyticsRef, null);
+            const displayName = App.currentProfileData?.displayName || 'your account';
 
-            showToast("Account data successfully deleted.");
-            handleLogout();
+            const confirmation = prompt(`To CONFIRM permanent deletion, please type your Display Name: "${displayName}"\n\nWARNING: You will be logged out and may need to sign in again immediately to complete the deletion.`);
+            
+            if (confirmation !== displayName) {
+                return showToast("Account deletion cancelled.");
+            }
+
+            const userId = App.currentUser.userId;
+            const user = auth.currentUser;
+
+            if (!user) {
+                return showToast("Error: No authenticated user found to delete.", "error");
+            }
+
+            try {
+                // Step 1: Attempt to delete the user from Firebase Authentication
+                await user.delete(); 
+                
+                // Step 2: Delete data from Realtime Database
+                // Note: Deletion from Auth revokes the token and triggers onAuthStateChanged/logout logic
+                const userRef = ref(db, `users/${userId}`);
+                const historyRef = ref(db, `history/${userId}`);
+                const analyticsRef = ref(db, `analytics/${userId}`);
+                
+                await set(userRef, null);
+                await set(historyRef, null);
+                await set(analyticsRef, null);
+
+                // Step 3: Cleanup and notify
+                showToast("Account and all associated data successfully deleted. 👋");
+                setTimeout(() => {
+                    // Force navigation to login page (though onAuthStateChanged should handle it)
+                    window.location.hash = 'loginPage';
+                    window.location.search = '';
+                }, 500);
+
+            } catch (error) {
+                console.error("Account Deletion Error:", error.code, error.message);
+                
+                // Handle the specific error where re-authentication is required
+                if (error.code === 'auth/requires-recent-login') {
+                    showToast("Security Alert: Please log in again to confirm this permanent action.", "error");
+                    // Log out to force the user to re-authenticate immediately
+                    handleLogout(); 
+                    // The user must now sign in and click delete again immediately.
+                } else {
+                    showToast(`Deletion failed: ${error.message}`, "error");
+                }
+            }
         }
 
         async function handleSaveSettings() {
             if (!App.currentUser) return;
+            const saveBtn = document.getElementById('save-settings-btn');
+            saveBtn.textContent = 'Saving...';
+            saveBtn.classList.add('btn-loading');
+
             const customLinks = Array.from({length: 5}, (_, i) => ({ label: document.getElementById(`link-label-${i}`).value.trim(), url: document.getElementById(`link-url-${i}`).value.trim() })).filter(l => l.label && l.url);
+            
             let endTime = null;
             const timeType = document.getElementById('status-time-type').value;
+            
             if (timeType === 'duration') {
                 const duration = parseInt(document.getElementById('status-duration').value, 10);
                 if (duration > 0) endTime = new Date(Date.now() + duration * 60 * 1000).toISOString();
             } else if (timeType === 'until') {
                 const timeString = document.getElementById('status-until').value;
-                if (timeString) { const [hours, minutes] = timeString.split(':'); const d = new Date(); d.setHours(hours, minutes, 0, 0); if (d < new Date()) d.setDate(d.getDate() + 1); endTime = d.toISOString(); }
+                if (timeString) { 
+                    const [hours, minutes] = timeString.split(':'); 
+                    const d = new Date(); 
+                    d.setHours(hours, minutes, 0, 0); 
+                    if (d < new Date()) d.setDate(d.getDate() + 1); // Set for tomorrow if time has passed
+                    endTime = d.toISOString(); 
+                }
             }
+
             const dataToSave = {
                 displayName: document.getElementById('display-name').value, theme: document.getElementById('themeSelect').value,
                 displayNameFont: document.getElementById('display-font').value, dynamicTitleTemplate: document.getElementById('dynamic-title-template').value,
@@ -1175,7 +1267,7 @@
                 travelDestination: document.getElementById('travel-destination').value, destinationTimezone: document.getElementById('destination-timezone').value,
                 timezoneOverride: document.getElementById('timezone-selector').value, status: document.getElementById('status-emoji').value,
                 message: document.getElementById('status-message').value, autoResetStatus: document.getElementById('auto-reset').checked,
-                links: customLinks, endTime: endTime,
+                links: customLinks, endTime: endTime, statusTimeType: timeType,
                 privacy: {
                     email: document.getElementById('privacy-email').value, bio: document.getElementById('privacy-bio').value,
                     age: document.getElementById('privacy-age').value, gender: document.getElementById('privacy-gender').value,
@@ -1184,18 +1276,35 @@
                     timezone: document.getElementById('privacy-timezone').value,
                 }
             };
+            
             const pfpFile = document.getElementById('pfp-upload').files[0];
             if (pfpFile) {
+                // In a real app, you'd upload the file to Firebase Storage here and save the URL.
+                // For this example, we'll use a local reader (not ideal for persistence but matches existing logic)
                 const reader = new FileReader();
-                reader.onload = async (e) => { dataToSave.pfpUrl = e.target.result; await saveAndLogStatus(dataToSave); };
+                reader.onload = async (e) => { 
+                    dataToSave.pfpUrl = e.target.result; 
+                    await saveAndLogStatus(dataToSave);
+                    saveBtn.textContent = 'Save & Update Status';
+                    saveBtn.classList.remove('btn-loading');
+                };
+                reader.onerror = () => {
+                    showToast('Failed to read image file.', 'error');
+                    saveBtn.textContent = 'Save & Update Status';
+                    saveBtn.classList.remove('btn-loading');
+                };
                 reader.readAsDataURL(pfpFile);
-            } else { await saveAndLogStatus(dataToSave); }
+            } else { 
+                await saveAndLogStatus(dataToSave); 
+                saveBtn.textContent = 'Save & Update Status';
+                saveBtn.classList.remove('btn-loading');
+            }
         }
 
         async function handlePresetClick(e) {
              const { emoji, message, duration } = e.currentTarget.dataset;
              const endTime = duration > 0 ? new Date(Date.now() + duration * 60000).toISOString() : null;
-             await updateStatus({ status: emoji, message: message, endTime: endTime, autoResetStatus: true });
+             await updateStatus({ status: emoji, message: message, endTime: endTime, autoResetStatus: true, statusTimeType: 'duration' });
              showToast(`Status updated: ${emoji}`);
         }
 
@@ -1229,11 +1338,13 @@
         function handleShareStatus() {
             if (!App.currentUser) return;
             const shareUrl = `${window.location.origin}${window.location.pathname}?user=${App.currentUser.userId}`;
-            navigator.clipboard.writeText(shareUrl).then(() => showToast('Profile link copied to clipboard!'));
+            navigator.clipboard.writeText(shareUrl).then(() => showToast('Profile link copied to clipboard! 🔗'));
         }
         function renderTimetableSettings(timetable = []) {
             const container = document.getElementById('timetable-entries-container');
-            container.innerHTML = (!timetable || timetable.length === 0) ? '<p class="muted">No scheduled entries yet.</p>' : '';
+            container.innerHTML = (!timetable || timetable.length === 0) ? '<p class="muted" id="no-timetable-message">No scheduled entries yet.</p>' : '';
+            if (timetable && timetable.length > 0) document.getElementById('no-timetable-message')?.remove();
+            
             timetable.forEach((entry, index) => {
                 const entryDiv = document.createElement('div');
                 entryDiv.className = 'timetable-entry-card';
@@ -1254,7 +1365,7 @@
             await update(userRef, { timetable: newTimetable });
             
             App.currentProfileData.timetable = newTimetable;
-            renderTimetableSettings(newTimetable); showToast("Schedule added!");
+            renderTimetableSettings(newTimetable); showToast("Schedule added! 🗓️");
         }
         async function handleRemoveTimetableEntry(e) {
             const index = parseInt(e.currentTarget.dataset.index, 10);
@@ -1298,21 +1409,19 @@
             resultsList.innerHTML = '<p class="muted">Searching...</p>';
             try {
                 const usersRef = ref(db, 'users');
-                // Firebase RTDB doesn't support case-insensitive or "contains" queries directly.
-                // A common approach is to fetch all and filter client-side, or use a dedicated search service like Algolia.
-                // For this app's scale, we'll fetch all.
+                // Fetch all and filter client-side as RTDB lacks robust search features.
                 const snapshot = await get(usersRef);
                 const allUsers = snapshot.val();
                 const results = [];
                 if(allUsers){
                      for (const userId in allUsers) {
-                        const user = allUsers[userId];
-                        if (user.displayName?.toLowerCase().includes(queryText)) {
-                            results.push({ userId, ...user });
-                        }
-                    }
+                         const user = allUsers[userId];
+                         if (user.displayName?.toLowerCase().includes(queryText)) {
+                             results.push({ userId, ...user });
+                         }
+                     }
                 }
-               
+                
                 if (results.length > 0) {
                     resultsList.innerHTML = '';
                     results.forEach(user => {
@@ -1350,7 +1459,7 @@
             a.href = url; a.download = `${data.displayName.replace(/\s/g, '_')}.vcf`;
             document.body.appendChild(a); a.click(); document.body.removeChild(a);
             URL.revokeObjectURL(url); 
-            showToast("Contact card downloaded!");
+            showToast("Contact card downloaded! 📥");
         }
 
         function filterCountries() {
