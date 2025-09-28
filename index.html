@@ -833,26 +833,32 @@
             window.location.search = '';
         }
 
-        // FIX: Reworked onAuthStateChanged to control initial routing
+        // FIX: Reworked onAuthStateChanged to correctly handle initial page loads for all scenarios.
         onAuthStateChanged(auth, user => {
             App.currentUser = user ? { email: user.email, displayName: user.displayName, userId: user.uid, pfpUrl: user.photoURL } : null;
-            
-            const params = new URLSearchParams(window.location.search);
-            const isPublicProfileView = params.has('user');
 
-            // 1. If it's a public view, ignore local auth changes
-            if (isPublicProfileView) return; 
+            if (!isAuthResolved) {
+                // --- This block runs ONLY ONCE on the initial page load ---
+                isAuthResolved = true; // Mark that initialization has happened
 
-            // 2. Setup user session and trigger initial routing only once
-            if (user && !isAuthResolved) {
-                setupUserSession(); 
-                isAuthResolved = true;
-                hashChangeRouter(); 
-            } else if (!user && !isAuthResolved) {
-                isAuthResolved = true;
+                const isPublicProfileView = new URLSearchParams(window.location.search).has('user');
+
+                // Set up the user's own session data ONLY IF they are logged in AND not currently viewing a public profile.
+                if (user && !isPublicProfileView) {
+                    setupUserSession();
+                }
+
+                // ALWAYS call the router on the initial load to display the correct page (either public profile or user dashboard).
                 hashChangeRouter();
-            } else if (isAuthResolved) {
-                // 3. Handle manual login/logout after initial load
+
+            } else {
+                // --- This block runs for subsequent logins/logouts after the page has loaded ---
+                const isPublicProfileView = new URLSearchParams(window.location.search).has('user');
+                
+                // If the user logs in or out while on a public profile page, don't navigate away from it.
+                if (isPublicProfileView) return; 
+
+                // Handle redirection after a user manually logs in or is logged out.
                 if (user && window.location.hash.substring(1) === 'loginPage') {
                     navigateTo('profilePage');
                 } else if (!user && window.location.hash.substring(1) !== 'loginPage') {
