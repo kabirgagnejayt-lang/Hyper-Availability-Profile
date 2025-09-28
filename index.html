@@ -161,6 +161,14 @@
             padding: 4px 8px;
             border-radius: 6px;
         }
+        
+        /* Inline Verified Icon Style */
+        .inline-verified-icon {
+            color: #0ea5e9; /* Primary color */
+            margin-left: 8px;
+            width: 24px; 
+            height: 24px;
+        }
 
         .profile-message { font-size: 1.2rem; color: var(--muted); min-height: 28px; }
         .profile-timer { font-size: 2.5rem; color: var(--primary); font-weight: 700; margin-top: 24px; min-height: 40px; }
@@ -656,6 +664,7 @@
         let timetableCheckInterval;
         let isPublicView = false;
         let publicViewInterval = null;
+        let isAuthResolved = false; // Flag to fix initial loading/routing bug
 
         const App = {
             pages: ['loginPage', 'profilePage', 'analyticsPage', 'settingsPage'],
@@ -804,19 +813,30 @@
             window.location.search = '';
         }
 
+        // FIX: Reworked onAuthStateChanged to control initial routing
         onAuthStateChanged(auth, user => {
-            if (user) {
-                App.currentUser = { email: user.email, displayName: user.displayName, userId: user.uid, pfpUrl: user.photoURL };
-                const params = new URLSearchParams(window.location.search);
-                if (!params.has('user')) {
-                    setupUserSession(); 
-                    // Do NOT call navigateTo here, let setupUserSession or hashChangeRouter handle it
-                }
-            } else {
-                App.currentUser = null;
-                const params = new URLSearchParams(window.location.search);
-                if (!params.has('user')) {
-                     navigateTo('loginPage');
+            App.currentUser = user ? { email: user.email, displayName: user.displayName, userId: user.uid, pfpUrl: user.photoURL } : null;
+            
+            const params = new URLSearchParams(window.location.search);
+            const isPublicProfileView = params.has('user');
+
+            // 1. If it's a public view, ignore local auth changes
+            if (isPublicProfileView) return; 
+
+            // 2. Setup user session and trigger initial routing only once
+            if (user && !isAuthResolved) {
+                setupUserSession(); 
+                isAuthResolved = true;
+                hashChangeRouter(); 
+            } else if (!user && !isAuthResolved) {
+                isAuthResolved = true;
+                hashChangeRouter();
+            } else if (isAuthResolved) {
+                // 3. Handle manual login/logout after initial load
+                if (user && window.location.hash.substring(1) === 'loginPage') {
+                    navigateTo('profilePage');
+                } else if (!user && window.location.hash.substring(1) !== 'loginPage') {
+                    navigateTo('loginPage');
                 }
             }
         });
@@ -962,6 +982,9 @@
             document.getElementById('create-hap-promo')?.classList.add('hidden');
             document.body.style.paddingBottom = "100px";
 
+            // If Auth is not yet resolved, let onAuthStateChanged handle the first routing step
+            if (!isAuthResolved) return; 
+
             if (wasPublicView && App.currentUser) {
                 await setupUserSession();
                 const hash = window.location.hash.substring(1);
@@ -1034,10 +1057,17 @@
             const profileNameEl = document.getElementById('profile-name');
             const roleEl = document.getElementById('user-role-display');
             const verifiedBadgeEl = document.getElementById('verified-badge');
+            const name = data.displayName || 'Unnamed User';
 
-            // 1. Display Name and Color
-            profileNameEl.textContent = data.displayName || 'Unnamed User';
+            // 1. Display Name and Inline Tick (Combined)
+            profileNameEl.textContent = name; // Set initial text content
             profileNameEl.classList.toggle('is-owner', (data.role || '').toLowerCase() === 'owner');
+
+            // Inline Tick: Uses SVG for better detail, appended directly to H1
+            if (data.verified) {
+                const inlineTickSvg = `<svg class="inline-verified-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>`;
+                profileNameEl.innerHTML = name + inlineTickSvg;
+            }
 
             // 2. Role Display
             const role = data.role || 'Member';
@@ -1045,7 +1075,7 @@
             roleEl.className = 'role-badge'; // Reset classes
             roleEl.classList.add(`role-${role.toLowerCase()}`);
             
-            // 3. Verified Badge
+            // 3. Verified Badge (separate, next to role)
             verifiedBadgeEl.classList.toggle('hidden', !data.verified);
             
             // 4. Status and Timer
@@ -1250,7 +1280,7 @@
             App.elements.toast = document.getElementById('toast');
             
             window.addEventListener('hashchange', hashChangeRouter);
-            hashChangeRouter(); 
+            // FIX: Removed initial hashChangeRouter call here. It is now called by onAuthStateChanged once the auth state is resolved.
             addEventListeners();
         }
         
