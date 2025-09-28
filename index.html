@@ -110,11 +110,21 @@
             border: 3px solid var(--pfp-border-day); transition: all 0.4s;
         }
         .profile-emoji { font-size: 4rem; line-height: 1; margin: 16px 0; }
-        .profile-name { font-size: 2.25rem; font-weight: 700; color: var(--text); margin: 0; font-family: var(--display-font); }
+        .profile-name { font-size: 2.25rem; font-weight: 700; color: var(--text); margin: 0; font-family: var(--display-font); display: flex; justify-content: center; align-items: center; }
         .profile-message { font-size: 1.2rem; color: var(--muted); min-height: 28px; }
         .profile-timer { font-size: 2.5rem; color: var(--primary); font-weight: 700; margin-top: 24px; min-height: 40px; }
         .profile-country { display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 500; margin-top: 10px; }
         .profile-country .flag-emoji { font-size: 1.5rem; }
+
+        /* --- ADDED ROLE STYLES --- */
+        .role-owner { 
+            background-color: #ef4444; /* Red BG */
+            color: white !important; 
+        }
+        .role-member { 
+            background-color: #3b82f6; /* Blue BG */
+            color: white !important; 
+        }
 
         .custom-link {
             display: inline-flex; align-items: center; gap: 8px; background: var(--primary-light);
@@ -254,11 +264,18 @@
             <div class="card profile-header">
                 <div id="profile-pfp"></div> 
                 <div class="profile-emoji" id="profile-emoji">❓</div>
-                <h1 class="profile-name" id="profile-name">Loading...</h1>
+                <h1 class="profile-name" id="profile-name">Loading...
+                    <!-- Verified Checkmark Icon (Initially Hidden) -->
+                    <span id="verified-checkmark" class="hidden" style="color: var(--primary); font-size: 1.2rem; margin-left: 5px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M2.5 12a9.5 9.5 0 1 1 19 0 9.5 9.5 0 0 1-19 0ZM15 10.5a.75.75 0 0 0-1.06-1.06l-4.72 4.72-2.84-2.84a.75.75 0 0 0-1.06 1.06l3.375 3.375a.75.75 0 0 0 1.06 0l5.25-5.25Z" clip-rule="evenodd"></path></svg>
+                    </span>
+                </h1>
+                <!-- User Role Display -->
+                <div id="user-role-display" style="font-size: 0.8rem; font-weight: 700; padding: 4px 10px; border-radius: 6px; margin: 5px auto 16px auto; width: fit-content;"></div>
                 <p class="profile-message" id="profile-message">Fetching status...</p>
                 <div class="profile-timer" id="profile-timer"></div>
                 <p class="local-time-display" id="local-time-info" style="font-size: 1rem; margin-top: 10px; font-weight: 500;"></p>
-                </div>
+            </div>
 
             <div class="card">
                 <h2>Contact & Info</h2>
@@ -450,6 +467,7 @@
                     <input type="text" id="status-message" placeholder="e.g., Drafting 2026 Strategy">
                     <button class="btn secondary" id="suggest-status-btn" style="margin-top: 10px; width: auto; font-size: 0.9rem; padding: 8px 12px;">Get Status Suggestion 💡</button>
                 </div>
+                
                 <div class="form-group">
                     <label for="status-time-type">Set Availability</label>
                     <select id="status-time-type">
@@ -602,7 +620,7 @@
 
         const DAYS_OF_WEEK = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
         const TIMEZONE_MAP = { 'auto': new Date().getTimezoneOffset() * -1, 'UTC-12:00': -720, 'UTC-11:00': -660, 'UTC-10:00': -600, 'UTC-09:30': -570, 'UTC-09:00': -540, 'UTC-08:00': -480, 'UTC-07:00': -420, 'UTC-06:00': -360, 'UTC-05:00': -300, 'UTC-04:00': -240, 'UTC-03:30': -210, 'UTC-03:00': -180, 'UTC-02:00': -120, 'UTC-01:00': -60, 'UTC+00:00': 0, 'UTC+01:00': 60, 'UTC+02:00': 120, 'UTC+03:00': 180, 'UTC+03:30': 210, 'UTC+04:00': 240, 'UTC+04:30': 270, 'UTC+05:00': 300, 'UTC+05:30': 330, 'UTC+05:45': 345, 'UTC+06:00': 360, 'UTC+06:30': 390, 'UTC+07:00': 420, 'UTC+08:00': 480, 'UTC+08:45': 525, 'UTC+09:00': 540, 'UTC+09:30': 570, 'UTC+10:00': 600, 'UTC+10:30': 630, 'UTC+11:00': 660, 'UTC+12:00': 720, 'UTC+12:45': 765, 'UTC+13:00': 780, 'UTC+14:00': 840 };
-        const COUNTRY_LIST = [ {name: "Afghanistan", code: "AF"}, {name: "Åland Islands", code: "AX"}, {name: "Albania", code: "AL"}, {name: "Algeria", code: "DZ"}, {name: "American Samoa", code: "AS"}, {name: "Andorra", code: "AD"}, {name: "Angola", code: "AO"}, {name: "Anguilla", code: "AI"}, {name: "Antarctica", code: "AQ"}, {name: "Antigua and Barbuda", code: "AG"}, {name: "Argentina", code: "AR"}, {name: "Armenia", code: "AM"}, {name: "Aruba", code: "AW"}, {name: "Australia", code: "AU"}, {name: "Austria", code: "AT"}, {name: "Azerbaijan", code: "AZ"}, {name: "Bahamas", code: "BS"}, {name: "Bahrain", code: "BH"}, {name: "Bangladesh", code: "BD"}, {name: "Barbados", code: "BB"}, {name: "Belarus", code: "BY"}, {name: "Belgium", code: "BE"}, {name: "Belize", code: "BZ"}, {name: "Benin", code: "BJ"}, {name: "Bermuda", code: "BM"}, {name: "Bhutan", code: "BT"}, {name: "Bolivia", code: "BO"}, {name: "Bosnia and Herzegovina", code: "BA"}, {name: "Botswana", code: "BW"}, {name: "Bouvet Island", code: "BV"}, {name: "Brazil", code: "BR"}, {name: "British Indian Ocean Territory", code: "IO"}, {name: "Brunei Darussalam", code: "BN"}, {name: "Bulgaria", code: "BG"}, {name: "Burkina Faso", code: "BF"}, {name: "Burundi", code: "BI"}, {name: "Cambodia", code: "KH"}, {name: "Cameroon", code: "CM"}, {name: "Canada", code: "CA"}, {name: "Cape Verde", code: "CV"}, {name: "Cayman Islands", code: "KY"}, {name: "Central African Republic", code: "CF"}, {name: "Chad", code: "TD"}, {name: "Chile", code: "CL"}, {name: "China", code: "CN"}, {name: "Christmas Island", code: "CX"}, {name: "Cocos (Keeling) Islands", code: "CC"}, {name: "Colombia", code: "CO"}, {name: "Comoros", code: "KM"}, {name: "Congo", code: "CG"}, {name: "Congo, The Democratic Republic of the", code: "CD"}, {name: "Cook Islands", code: "CK"}, {name: "Costa Rica", code: "CR"}, {name: "Cote D'Ivoire", code: "CI"}, {name: "Croatia", code: "HR"}, {name: "Cuba", code: "CU"}, {name: "Cyprus", code: "CY"}, {name: "Czech Republic", code: "CZ"}, {name: "Denmark", code: "DK"}, {name: "Djibouti", code: "DJ"}, {name: "Dominica", code: "DM"}, {name: "Dominican Republic", code: "DO"}, {name: "Ecuador", code: "EC"}, {name: "Egypt", code: "EG"}, {name: "El Salvador", code: "SV"}, {name: "Equatorial Guinea", code: "GQ"}, {name: "Eritrea", code: "ER"}, {name: "Estonia", code: "EE"}, {name: "Ethiopia", code: "ET"}, {name: "Falkland Islands (Malvinas)", code: "FK"}, {name: "Faroe Islands", code: "FO"}, {name: "Fiji", code: "FJ"}, {name: "Finland", code: "FI"}, {name: "France", code: "FR"}, {name: "French Guiana", code: "GF"}, {name: "French Polynesia", code: "PF"}, {name: "French Southern Territories", code: "TF"}, {name: "Gabon", code: "GA"}, {name: "Gambia", code: "GM"}, {name: "Georgia", code: "GE"}, {name: "Germany", code: "DE"}, {name: "Ghana", code: "GH"}, {name: "Gibraltar", code: "GI"}, {name: "Greece", code: "GR"}, {name: "Greenland", code: "GL"}, {name: "Grenada", code: "GD"}, {name: "Guadeloupe", code: "GP"}, {name: "Guam", code: "GU"}, {name: "Guatemala", code: "GT"}, {name: "Guernsey", code: "GG"}, {name: "Guinea", code: "GN"}, {name: "Guinea-Bissau", code: "GW"}, {name: "Guyana", code: "GY"}, {name: "Haiti", code: "HT"}, {name: "Heard Island and Mcdonald Islands", code: "HM"}, {name: "Holy See (Vatican City State)", code: "VA"}, {name: "Honduras", code: "HN"}, {name: "Hong Kong", code: "HK"}, {name: "Hungary", code: "HU"}, {name: "Iceland", code: "IS"}, {name: "India", code: "IN"}, {name: "Indonesia", code: "ID"}, {name: "Iran, Islamic Republic Of", code: "IR"}, {name: "Iraq", code: "IQ"}, {name: "Ireland", code: "IE"}, {name: "Isle of Man", code: "IM"}, {name: "Israel", code: "IL"}, {name: "Italy", code: "IT"}, {name: "Jamaica", code: "JM"}, {name: "Japan", code: "JP"}, {name: "Jersey", code: "JE"}, {name: "Jordan", code: "JO"}, {name: "Kazakhstan", code: "KZ"}, {name: "Kenya", code: "KE"}, {name: "Kiribati", code: "KI"}, {name: "Korea, Democratic People'S Republic of", code: "KP"}, {name: "Korea, Republic of", code: "KR"}, {name: "Kuwait", code: "KW"}, {name: "Kyrgyzstan", code: "KG"}, {name: "Lao People'S Democratic Republic", code: "LA"}, {name: "Latvia", code: "LV"}, {name: "Lebanon", code: "LB"}, {name: "Lesotho", code: "LS"}, {name: "Liberia", code: "LR"}, {name: "Libyan Arab Jamahiriya", code: "LY"}, {name: "Liechtenstein", code: "LI"}, {name: "Lithuania", code: "LT"}, {name: "Luxembourg", code: "LU"}, {name: "Macao", code: "MO"}, {name: "Macedonia, The Former Yugoslav Republic of", code: "MK"}, {name: "Madagascar", code: "MG"}, {name: "Malawi", code: "MW"}, {name: "Malaysia", code: "MY"}, {name: "Maldives", code: "MV"}, {name: "Mali", code: "ML"}, {name: "Malta", code: "MT"}, {name: "Marshall Islands", code: "MH"}, {name: "Martinique", code: "MQ"}, {name: "Mauritania", code: "MR"}, {name: "Mauritius", code: "MU"}, {name: "Mayotte", code: "YT"}, {name: "Mexico", code: "MX"}, {name: "Micronesia, Federated States of", code: "FM"}, {name: "Moldova, Republic of", code: "MD"}, {name: "Monaco", code: "MC"}, {name: "Mongolia", code: "MN"}, {name: "Montserrat", code: "MS"}, {name: "Morocco", code: "MA"}, {name: "Mozambique", code: "MZ"}, {name: "Myanmar", code: "MM"}, {name: "Namibia", code: "NA"}, {name: "Nauru", code: "NR"}, {name: "Nepal", code: "NP"}, {name: "Netherlands", code: "NL"}, {name: "Netherlands Antilles", code: "AN"}, {name: "New Caledonia", code: "NC"}, {name: "New Zealand", code: "NZ"}, {name: "Nicaragua", code: "NI"}, {name: "Niger", code: "NE"}, {name: "Nigeria", code: "NG"}, {name: "Niue", code: "NU"}, {name: "Norfolk Island", code: "NF"}, {name: "Northern Mariana Islands", code: "MP"}, {name: "Norway", code: "NO"}, {name: "Oman", code: "OM"}, {name: "Pakistan", code: "PK"}, {name: "Palau", code: "PW"}, {name: "Palestinian Territory, Occupied", code: "PS"}, {name: "Panama", code: "PA"}, {name: "Papua New Guinea", code: "PG"}, {name: "Paraguay", code: "PY"}, {name: "Peru", code: "PE"}, {name: "Philippines", code: "PH"}, {name: "Pitcairn", code: "PN"}, {name: "Poland", code: "PL"}, {name: "Portugal", code: "PT"}, {name: "Puerto Rico", code: "PR"}, {name: "Qatar", code: "QA"}, {name: "Reunion", code: "RE"}, {name: "Romania", code: "RO"}, {name: "Russian Federation", code: "RU"}, {name: "RWANDA", code: "RW"}, {name: "Saint Helena", code: "SH"}, {name: "Saint Kitts and Nevis", code: "KN"}, {name: "Saint Lucia", code: "LC"}, {name: "Saint Pierre and Miquelon", code: "PM"}, {name: "Saint Vincent and the Grenadines", code: "VC"}, {name: "Samoa", code: "WS"}, {name: "San Marino", code: "SM"}, {name: "Sao Tome and Principe", code: "ST"}, {name: "Saudi Arabia", code: "SA"}, {name: "Senegal", code: "SN"}, {name: "Serbia and Montenegro", code: "CS"}, {name: "Seychelles", code: "SC"}, {name: "Sierra Leone", code: "SL"}, {name: "Singapore", code: "SG"}, {name: "Slovakia", code: "SK"}, {name: "Slovenia", code: "SI"}, {name: "Solomon Islands", code: "SB"}, {name: "Somalia", code: "SO"}, {name: "South Africa", code: "ZA"}, {name: "South Georgia and the South Sandwich Islands", code: "GS"}, {name: "Spain", code: "ES"}, {name: "Sri Lanka", code: "LK"}, {name: "Sudan", code: "SD"}, {name: "Suriname", code: "SR"}, {name: "Svalbard and Jan Mayen", code: "SJ"}, {name: "Swaziland", code: "SZ"}, {name: "Sweden", code: "SE"}, {name: "Switzerland", code: "CH"}, {name: "Syrian Arab Republic", code: "SY"}, {name: "Taiwan", code: "TW"}, {name: "Tajikistan", code: "TJ"}, {name: "Tanzania, United Republic of", code: "TZ"}, {name: "Thailand", code: "TH"}, {name: "Timor-Leste", code: "TL"}, {name: "Togo", code: "TG"}, {name: "Tokelau", code: "TK"}, {name: "Tonga", code: "TO"}, {name: "Trinidad and Tobago", code: "TT"}, {name: "Tunisia", code: "TN"}, {name: "Turkey", code: "TR"}, {name: "Turkmenistan", code: "TM"}, {name: "Turks and Caicos Islands", code: "TC"}, {name: "Tuvalu", code: "TV"}, {name: "Uganda", code: "UG"}, {name: "Ukraine", code: "UA"}, {name: "United Arab Emirates", code: "AE"}, {name: "United Kingdom", code: "GB"}, {name: "United States", code: "US"}, {name: "United States Minor Outlying Islands", code: "UM"}, {name: "Uruguay", code: "UY"}, {name: "Uzbekistan", code: "UZ"}, {name: "Vanuatu", code: "VU"}, {name: "Venezuela", code: "VE"}, {name: "Viet Nam", code: "VN"}, {name: "Virgin Islands, British", code: "VG"}, {name: "Virgin Islands, U.S.", code: "VI"}, {name: "Wallis and Futuna", code: "WF"}, {name: "Western Sahara", code: "EH"}, {name: "Yemen", code: "YE"}, {name: "Zambia", code: "ZM"}, {name: "Zimbabwe", code: "ZW"} ];
+        const COUNTRY_LIST = [ {name: "Afghanistan", code: "AF"}, {name: "Åland Islands", code: "AX"}, {name: "Albania", code: "AL"}, {name: "Algeria", code: "DZ"}, {name: "American Samoa", code: "AS"}, {name: "Andorra", code: "AD"}, {name: "Angola", code: "AO"}, {name: "Anguilla", code: "AI"}, {name: "Antarctica", code: "AQ"}, {name: "Antigua and Barbuda", code: "AG"}, {name: "Argentina", code: "AR"}, {name: "Armenia", code: "AM"}, {name: "Aruba", code: "AW"}, {name: "Australia", code: "AU"}, {name: "Austria", code: "AT"}, {name: "Azerbaijan", code: "AZ"}, {name: "Bahamas", code: "BS"}, {name: "Bahrain", code: "BH"}, {name: "Bangladesh", code: "BD"}, {name: "Barbados", code: "BB"}, {name: "Belarus", code: "BY"}, {name: "Belgium", code: "BE"}, {name: "Belize", code: "BZ"}, {name: "Benin", code: "BJ"}, {name: "Bermuda", code: "BM"}, {name: "Bhutan", code: "BT"}, {name: "Bolivia", code: "BO"}, {name: "Bosnia and Herzegovina", code: "BA"}, {name: "Botswana", code: "BW"}, {name: "Bouvet Island", code: "BV"}, {name: "Brazil", code: "BR"}, {name: "British Indian Ocean Territory", code: "IO"}, {name: "Brunei Darussalam", code: "BN"}, {name: "Bulgaria", code: "BG"}, {name: "Burkina Faso", code: "BF"}, {name: "Burundi", code: "BI"}, {name: "Cambodia", code: "KH"}, {name: "Cameroon", code: "CM"}, {name: "Canada", code: "CA"}, {name: "Cape Verde", code: "CV"}, {name: "Cayman Islands", code: "KY"}, {name: "Central African Republic", code: "CF"}, {name: "Chad", code: "TD"}, {name: "Chile", code: "CL"}, {name: "China", code: "CN"}, {name: "Christmas Island", code: "CX"}, {name: "Cocos (Keeling) Islands", code: "CC"}, {name: "Colombia", code: "CO"}, {name: "Comoros", code: "KM"}, {name: "Congo", code: "CG"}, {name: "Congo, The Democratic Republic of the", code: "CD"}, {name: "Cook Islands", code: "CK"}, {name: "Costa Rica", code: "CR"}, {name: "Cote D'Ivoire", code: "CI"}, {name: "Croatia", code: "HR"}, {name: "Cuba", code: "CU"}, {name: "Cyprus", code: "CY"}, {name: "Czech Republic", code: "CZ"}, {name: "Denmark", code: "DK"}, {name: "Djibouti", code: "DJ"}, {name: "Dominica", code: "DM"}, {name: "Dominican Republic", code: "DO"}, {name: "Ecuador", code: "EC"}, {name: "Egypt", code: "EG"}, {name: "El Salvador", code: "SV"}, {name: "Equatorial Guinea", code: "GQ"}, {name: "Eritrea", code: "ER"}, {name: "Estonia", code: "EE"}, {name: "Ethiopia", code: "ET"}, {name: "Falkland Islands (Malvinas)", code: "FK"}, {name: "Faroe Islands", code: "FO"}, {name: "Fiji", code: "FJ"}, {name: "Finland", code: "FI"}, {name: "France", code: "FR"}, {name: "French Guiana", code: "GF"}, {name: "French Polynesia", code: "PF"}, {name: "French Southern Territories", code: "TF"}, {name: "Gabon", code: "GA"}, {name: "Gambia", code: "GM"}, {name: "Georgia", code: "GE"}, {name: "Germany", code: "DE"}, {name: "Ghana", code: "GH"}, {name: "Gibraltar", code: "GI"}, {name: "Greece", code: "GR"}, {name: "Greenland", code: "GL"}, {name: "Grenada", code: "GD"}, {name: "Guadeloupe", code: "GP"}, {name: "Guam", code: "GU"}, {name: "Guatemala", code: "GT"}, {name: "Guernsey", code: "GG"}, {name: "Guinea", code: "GN"}, {name: "Guinea-Bissau", code: "GW"}, {name: "Guyana", code: "GY"}, {name: "Haiti", code: "HT"}, {name: "Heard Island and Mcdonald Islands", code: "HM"}, {name: "Holy See (Vatican City State)", code: "VA"}, {name: "Honduras", code: "HN"}, {name: "Hong Kong", code: "HK"}, {name: "Hungary", code: "HU"}, {name: "Iceland", code: "IS"}, {name: "India", code: "IN"}, {name: "Indonesia", code: "ID"}, {name: "Iran, Islamic Republic Of", code: "IR"}, {name: "Iraq", code: "IQ"}, {name: "Ireland", code: "IE"}, {name: "Isle of Man", code: "IM"}, {name: "Israel", code: "IL"}, {name: "Italy", code: "IT"}, {name: "Jamaica", code: "JM"}, {name: "Japan", code: "JP"}, {name: "Jersey", code: "JE"}, {name: "Jordan", code: "JO"}, {name: "Kazakhstan", code: "KZ"}, {name: "Kenya", code: "KE"}, {name: "Kiribati", code: "KI"}, {name: "Korea, Democratic People'S Republic of", code: "KP"}, {name: "Korea, Republic of", code: "KR"}, {name: "Kuwait", code: "KW"}, {name: "Kyrgyzstan", code: "KG"}, {name: "Lao People'S Democratic Republic", code: "LA"}, {name: "Latvia", code: "LV"}, {name: "Lebanon", code: "LB"}, {name: "Lesotho", code: "LS"}, {name: "Liberia", code: "LR"}, {name: "Libyan Arab Jamahiriya", code: "LY"}, {name: "Liechtenstein", code: "LI"}, {name: "Lithuania", code: "LT"}, {name: "Luxembourg", code: "LU"}, {name: "Macao", code: "MO"}, {name: "Macedonia, The Former Yugoslav Republic of", code: "MK"}, {name: "Madagascar", code: "MG"}, {name: "Malawi", code: "MW"}, {name: "Malaysia", code: "MY"}, {name: "Maldives", code: "MV"}, {name: "Mali", code: "ML"}, {name: "Malta", code: "MT"}, {name: "Marshall Islands", code: "MH"}, {name: "Mauritania", code: "MR"}, {name: "Mauritius", code: "MU"}, {name: "Mayotte", code: "YT"}, {name: "Mexico", code: "MX"}, {name: "Micronesia, Federated States of", code: "FM"}, {name: "Moldova, Republic of", code: "MD"}, {name: "Monaco", code: "MC"}, {name: "Mongolia", code: "MN"}, {name: "Montserrat", code: "MS"}, {name: "Morocco", code: "MA"}, {name: "Mozambique", code: "MZ"}, {name: "Myanmar", code: "MM"}, {name: "Namibia", code: "NA"}, {name: "Nauru", code: "NR"}, {name: "Nepal", code: "NP"}, {name: "Netherlands", code: "NL"}, {name: "Netherlands Antilles", code: "AN"}, {name: "New Caledonia", code: "NC"}, {name: "New Zealand", code: "NZ"}, {name: "Nicaragua", code: "NI"}, {name: "Niger", code: "NE"}, {name: "Nigeria", code: "NG"}, {name: "Niue", code: "NU"}, {name: "Norfolk Island", code: "NF"}, {name: "Northern Mariana Islands", code: "MP"}, {name: "Norway", code: "NO"}, {name: "Oman", code: "OM"}, {name: "Pakistan", code: "PK"}, {name: "Palau", code: "PW"}, {name: "Palestinian Territory, Occupied", code: "PS"}, {name: "Panama", code: "PA"}, {name: "Papua New Guinea", code: "PG"}, {name: "Paraguay", code: "PY"}, {name: "Peru", code: "PE"}, {name: "Philippines", code: "PH"}, {name: "Pitcairn", code: "PN"}, {name: "Poland", code: "PL"}, {name: "Portugal", code: "PT"}, {name: "Puerto Rico", code: "PR"}, {name: "Qatar", code: "QA"}, {name: "Reunion", code: "RE"}, {name: "Romania", code: "RO"}, {name: "Russian Federation", code: "RU"}, {name: "RWANDA", code: "RW"}, {name: "Saint Helena", code: "SH"}, {name: "Saint Kitts and Nevis", code: "KN"}, {name: "Saint Lucia", code: "LC"}, {name: "Saint Pierre and Miquelon", code: "PM"}, {name: "Saint Vincent and the Grenadines", code: "VC"}, {name: "Samoa", code: "WS"}, {name: "San Marino", code: "SM"}, {name: "Sao Tome and Principe", code: "ST"}, {name: "Saudi Arabia", code: "SA"}, {name: "Senegal", code: "SN"}, {name: "Serbia and Montenegro", code: "CS"}, {name: "Seychelles", code: "SC"}, {name: "Sierra Leone", code: "SL"}, {name: "Singapore", code: "SG"}, {name: "Slovakia", code: "SK"}, {name: "Slovenia", code: "SI"}, {name: "Solomon Islands", code: "SB"}, {name: "Somalia", code: "SO"}, {name: "South Africa", code: "ZA"}, {name: "South Georgia and the South Sandwich Islands", code: "GS"}, {name: "Spain", code: "ES"}, {name: "Sri Lanka", code: "LK"}, {name: "Sudan", code: "SD"}, {name: "Suriname", code: "SR"}, {name: "Svalbard and Jan Mayen", code: "SJ"}, {name: "Swaziland", code: "SZ"}, {name: "Sweden", code: "SE"}, {name: "Switzerland", code: "CH"}, {name: "Syrian Arab Republic", code: "SY"}, {name: "Taiwan", code: "TW"}, {name: "Tajikistan", code: "TJ"}, {name: "Tanzania, United Republic of", code: "TZ"}, {name: "Thailand", code: "TH"}, {name: "Timor-Leste", code: "TL"}, {name: "Togo", code: "TG"}, {name: "Tokelau", code: "TK"}, {name: "Tonga", code: "TO"}, {name: "Trinidad and Tobago", code: "TT"}, {name: "Tunisia", code: "TN"}, {name: "Turkey", code: "TR"}, {name: "Turkmenistan", code: "TM"}, {name: "Turks and Caicos Islands", code: "TC"}, {name: "Tuvalu", code: "TV"}, {name: "Uganda", code: "UG"}, {name: "Ukraine", code: "UA"}, {name: "United Arab Emirates", code: "AE"}, {name: "United Kingdom", code: "GB"}, {name: "United States", code: "US"}, {name: "United States Minor Outlying Islands", code: "UM"}, {name: "Uruguay", code: "UY"}, {name: "Uzbekistan", code: "UZ"}, {name: "Vanuatu", code: "VU"}, {name: "Venezuela", code: "VE"}, {name: "Viet Nam", code: "VN"}, {name: "Virgin Islands, British", code: "VG"}, {name: "Virgin Islands, U.S.", code: "VI"}, {name: "Wallis and Futuna", code: "WF"}, {name: "Western Sahara", code: "EH"}, {name: "Yemen", code: "YE"}, {name: "Zambia", code: "ZM"}, {name: "Zimbabwe", code: "ZW"} ];
 
         // --- UTILITIES ---
         function showToast(message, type = 'info') {
@@ -660,9 +678,25 @@
                 const snapshot = await get(userRef);
 
                 if (!snapshot.exists()) {
-                    const initialProfile = { displayName: user.displayName, email: user.email, pfpUrl: user.photoURL, status: '🟢', message: 'Ready for the day!', theme: 'auto', privacy: { email: 'public', phone: 'private', school: 'private', bio: 'public', age: 'public', gender: 'private', hobbies: 'public', country: 'public', timezone: 'public' }, updatedAt: new Date().toISOString() };
+                    const initialProfile = { 
+                        displayName: user.displayName, 
+                        email: user.email, 
+                        pfpUrl: user.photoURL, 
+                        status: '🟢', 
+                        message: 'Ready for the day!', 
+                        theme: 'auto', 
+                        role: 'Member', // NEW DEFAULT
+                        verified: false, // NEW DEFAULT
+                        privacy: { email: 'public', phone: 'private', school: 'private', bio: 'public', age: 'public', gender: 'private', hobbies: 'public', country: 'public', timezone: 'public' }, 
+                        updatedAt: new Date().toISOString() 
+                    };
                     await set(userRef, initialProfile);
+                    App.currentProfileData = initialProfile; // Load fresh data immediately (BUG FIX part 1)
                 }
+                
+                // BUG FIX part 2: Force navigation after successful sign-in to kickstart the UI
+                navigateTo('profilePage', true); 
+
             } catch (error) {
                 document.getElementById('error-message').textContent = error.message;
             }
@@ -685,8 +719,23 @@
                 const result = await createUserWithEmailAndPassword(auth, email, password);
                 const user = result.user;
                 const userRef = ref(db, `users/${user.uid}`);
-                const initialProfile = { displayName: displayName, email: user.email, status: '🟢', message: 'Ready for the day!', theme: 'auto', updatedAt: new Date().toISOString(), privacy: { email: 'public', phone: 'private', school: 'private', bio: 'public', age: 'public', gender: 'private', hobbies: 'public', country: 'public', timezone: 'public' } };
+                const initialProfile = { 
+                    displayName: displayName, 
+                    email: user.email, 
+                    status: '🟢', 
+                    message: 'Ready for the day!', 
+                    theme: 'auto', 
+                    role: 'Member', // NEW DEFAULT
+                    verified: false, // NEW DEFAULT
+                    updatedAt: new Date().toISOString(), 
+                    privacy: { email: 'public', phone: 'private', school: 'private', bio: 'public', age: 'public', gender: 'private', hobbies: 'public', country: 'public', timezone: 'public' } 
+                };
                 await set(userRef, initialProfile);
+                App.currentProfileData = initialProfile; // Load fresh data immediately (BUG FIX part 1)
+                
+                // BUG FIX part 2: Force navigation after successful sign-up
+                navigateTo('profilePage', true); 
+
             } catch (error) {
                 errorMsg.textContent = error.message;
             }
@@ -700,6 +749,7 @@
             errorMsg.textContent = '';
             try {
                 await signInWithEmailAndPassword(auth, email, password);
+                // Navigating relies on onAuthStateChanged handler
             } catch (error) {
                 errorMsg.textContent = error.message;
             }
@@ -716,7 +766,9 @@
                 App.currentUser = { email: user.email, displayName: user.displayName, userId: user.uid, pfpUrl: user.photoURL };
                 const params = new URLSearchParams(window.location.search);
                 if (!params.has('user')) {
-                    setupUserSession();
+                    // This call ensures the UI loads quickly if the user was already signed in 
+                    // or if they just finished a non-redirecting login/signup flow.
+                    setupUserSession(); 
                     navigateTo('profilePage');
                 }
             } else {
@@ -938,12 +990,31 @@
         function renderProfile(data) {
             if (!data) return;
             updatePageTitle(data);
-            document.getElementById('profile-name').textContent = data.displayName || 'Unnamed User';
+            const profileNameEl = document.getElementById('profile-name');
+            const roleEl = document.getElementById('user-role-display');
+            const verifiedEl = document.getElementById('verified-checkmark');
+
+            // 1. Display Name and Verified Status
+            profileNameEl.innerHTML = (data.displayName || 'Unnamed User') + (data.verified ? verifiedEl.outerHTML : '');
+            if (data.verified) {
+                // Since we replaced innerHTML, we need to re-fetch the new element and show it
+                document.getElementById('verified-checkmark').classList.remove('hidden');
+            } else {
+                verifiedEl.classList.add('hidden');
+            }
+
+            // 2. Role Display
+            const role = data.role || 'Member';
+            roleEl.textContent = role.toUpperCase();
+            roleEl.className = 'role-display'; // Reset classes
+            roleEl.classList.add(`role-${role.toLowerCase()}`);
+            
+            // 3. Status and Timer
             document.getElementById('profile-emoji').textContent = data.status || '❓';
             document.getElementById('profile-message').textContent = data.message || 'No message set.';
             updateTimer(data);
-            renderCustomLinks(data.links, document.getElementById('profile-links'));
-            renderActionLinks(data);
+            
+            // 4. Timezone
             renderPersonalDetails(data);
             const timeData = getLocalTimeData(data.timezoneOverride || 'auto');
             const timeInfoEl = document.getElementById('local-time-info');
@@ -952,10 +1023,13 @@
             } else {
                 timeInfoEl.textContent = `Local Time: ${timeData.time} (${timeData.offset})`;
             }
-            // Removed updateDestinationTime call
+
             if (isPublicView && (!App.currentUser || App.currentUser.userId !== data.userId)) {
                 trackProfileView(data.userId);
             }
+
+            renderCustomLinks(data.links, document.getElementById('profile-links'));
+            renderActionLinks(data);
         }
 
         function findActiveSchedule(user) {
@@ -1021,8 +1095,6 @@
                 }, 1000);
             }
         }
-
-        // Removed updateDestinationTime function
         
         async function checkTimetableAndApplyStatus() {
             if (!App.currentUser) return;
@@ -1097,14 +1169,13 @@
             document.getElementById('hobbies').value = data.hobbies || '';
             document.getElementById('phone-number').value = data.phone || '';
             document.getElementById('school').value = data.school || '';
-            // Removed travelDestination and destinationTimezone from population
             
             const privacy = data.privacy || {};
             Object.keys(privacy).forEach(key => {
                 const el = document.getElementById(`privacy-${key}`);
                 if (el) el.value = privacy[key] || 'public';
             });
-            [document.getElementById('timezone-selector')].forEach(selector => { // Removed destination-timezone
+            [document.getElementById('timezone-selector')].forEach(selector => { 
                 if (!selector) return;
                 const selectedValue = data.timezoneOverride;
                 selector.innerHTML = '<option value="auto">Auto-Detect</option>';
@@ -1116,7 +1187,7 @@
             document.getElementById('status-message').value = data.message || '';
             document.getElementById('auto-reset').checked = !!data.autoResetStatus;
             
-            toggleTimeInputs(document.getElementById('status-time-type').value); // Set correct time inputs visibility
+            toggleTimeInputs(document.getElementById('status-time-type').value); 
 
             const countrySearch = document.getElementById('country-search'), countryCodeInput = document.getElementById('country-code');
             if(data.countryCode) {
@@ -1144,7 +1215,6 @@
             addEventListeners();
         }
         
-        // --- UPDATED DELETE ACCOUNT FUNCTION ---
         async function handleDeleteAccount() {
             if (!App.currentUser) return;
             
@@ -1216,7 +1286,7 @@
                     const [hours, minutes] = timeString.split(':'); 
                     const d = new Date(); 
                     d.setHours(hours, minutes, 0, 0); 
-                    if (d < new Date()) d.setDate(d.getDate() + 1); // Set for tomorrow if time has passed
+                    if (d < new Date()) d.setDate(d.getDate() + 1); 
                     endTime = d.toISOString(); 
                 }
             }
@@ -1229,10 +1299,10 @@
                 birthday: document.getElementById('birthday').value, gender: document.getElementById('gender').value,
                 countryCode: document.getElementById('country-code').value, hobbies: document.getElementById('hobbies').value,
                 phone: document.getElementById('phone-number').value, school: document.getElementById('school').value,
-                // Removed travelDestination and destinationTimezone from dataToSave
                 timezoneOverride: document.getElementById('timezone-selector').value, status: document.getElementById('status-emoji').value,
                 message: document.getElementById('status-message').value, autoResetStatus: document.getElementById('auto-reset').checked,
                 links: customLinks, endTime: endTime, statusTimeType: timeType,
+                // Role and verified are NOT updated via settings for security/control reasons
                 privacy: {
                     email: document.getElementById('privacy-email').value, bio: document.getElementById('privacy-bio').value,
                     age: document.getElementById('privacy-age').value, gender: document.getElementById('privacy-gender').value,
@@ -1296,7 +1366,7 @@
             const shareUrl = `${window.location.origin}${window.location.pathname}?user=${App.currentUser.userId}`;
             const img = document.getElementById('profile-qrcode-img'), placeholder = document.getElementById('qrcode-placeholder');
             img.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(shareUrl)}`;
-            img.onload = () => { img.style.display = 'block'; placeholder.classList.add('hidden'); showToast('QR Code generated!'); };
+            img.onload = () => { img.style.display = 'block'; placeholder.classList.add('hidden'); showToast('QR Code generated! 🖼️'); };
         }
         function handleShareStatus() {
             if (!App.currentUser) return;
