@@ -974,11 +974,15 @@
 
             if (userIdFromUrl) {
                 isPublicView = true;
-                document.body.style.paddingBottom = "20px";
-                App.elements.mainHeader?.classList.add('hidden');
+                
+                // --- FIX APPLIED HERE: Ensure the profile page is active immediately ---
                 App.pages.forEach(pId => App.elements[pId]?.classList.remove('active'));
                 App.elements.profilePage?.classList.add('active');
+                // ----------------------------------------------------------------------
 
+                document.body.style.paddingBottom = "20px";
+                App.elements.mainHeader?.classList.add('hidden');
+                
                 await displayPublicProfile(userIdFromUrl);
                 publicViewInterval = setInterval(() => displayPublicProfile(userIdFromUrl), 30000);
 
