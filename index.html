@@ -385,24 +385,6 @@
                     <label for="link-text-color">Custom Link Text Color</label>
                     <input type="color" id="link-text-color" value="#0369a1">
                 </div>
-                
-                <div class="form-group">
-                    <label>Profile Header Background Type</label>
-                    <div style="display: flex; gap: 20px; margin-top: 8px;">
-                        <label style="display: inline-flex; align-items: center; gap: 8px; font-weight: normal;">
-                            <input type="radio" name="profile-bg-type" value="auto" id="profile-bg-type-auto" checked style="width: auto;">
-                            <span>Auto (Theme-based)</span>
-                        </label>
-                        <label style="display: inline-flex; align-items: center; gap: 8px; font-weight: normal;">
-                            <input type="radio" name="profile-bg-type" value="custom" id="profile-bg-type-custom" style="width: auto;">
-                            <span>Custom</span>
-                        </label>
-                    </div>
-                </div>
-                <div class="form-group hidden" id="custom-bg-group">
-                    <label for="profile-bg-value">Custom Background (CSS Color/Gradient/Image URL)</label>
-                    <input type="text" id="profile-bg-value" placeholder="e.g., #ffdeae, linear-gradient(...)"/>
-                </div>
 
                 <div class="form-group">
                     <label for="scheduling-link">Scheduling Link (e.g., Calendly)</label>
@@ -505,7 +487,7 @@
              <div class="card">
                 <h2>Search Public HAP Profiles</h2>
                 <div class="form-group" style="margin-bottom: 0;">
-                    <input type="text" id="user-search-input" placeholder="Enter name or email to search">
+                    <input type="text" id="user-search-input" placeholder="Enter name to search">
                 </div>
                 <button id="run-search-btn" class="btn secondary" style="margin-top: 10px;">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path fill-rule="evenodd" d="M10.5 3.75a6.75 6.75 0 1 0 0 13.5 6.75 6.75 0 0 0 0-13.5ZM2.25 10.5a8.25 8.25 0 1 1 14.59 5.28l4.69 4.69a.75.75 0 1 1-1.06 1.06l-4.69-4.69A8.25 8.25 0 0 1 2.25 10.5Z" clip-rule="evenodd"></path></svg>
@@ -710,12 +692,7 @@
             document.documentElement.style.setProperty('--link-text-color', data.linkTextColor || '#0369a1');
             document.documentElement.style.setProperty('--display-font', data.displayNameFont || 'Inter, sans-serif');
             
-            const rootStyle = document.documentElement.style;
-            if (data.profileBgType === 'custom' && data.profileBgValue && data.profileBgValue.trim() !== '') {
-                rootStyle.setProperty('--profile-header-bg-style', data.profileBgValue);
-            } else {
-                rootStyle.removeProperty('--profile-header-bg-style');
-            }
+            document.documentElement.style.setProperty('--profile-header-bg-style', '#ffffff');
 
             const pfpElement = document.getElementById('profile-pfp');
             if(pfpElement) {
@@ -976,10 +953,6 @@
             document.getElementById('phone-number').value = data.phone || '';
             document.getElementById('school').value = data.school || '';
             document.getElementById('travel-destination').value = data.travelDestination || '';
-            const bgType = data.profileBgType || 'auto';
-            document.getElementById(`profile-bg-type-${bgType}`).checked = true;
-            document.getElementById('custom-bg-group').classList.toggle('hidden', bgType !== 'custom');
-            document.getElementById('profile-bg-value').value = data.profileBgValue || '';
             const privacy = data.privacy || {};
             Object.keys(privacy).forEach(key => {
                 const el = document.getElementById(`privacy-${key}`);
@@ -1093,11 +1066,6 @@
                 if (navBtn) navigateTo(navBtn.dataset.page);
             });
             document.querySelectorAll('.preset-btn').forEach(btn => btn.addEventListener('click', handlePresetClick));
-            document.querySelectorAll('input[name="profile-bg-type"]').forEach(radio => {
-                radio.addEventListener('change', (e) => {
-                    document.getElementById('custom-bg-group').classList.toggle('hidden', e.target.value !== 'custom');
-                });
-            });
             const countrySearch = document.getElementById('country-search');
             const countryDropdown = document.getElementById('country-dropdown');
             countrySearch?.addEventListener('focus', () => { countryDropdown.classList.remove('hidden'); filterCountries(); });
@@ -1123,7 +1091,6 @@
                 displayName: document.getElementById('display-name').value, theme: document.getElementById('themeSelect').value,
                 displayNameFont: document.getElementById('display-font').value, dynamicTitleTemplate: document.getElementById('dynamic-title-template').value,
                 profileAccentColor: document.getElementById('accent-color').value, linkTextColor: document.getElementById('link-text-color').value,
-                profileBgType: document.querySelector('input[name="profile-bg-type"]:checked').value, profileBgValue: document.getElementById('profile-bg-value').value,
                 schedulingLink: document.getElementById('scheduling-link').value, bio: document.getElementById('bio').value,
                 birthday: document.getElementById('birthday').value, gender: document.getElementById('gender').value,
                 countryCode: document.getElementById('country-code').value, hobbies: document.getElementById('hobbies').value,
