@@ -258,8 +258,7 @@
                 <p class="profile-message" id="profile-message">Fetching status...</p>
                 <div class="profile-timer" id="profile-timer"></div>
                 <p class="local-time-display" id="local-time-info" style="font-size: 1rem; margin-top: 10px; font-weight: 500;"></p>
-                <p class="travel-time-display" id="destination-time-info" style="font-size: 1rem; margin-top: 10px; font-weight: 500; color: var(--primary-dark);"></p>
-            </div>
+                </div>
 
             <div class="card">
                 <h2>Contact & Info</h2>
@@ -452,14 +451,6 @@
                     <button class="btn secondary" id="suggest-status-btn" style="margin-top: 10px; width: auto; font-size: 0.9rem; padding: 8px 12px;">Get Status Suggestion 💡</button>
                 </div>
                 <div class="form-group">
-                    <label for="travel-destination">✈️ Destination (Optional)</label>
-                    <input type="text" id="travel-destination" placeholder="e.g., Tokyo, Japan">
-                </div>
-                <div class="form-group">
-                    <label for="destination-timezone">✈️ Destination Timezone</label>
-                    <select id="destination-timezone"><option value="">(Not Set)</option></select>
-                </div>
-                <div class="form-group">
                     <label for="status-time-type">Set Availability</label>
                     <select id="status-time-type">
                         <option value="duration">For a Duration (minutes)</option>
@@ -599,7 +590,6 @@
         // --- GLOBAL STATE & CONSTANTS ---
         let countdownInterval;
         let timetableCheckInterval;
-        let travelInterval;
         let isPublicView = false;
         let publicViewInterval = null;
 
@@ -844,7 +834,6 @@
 
         async function hashChangeRouter() {
             clearInterval(countdownInterval);
-            clearInterval(travelInterval);
             if(publicViewInterval) clearInterval(publicViewInterval);
             
             const params = new URLSearchParams(window.location.search);
@@ -963,7 +952,7 @@
             } else {
                 timeInfoEl.textContent = `Local Time: ${timeData.time} (${timeData.offset})`;
             }
-            updateDestinationTime(data);
+            // Removed updateDestinationTime call
             if (isPublicView && (!App.currentUser || App.currentUser.userId !== data.userId)) {
                 trackProfileView(data.userId);
             }
@@ -1033,25 +1022,7 @@
             }
         }
 
-        function updateDestinationTime(data) {
-            const timeInfoEl = document.getElementById('destination-time-info');
-            if (!timeInfoEl) return;
-            timeInfoEl.textContent = '';
-            if (travelInterval) clearInterval(travelInterval);
-            if (data.status !== '✈️' || !data.travelDestination || !data.destinationTimezone) return;
-            const renderTime = () => {
-                const currentData = App.currentProfileData;
-                if (!currentData || currentData.status !== '✈️') {
-                    timeInfoEl.textContent = '';
-                    clearInterval(travelInterval);
-                    return;
-                }
-                const newTimeData = getLocalTimeData(currentData.destinationTimezone);
-                timeInfoEl.innerHTML = `✈️ ${currentData.travelDestination} Local Time: <span style="font-weight: 700;">${newTimeData.time}</span> (${newTimeData.offset})`;
-            };
-            renderTime();
-            travelInterval = setInterval(renderTime, 1000);
-        }
+        // Removed updateDestinationTime function
         
         async function checkTimetableAndApplyStatus() {
             if (!App.currentUser) return;
@@ -1126,19 +1097,17 @@
             document.getElementById('hobbies').value = data.hobbies || '';
             document.getElementById('phone-number').value = data.phone || '';
             document.getElementById('school').value = data.school || '';
-            document.getElementById('travel-destination').value = data.travelDestination || '';
-            document.getElementById('status-time-type').value = data.endTime ? (data.statusTimeType === 'until' ? 'until' : 'duration') : 'none'; // Re-calculate status type based on data.endTime
+            // Removed travelDestination and destinationTimezone from population
             
             const privacy = data.privacy || {};
             Object.keys(privacy).forEach(key => {
                 const el = document.getElementById(`privacy-${key}`);
                 if (el) el.value = privacy[key] || 'public';
             });
-            [document.getElementById('timezone-selector'), document.getElementById('destination-timezone')].forEach(selector => {
+            [document.getElementById('timezone-selector')].forEach(selector => { // Removed destination-timezone
                 if (!selector) return;
-                const isDest = selector.id.includes('destination');
-                const selectedValue = isDest ? data.destinationTimezone : data.timezoneOverride;
-                selector.innerHTML = isDest ? '<option value="">(Not Set)</option>' : '<option value="auto">Auto-Detect</option>';
+                const selectedValue = data.timezoneOverride;
+                selector.innerHTML = '<option value="auto">Auto-Detect</option>';
                 Object.entries(TIMEZONE_MAP).forEach(([label, offset]) => {
                     if(label !== 'auto') selector.innerHTML += `<option value="${offset}" ${String(offset) === String(selectedValue) ? 'selected' : ''}>${label}</option>`;
                 });
@@ -1199,7 +1168,6 @@
                 await user.delete(); 
                 
                 // Step 2: Delete data from Realtime Database
-                // Note: Deletion from Auth revokes the token and triggers onAuthStateChanged/logout logic
                 const userRef = ref(db, `users/${userId}`);
                 const historyRef = ref(db, `history/${userId}`);
                 const analyticsRef = ref(db, `analytics/${userId}`);
@@ -1211,7 +1179,6 @@
                 // Step 3: Cleanup and notify
                 showToast("Account and all associated data successfully deleted. 👋");
                 setTimeout(() => {
-                    // Force navigation to login page (though onAuthStateChanged should handle it)
                     window.location.hash = 'loginPage';
                     window.location.search = '';
                 }, 500);
@@ -1222,9 +1189,7 @@
                 // Handle the specific error where re-authentication is required
                 if (error.code === 'auth/requires-recent-login') {
                     showToast("Security Alert: Please log in again to confirm this permanent action.", "error");
-                    // Log out to force the user to re-authenticate immediately
                     handleLogout(); 
-                    // The user must now sign in and click delete again immediately.
                 } else {
                     showToast(`Deletion failed: ${error.message}`, "error");
                 }
@@ -1264,7 +1229,7 @@
                 birthday: document.getElementById('birthday').value, gender: document.getElementById('gender').value,
                 countryCode: document.getElementById('country-code').value, hobbies: document.getElementById('hobbies').value,
                 phone: document.getElementById('phone-number').value, school: document.getElementById('school').value,
-                travelDestination: document.getElementById('travel-destination').value, destinationTimezone: document.getElementById('destination-timezone').value,
+                // Removed travelDestination and destinationTimezone from dataToSave
                 timezoneOverride: document.getElementById('timezone-selector').value, status: document.getElementById('status-emoji').value,
                 message: document.getElementById('status-message').value, autoResetStatus: document.getElementById('auto-reset').checked,
                 links: customLinks, endTime: endTime, statusTimeType: timeType,
@@ -1279,8 +1244,6 @@
             
             const pfpFile = document.getElementById('pfp-upload').files[0];
             if (pfpFile) {
-                // In a real app, you'd upload the file to Firebase Storage here and save the URL.
-                // For this example, we'll use a local reader (not ideal for persistence but matches existing logic)
                 const reader = new FileReader();
                 reader.onload = async (e) => { 
                     dataToSave.pfpUrl = e.target.result; 
