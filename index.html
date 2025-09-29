@@ -56,7 +56,7 @@
             transition: transform 0.4s ease-in-out, background-color 0.4s;
         }
         header.hidden { transform: translateY(100%); }
-        nav { display: flex; gap: 8px; align-items: center; width: 100%; max-width: 450px; justify-content: space-around; }
+        nav { display: flex; gap: 8px; align-items: center; width: 100%; max-width: 500px; justify-content: space-around; }
         .nav-btn {
             background: transparent; border: none; padding: 8px 10px; border-radius: 8px;
             cursor: pointer; color: var(--muted); font-weight: 500; font-size: 0.9rem;
@@ -127,9 +127,10 @@
             align-items: center;
             gap: 8px;
             margin: 5px auto 16px auto;
+            flex-wrap: wrap;
         }
         
-        .role-badge {
+        .membership-badge, .role-badge {
             font-size: 0.8rem; 
             font-weight: 700; 
             padding: 4px 10px; 
@@ -137,14 +138,9 @@
             width: fit-content;
         }
 
-        .role-owner { 
-            background-color: #ef4444;
-            color: white !important; 
-        }
-        .role-member { 
-            background-color: #3b82f6;
-            color: white !important; 
-        }
+        .role-owner { background-color: #ef4444; color: white !important; }
+        .role-member { background-color: #3b82f6; color: white !important; }
+        .membership-badge { background-color: #a855f7; color: white !important; }
 
         .verified-badge {
             display: inline-flex;
@@ -245,6 +241,13 @@
             height: 16px;
             animation: spin 1s linear infinite;
         }
+        /* Styles for Admin Panel & My Plan */
+        .admin-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .admin-table th, .admin-table td { padding: 12px; border: 1px solid var(--border-color); text-align: left; }
+        .admin-table th { background-color: var(--input-bg); }
+        .achievement-item { margin-bottom: 15px; }
+        .achievement-progress { width: 100%; background: var(--input-bg); border-radius: 8px; height: 10px; overflow: hidden; }
+        .progress-bar { height: 100%; background: var(--primary); border-radius: 8px; transition: width 0.5s ease; }
     </style>
 </head>
 <body>
@@ -257,13 +260,18 @@
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5a5.5 5.5 0 0 1 3.096 10.047 9.005 9.005 0 0 1 5.9 8.181.75.75 0 0 1-1.498.07 7.502 7.502 0 0 0-15 0 .75.75 0 0 1-1.498-.07A9.005 9.005 0 0 1 9 12.55a5.5 5.5 0 0 1 3-10.05ZM12 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z"></path></svg>
                 <span>Profile</span>
             </button>
+
+            <button class="nav-btn" data-page="myPlanPage">
+                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12.963 2.286a.75.75 0 0 0-1.071 1.052A11.202 11.202 0 0 1 18 10.5c0 1.25-.22 2.454-.626 3.565a.75.75 0 1 0 1.393.572A12.702 12.702 0 0 0 19.5 10.5c0-6.233-4.743-11.24-10.743-11.24a.75.75 0 0 0-.794.704Z" clip-rule="evenodd" /><path d="M3.75 6A1.5 1.5 0 0 1 5.25 4.5h6A1.5 1.5 0 0 1 12.75 6v1.5a.75.75 0 0 0 1.5 0V6A3 3 0 0 0 11.25 3h-6A3 3 0 0 0 2.25 6v12A3 3 0 0 0 5.25 21h6a3 3 0 0 0 3-3V16.5a.75.75 0 0 0-1.5 0V18a1.5 1.5 0 0 1-1.5 1.5h-6A1.5 1.5 0 0 1 3.75 18V6Z" /></svg>
+                 <span>My Plan</span>
+             </button>
             
             <button class="nav-btn" data-page="searchPage">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path fill-rule="evenodd" d="M10.5 3.75a6.75 6.75 0 1 0 0 13.5 6.75 6.75 0 0 0 0-13.5ZM2.25 10.5a8.25 8.25 0 1 1 14.59 5.28l4.69 4.69a.75.75 0 1 1-1.06 1.06l-4.69-4.69A8.25 8.25 0 0 1 2.25 10.5Z" clip-rule="evenodd"></path></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M10.5 3.75a6.75 6.75 0 1 0 0 13.5 6.75 6.75 0 0 0 0-13.5ZM2.25 10.5a8.25 8.25 0 1 1 14.59 5.28l4.69 4.69a.75.75 0 1 1-1.06 1.06l-4.69-4.69A8.25 8.25 0 0 1 2.25 10.5Z" clip-rule="evenodd"></path></svg>
                 <span>Search</span>
             </button>
             
-            <button class="nav-btn" data-page="analyticsPage">
+            <button id="analytics-nav-btn" class="nav-btn" data-page="analyticsPage">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M10.5 4.5a.75.75 0 0 0-1.5 0V7.5a.75.75 0 0 0 1.5 0V4.5ZM17.25 5.25a.75.75 0 0 0-1.5 0V9a.75.75 0 0 0 1.5 0V5.25ZM14.25 7.5a.75.75 0 0 0-1.5 0v10.5a.75.75 0 0 0 1.5 0V7.5ZM21 9a.75.75 0 0 0-1.5 0v7.5a.75.75 0 0 0 1.5 0V9ZM3.75 12a.75.75 0 0 0-1.5 0v4.5a.75.75 0 0 0 1.5 0V12Z"></path><path fill-rule="evenodd" d="M3 3a1.5 1.5 0 0 0-1.5 1.5V19.5A1.5 1.5 0 0 0 3 21h18a1.5 1.5 0 0 0 1.5-1.5V4.5A1.5 1.5 0 0 0 21 3H3ZM5.25 19.5h13.5V4.5H5.25v15Z" clip-rule="evenodd"></path></svg>
                 <span>Analytics</span>
             </button>
@@ -271,6 +279,10 @@
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M11.64 3.023a.75.75 0 0 1 .72 0l1.517.65a.75.75 0 0 0 .841-.252l1.11-1.48A.75.75 0 0 1 17 2.25a.75.75 0 0 1 .633.368l1.11 1.48a.75.75 0 0 0 .84.253l1.518-.65a.75.75 0 0 1 .72 0l1.016.436a.75.75 0 0 1 .45 1.033l-.74 1.385a.75.75 0 0 0 .14.925l1.28.96a.75.75 0 0 1 0 1.302l-1.28.96a.75.75 0 0 0-.14.925l.74 1.385a.75.75 0 0 1-.45 1.033l-1.017.436a.75.75 0 0 1-.72 0l-1.517-.65a.75.75 0 0 0-.84.252l-1.11 1.48A.75.75 0 0 1 17 21.75a.75.75 0 0 1-.633-.368l-1.11-1.48a.75.75 0 0 0-.84-.253l-1.518.65a.75.75 0 0 1-.72 0l-1.016-.436a.75.75 0 0 1-.45-1.033l.74-1.385a.75.75 0 0 0-.14-.925l-1.28-.96a.75.75 0 0 1 0-1.302l1.28.96a.75.75 0 0 0 .14-.925l-.74-1.385a.75.75 0 0 1 .45-1.033l1.017-.436ZM12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"></path></svg>
                 <span>Settings</span>
             </button>
+             <button id="admin-nav-btn" class="nav-btn hidden" data-page="adminPage">
+                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M4.5 2.25a.75.75 0 0 0 0 1.5v16.5a.75.75 0 0 0 0 1.5h15a.75.75 0 0 0 0-1.5V3.75a.75.75 0 0 0 0-1.5h-15ZM5.25 21a1.5 1.5 0 0 0 1.5-1.5V3.75A1.5 1.5 0 0 0 5.25 2.25h-1.5A3 3 0 0 0 .75 5.25v13.5A3 3 0 0 0 3.75 21h1.5Zm15-1.5V3.75A1.5 1.5 0 0 0 18.75 2.25h-1.5a.75.75 0 0 0 0 1.5h1.5c.414 0 .75.336.75.75v16.5c0 .414-.336.75-.75.75h-1.5a.75.75 0 0 0 0 1.5h1.5a3 3 0 0 0 3-3V5.25a3 3 0 0 0-3-3h-1.5ZM8.25 7.5a.75.75 0 0 0 0 1.5h7.5a.75.75 0 0 0 0-1.5h-7.5Zm.75 3.75a.75.75 0 0 1 .75-.75h4.5a.75.75 0 0 1 0 1.5h-4.5a.75.75 0 0 1-.75-.75Z" clip-rule="evenodd" /></svg>
+                 <span>Admin</span>
+             </button>
         </nav>
     </header>
 
@@ -317,7 +329,8 @@
                 <h1 class="profile-name" id="profile-name">Loading...</h1>
                 
                 <div id="role-and-verified-container" class="role-badge-container">
-                    <div id="user-role-display" class="role-badge">Loading Role</div>
+                    <div id="user-role-display" class="role-badge"></div>
+                    <div id="membership-tier-display" class="membership-badge"></div>
                     <div id="verified-badge" class="verified-badge hidden">
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="display: block;"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
                         <span>Verified</span>
@@ -418,6 +431,49 @@
                  </div>
              </div>
         </div>
+
+        <!-- NEW: My Plan Page -->
+        <div id="myPlanPage" class="page">
+            <div class="card">
+                <h2>My Membership Plan</h2>
+                <div id="my-plan-details">
+                    <p class="muted">Loading your plan details...</p>
+                </div>
+            </div>
+            <div class="card">
+                <h2>Progress to Next Tier</h2>
+                <div id="my-plan-progress">
+                    <p class="muted">Loading your achievement progress...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- NEW: Admin Panel Page -->
+        <div id="adminPage" class="page">
+            <div class="card">
+                <h2>👑 Admin Panel</h2>
+                <p class="muted">Manage users, organizations, and verification requests.</p>
+            </div>
+            <div class="card">
+                <h2>Verification Requests</h2>
+                <div id="admin-verification-requests">
+                    <p class="muted">Loading requests...</p>
+                </div>
+            </div>
+             <div class="card">
+                <h2>All Users</h2>
+                <div id="admin-all-users" style="max-height: 400px; overflow-y: auto;">
+                    <p class="muted">Loading users...</p>
+                </div>
+            </div>
+            <div class="card">
+                <h2>All Organizations</h2>
+                <div id="admin-all-orgs" style="max-height: 400px; overflow-y: auto;">
+                    <p class="muted">Loading organizations...</p>
+                </div>
+            </div>
+        </div>
+
 
         <div id="settingsPage" class="page">
             <div class="card">
@@ -678,7 +734,7 @@
         let isAuthResolved = false;
 
         const App = {
-            pages: ['loginPage', 'profilePage', 'searchPage', 'analyticsPage', 'settingsPage'],
+            pages: ['loginPage', 'profilePage', 'searchPage', 'analyticsPage', 'settingsPage', 'myPlanPage', 'adminPage'],
             elements: {},
             currentUser: null,
             currentProfileData: null,
@@ -753,7 +809,9 @@
                         message: 'Ready for the day!', 
                         theme: 'auto', 
                         role: 'Member',
+                        membershipTier: 'Member', // NEW
                         verified: false,
+                        achievements: { profileComplete: false, scheduler: false, socialButterfly: false, firstShare: false, views: 0, loyalUser: false, expressive: false, referralCount: 0 }, // NEW
                         privacy: { email: 'public', phone: 'private', school: 'private', bio: 'public', age: 'public', gender: 'private', hobbies: 'public', country: 'public', timezone: 'public' }, 
                         updatedAt: new Date().toISOString() 
                     };
@@ -788,7 +846,9 @@
                     message: 'Ready for the day!', 
                     theme: 'auto', 
                     role: 'Member',
+                    membershipTier: 'Member', // NEW
                     verified: false,
+                    achievements: { profileComplete: false, scheduler: false, socialButterfly: false, firstShare: false, views: 0, loyalUser: false, expressive: false, referralCount: 0 }, // NEW
                     updatedAt: new Date().toISOString(), 
                     privacy: { email: 'public', phone: 'private', school: 'private', bio: 'public', age: 'public', gender: 'private', hobbies: 'public', country: 'public', timezone: 'public' } 
                 };
@@ -815,37 +875,24 @@
             signOut(auth);
         }
 
-        // --- [UPDATED] onAuthStateChanged ---
-        // This is now the single source of truth for handling all auth state changes.
+        // --- [FIXED & UPDATED] onAuthStateChanged ---
         onAuthStateChanged(auth, async (user) => {
             const wasLoggedIn = !!App.currentUser;
             App.currentUser = user ? { email: user.email, displayName: user.displayName, userId: user.uid, pfpUrl: user.photoURL } : null;
             const isLoggedIn = !!App.currentUser;
 
-            // Handle the initial page load routing
+            if (isLoggedIn) {
+                await setupUserSession();
+            }
+
             if (!isAuthResolved) {
                 isAuthResolved = true;
-                const isPublicProfileView = new URLSearchParams(window.location.search).has('user');
-                if (!isPublicProfileView) {
-                    if (isLoggedIn) {
-                        await setupUserSession();
-                        navigateTo('profilePage');
-                    } else {
-                        navigateTo('loginPage');
-                    }
-                } else {
-                    hashChangeRouter(); // Let the router handle the public view
-                }
-                return;
+                hashChangeRouter(); 
             }
             
-            // Handle login/logout events after the initial load
             if (isLoggedIn && !wasLoggedIn) {
-                // This block runs when a user logs in or signs up successfully
-                await setupUserSession();
                 navigateTo('profilePage', true);
             } else if (!isLoggedIn && wasLoggedIn) {
-                // This block runs when a user logs out
                 App.currentProfileData = null;
                 clearInterval(timetableCheckInterval);
                 navigateTo('loginPage', true);
@@ -903,6 +950,10 @@
                     App.currentProfileData = data;
                     applyVisuals(data);
                     populateSettings(data);
+                    
+                    // Show/Hide Admin nav button
+                    document.getElementById('admin-nav-btn').classList.toggle('hidden', data.role !== 'Owner');
+
                     await checkTimetableAndApplyStatus();
                     timetableCheckInterval = setInterval(checkTimetableAndApplyStatus, 60000);
                 }
@@ -963,6 +1014,8 @@
             clearInterval(countdownInterval);
             if(publicViewInterval) clearInterval(publicViewInterval);
             
+            if (!isAuthResolved) return; // Wait for auth to resolve
+
             const params = new URLSearchParams(window.location.search);
             const userIdFromUrl = params.get('user');
 
@@ -1001,20 +1054,26 @@
             document.getElementById('create-hap-promo')?.classList.add('hidden');
             document.body.style.paddingBottom = "100px";
 
-            if (!isAuthResolved) return; 
-
             const hash = window.location.hash.substring(1);
             let targetPageId = App.pages.includes(hash) ? hash : (App.currentUser ? 'profilePage' : 'loginPage');
-
+            
             if (!App.currentUser && targetPageId !== 'loginPage') {
                 targetPageId = 'loginPage';
             }
 
             if (App.currentUser) {
+                 if (targetPageId === 'adminPage' && App.currentProfileData.role !== 'Owner') {
+                    targetPageId = 'profilePage'; // Redirect non-owners from admin page
+                }
+
                 if(targetPageId === 'profilePage' && App.currentProfileData) {
                     renderProfile(App.currentProfileData);
                 } else if (targetPageId === 'analyticsPage') {
                     await fetchAndRenderAnalytics();
+                } else if (targetPageId === 'myPlanPage') {
+                    renderMyPlanPage();
+                } else if (targetPageId === 'adminPage') {
+                    renderAdminPanel();
                 }
             }
             
@@ -1068,6 +1127,7 @@
             updatePageTitle(data);
             const profileNameEl = document.getElementById('profile-name');
             const roleEl = document.getElementById('user-role-display');
+            const membershipEl = document.getElementById('membership-tier-display');
             const verifiedBadgeEl = document.getElementById('verified-badge');
             const name = data.displayName || 'Unnamed User';
 
@@ -1083,6 +1143,8 @@
             roleEl.textContent = role.toUpperCase();
             roleEl.className = 'role-badge';
             roleEl.classList.add(`role-${role.toLowerCase()}`);
+            
+            membershipEl.textContent = data.membershipTier || 'Member';
             
             verifiedBadgeEl.classList.toggle('hidden', !data.verified);
             
@@ -1267,7 +1329,7 @@
             
             const linksContainer = document.getElementById('custom-links-container');
             linksContainer.innerHTML = '';
-            for (let i = 0; i < 5; i++) {
+            for (let i = 0; i < 10; i++) { // Increased to 10 for Max tier
                 const link = data.links ? data.links[i] : null;
                 linksContainer.innerHTML += `<div class="link-group"><input type="text" id="link-label-${i}" placeholder="Label ${i + 1}" value="${link?.label || ''}"><input type="url" id="link-url-${i}" placeholder="https://..." value="${link?.url || ''}"></div>`;
             }
@@ -1282,6 +1344,7 @@
             
             window.addEventListener('hashchange', hashChangeRouter);
             addEventListeners();
+            // Moved initial routing to onAuthStateChanged to prevent race conditions
         }
         
         async function handleDeleteAccount() {
@@ -1332,7 +1395,7 @@
             saveBtn.textContent = 'Saving...';
             saveBtn.classList.add('btn-loading');
 
-            const customLinks = Array.from({length: 5}, (_, i) => ({ label: document.getElementById(`link-label-${i}`).value.trim(), url: document.getElementById(`link-url-${i}`).value.trim() })).filter(l => l.label && l.url);
+            const customLinks = Array.from({length: 10}, (_, i) => ({ label: document.getElementById(`link-label-${i}`).value.trim(), url: document.getElementById(`link-url-${i}`).value.trim() })).filter(l => l.label && l.url);
             
             let endTime = null;
             const timeType = document.getElementById('status-time-type').value;
@@ -1572,22 +1635,14 @@
                         }
                     }
                 }
-
+                
+                const rank = { 'Owner': 0, 'Max': 1, 'Vip': 2, 'Member+': 3, 'Member': 4 };
                 results.sort((a, b) => {
-                    const roleA = (a.role || 'Member').toLowerCase();
-                    const roleB = (b.role || 'Member').toLowerCase();
-                    const verifiedA = !!a.verified;
-                    const verifiedB = !!b.verified;
-
-                    if (roleA === 'owner' && roleB !== 'owner') return -1;
-                    if (roleB === 'owner' && roleA !== 'owner') return 1;
-                    
-                    if (verifiedA && !verifiedB) return -1;
-                    if (verifiedB && !verifiedA) return 1;
-
-                    const nameA = a.displayName || '';
-                    const nameB = b.displayName || '';
-                    return nameA.localeCompare(nameB);
+                    const rankA = rank[a.membershipTier || 'Member'];
+                    const rankB = rank[b.membershipTier || 'Member'];
+                    if (rankA < rankB) return -1;
+                    if (rankA > rankB) return 1;
+                    return (a.displayName || '').localeCompare(b.displayName || '');
                 });
 
                 if (results.length > 0) {
@@ -1599,6 +1654,7 @@
                         const displayStatus = activeSchedule ? activeSchedule.status : (user.status || '❓');
                         const displayMessage = activeSchedule ? activeSchedule.message : (user.message || 'Ready');
                         const role = user.role || 'Member';
+                        const membershipTier = user.membershipTier || 'Member';
                         const verifiedTick = user.verified ? verifiedIconSvg : '';
 
                         resultsList.innerHTML += `
@@ -1610,6 +1666,7 @@
                                     </div>
                                     <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
                                         <div class="role-badge role-${role.toLowerCase()}" style="padding: 2px 8px; font-size: 0.7rem; line-height: 1;">${role.toUpperCase()}</div>
+                                        <div class="membership-badge" style="padding: 2px 8px; font-size: 0.7rem; line-height: 1;">${membershipTier}</div>
                                         <span style="font-size: 0.9rem; color: var(--muted);">${displayStatus} ${displayMessage}</span>
                                     </div>
                                 </div>
@@ -1630,12 +1687,15 @@
         }
 
         async function trackProfileView(profileId) {
-            try {
-                const viewCountRef = ref(db, `analytics/${profileId}/totalViews`);
-                const snapshot = await get(viewCountRef);
-                const currentViews = snapshot.val() || 0;
-                await set(viewCountRef, currentViews + 1);
-            } catch (error) { console.error("Failed to track profile view:", error); }
+             try {
+                let visitorId = localStorage.getItem('hapVisitorId');
+                if (!visitorId) {
+                    visitorId = 'visitor_' + Date.now() + Math.random().toString(36).substring(2, 15);
+                    localStorage.setItem('hapVisitorId', visitorId);
+                }
+                const uniqueViewRef = ref(db, `analytics/${profileId}/uniqueVisitors/${visitorId}`);
+                await set(uniqueViewRef, true);
+            } catch (error) { console.error("Failed to track unique profile view:", error); }
         }
 
         function handleVCardDownload(data) {
@@ -1674,6 +1734,53 @@
             });
         }
         
+        // --- NEW PAGE RENDERERS ---
+        function renderMyPlanPage() {
+            // Placeholder - this would be built out with detailed progress bars etc.
+            const detailsContainer = document.getElementById('my-plan-details');
+            const progressContainer = document.getElementById('my-plan-progress');
+            if (!App.currentProfileData) return;
+
+            const tier = App.currentProfileData.membershipTier || 'Member';
+            detailsContainer.innerHTML = `
+                <h2>Current Tier: <span style="color: var(--primary);">${tier}</span></h2>
+                <p>This is your current membership level based on your activity and achievements on the platform.</p>
+            `;
+            progressContainer.innerHTML = '<h2>Your Progress</h2><p>Feature to track achievements towards the next tier is coming soon!</p>';
+        }
+
+        async function renderAdminPanel() {
+            const requestsContainer = document.getElementById('admin-verification-requests');
+            const usersContainer = document.getElementById('admin-all-users');
+            const orgsContainer = document.getElementById('admin-all-orgs');
+            
+            requestsContainer.innerHTML = '<p class="muted">Loading requests...</p>';
+            usersContainer.innerHTML = '<p class="muted">Loading users...</p>';
+            orgsContainer.innerHTML = '<p class="muted">Loading organizations...</p>';
+
+            // In a real app, you would fetch and display data here.
+            // For now, we'll show placeholder content.
+            requestsContainer.innerHTML = '<p>No active verification requests.</p>';
+            
+            const usersSnap = await get(ref(db, 'users'));
+            const users = usersSnap.val();
+            if (users) {
+                usersContainer.innerHTML = `<table class="admin-table"><thead><tr><th>Name</th><th>Email</th><th>Tier</th></tr></thead><tbody>
+                ${Object.entries(users).map(([uid, user]) => `
+                    <tr>
+                        <td>${user.displayName}</td>
+                        <td>${user.email}</td>
+                        <td>${user.membershipTier || 'Member'}</td>
+                    </tr>
+                `).join('')}
+                </tbody></table>`;
+            } else {
+                usersContainer.innerHTML = '<p>No users found.</p>';
+            }
+
+            orgsContainer.innerHTML = '<p>Organization management is coming soon.</p>';
+        }
+
         function addEventListeners() {
             document.querySelector('.auth-tabs')?.addEventListener('click', e => {
                 if (e.target.classList.contains('tab')) {
@@ -1714,3 +1821,4 @@
     </script>
 </body>
 </html>
+
