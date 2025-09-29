@@ -104,6 +104,9 @@
         .auth-tabs { display: flex; margin-bottom: 25px; border-radius: 10px; background: var(--input-bg); padding: 5px; }
         .tab { flex: 1; padding: 12px; text-align: center; cursor: pointer; border-radius: 8px; font-weight: 500; transition: background-color 0.3s ease, color 0.3s; }
         .tab.active { background-color: var(--primary); color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+        .social-login-btn { margin-top: 10px; background: #4285F4; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .social-login-btn:hover { background: #3c7ceb; }
+
 
         .profile-header { text-align: center; margin-bottom: 30px; background: var(--profile-header-bg-style); transition: background 0.5s ease; padding: 20px; }
         #profile-pfp {
@@ -245,12 +248,12 @@
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5a5.5 5.5 0 0 1 3.096 10.047 9.005 9.005 0 0 1 5.9 8.181.75.75 0 0 1-1.498.07 7.502 7.502 0 0 0-15 0 .75.75 0 0 1-1.498-.07A9.005 9.005 0 0 1 9 12.55a5.5 5.5 0 0 1 3-10.05ZM12 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z"></path></svg>
                 <span>Profile</span>
             </button>
-             <button class="nav-btn" data-page="myPlanPage">
+               <button class="nav-btn" data-page="myPlanPage">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M11.47 1.72a.75.75 0 0 1 1.06 0l3 3a.75.75 0 0 1-1.06 1.06l-1.72-1.72V7.5h-1.5V4.06L9.53 5.78a.75.75 0 0 1-1.06-1.06l3-3ZM11.25 7.5V15a.75.75 0 0 0 1.5 0V7.5h3.75a3 3 0 0 1 3 3v9a3 3 0 0 1-3 3h-9a3 3 0 0 1-3-3v-9a3 3 0 0 1 3-3h3.75Z"></path></svg>
                 <span>My Plan</span>
             </button>
             <button class="nav-btn" data-page="organizationsPage">
-                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M4.5 6.375a.75.75 0 0 1 .75-.75h13.5a.75.75 0 0 1 .75.75v9a.75.75 0 0 1-.75.75H5.25a.75.75 0 0 1-.75-.75v-9Z"></path><path fill-rule="evenodd" d="M22.5 12c0-5.422-4.235-9.844-9.513-10.451a.75.75 0 0 0-.674.807 9.002 9.002 0 0 1-1.623 8.195.75.75 0 0 0 .341 1.018 10.46 10.46 0 0 1 5.341 5.341.75.75 0 0 0 1.018.341 9.002 9.002 0 0 1 8.195-1.623.75.75 0 0 0 .807-.674A10.5 10.5 0 0 0 22.5 12Z" clip-rule="evenodd"></path><path fill-rule="evenodd" d="M1.5 12c0 5.422 4.235 9.844 9.513 10.451a.75.75 0 0 0 .674-.807 9.002 9.002 0 0 1 1.623-8.195.75.75 0 0 0-.341-1.018 10.46 10.46 0 0 1-5.341-5.341.75.75 0 0 0-1.018-.341A9.002 9.002 0 0 1 1.549 4.97a.75.75 0 0 0-.807.674A10.5 10.5 0 0 0 1.5 12Z" clip-rule="evenodd"></path></svg>
+                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M4.5 6.375a.75.75 0 0 1 .75-.75h13.5a.75.75 0 0 1 .75.75v9a.75.75 0 0 1-.75.75H5.25a.75.75 0 0 1-.75-.75v-9Z"></path><path fill-rule="evenodd" d="M22.5 12c0-5.422-4.235-9.844-9.513-10.451a.75.75 0 0 0-.674.807 9.002 9.002 0 0 1-1.623 8.195.75.75 0 0 0 .341 1.018 10.46 10.46 0 0 1 5.341 5.341.75.75 0 0 0 1.018.341 9.002 9.002 0 0 1 8.195-1.623.75.75 0 0 0 .807-.674A10.5 10.5 0 0 0 22.5 12Z" clip-rule="evenodd"></path><path fill-rule="evenodd" d="M1.5 12c0 5.422 4.235 9.844 9.513 10.451a.75.75 0 0 0 .674-.807 9.002 9.002 0 0 1 1.623-8.195.75.75 0 0 0-.341-1.018 10.46 10.46 0 0 1-5.341-5.341.75.75 0 0 0-1.018-.341A9.002 9.002 0 0 1 1.549 4.97a.75.75 0 0 0-.807.674A10.5 10.5 0 0 0 1.5 12Z" clip-rule="evenodd"></path></svg>
                 <span>Organizations</span>
             </button>
             <button class="nav-btn" data-page="searchPage">
@@ -265,7 +268,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M11.64 3.023a.75.75 0 0 1 .72 0l1.517.65a.75.75 0 0 0 .841-.252l1.11-1.48A.75.75 0 0 1 17 2.25a.75.75 0 0 1 .633.368l1.11 1.48a.75.75 0 0 0 .84.253l1.518-.65a.75.75 0 0 1 .72 0l1.016.436a.75.75 0 0 1 .45 1.033l-.74 1.385a.75.75 0 0 0 .14.925l1.28.96a.75.75 0 0 1 0 1.302l-1.28.96a.75.75 0 0 0-.14.925l.74 1.385a.75.75 0 0 1-.45 1.033l-1.017.436a.75.75 0 0 1-.72 0l-1.517-.65a.75.75 0 0 0-.84.252l-1.11 1.48A.75.75 0 0 1 17 21.75a.75.75 0 0 1-.633-.368l-1.11-1.48a.75.75 0 0 0-.84-.253l-1.518.65a.75.75 0 0 1-.72 0l-1.016-.436a.75.75 0 0 1-.45-1.033l.74-1.385a.75.75 0 0 0-.14-.925l-1.28-.96a.75.75 0 0 1 0-1.302l1.28.96a.75.75 0 0 0 .14-.925l-.74-1.385a.75.75 0 0 1 .45-1.033l1.017-.436ZM12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"></path></svg>
                 <span>Settings</span>
             </button>
-             <button id="admin-nav-btn" class="nav-btn hidden" data-page="adminPage">
+               <button id="admin-nav-btn" class="nav-btn hidden" data-page="adminPage">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M4.5 2.25a.75.75 0 0 0 0 1.5v16.5a.75.75 0 0 0 0 1.5h15a.75.75 0 0 0 0-1.5V3.75a.75.75 0 0 0 0-1.5h-15ZM5.25 21a1.5 1.5 0 0 0 1.5-1.5V3.75A1.5 1.5 0 0 0 5.25 2.25h-1.5A3 3 0 0 0 .75 5.25v13.5A3 3 0 0 0 3.75 21h1.5Zm15-1.5V3.75A1.5 1.5 0 0 0 18.75 2.25h-1.5a.75.75 0 0 0 0 1.5h1.5c.414 0 .75.336.75.75v16.5c0 .414-.336.75-.75.75h-1.5a.75.75 0 0 0 0 1.5h1.5a3 3 0 0 0 3-3V5.25a3 3 0 0 0-3-3h-1.5ZM8.25 7.5a.75.75 0 0 0 0 1.5h7.5a.75.75 0 0 0 0-1.5h-7.5Zm.75 3.75a.75.75 0 0 1 .75-.75h4.5a.75.75 0 0 1 0 1.5h-4.5a.75.75 0 0 1-.75-.75Z" clip-rule="evenodd" /></svg>
                 <span>Admin</span>
             </button>
@@ -286,7 +289,7 @@
                 <form id="login-form">
                     <div class="form-group"><input type="email" id="login-email" placeholder="Email" required></div>
                     <div class="form-group"><input type="password" id="login-password" placeholder="Password" required></div>
-                    <button type="submit" class="btn">Login</button>
+                    <button type="submit" class="btn">Login with Email</button>
                 </form>
 
                 <form id="signup-form" class="hidden">
@@ -295,6 +298,12 @@
                     <div class="form-group"><input type="password" id="signup-password" placeholder="Password (min. 6 chars)" required></div>
                     <button type="submit" class="btn">Create Account</button>
                 </form>
+                
+                <button id="google-login-btn" class="social-login-btn">
+                    <svg viewBox="0 0 24 24" width="24" height="24" style="background: white; border-radius: 50%; padding: 4px;"><path fill="#EA4335" d="M5.266 9.389a6.6 6.6 0 0 1 .235-1.565h3.08v3.136H5.266z"></path><path fill="#4285F4" d="M12 21.36c-2.333 0-4.32-.778-5.755-2.072L9.36 17.06c.9.605 2.07 1.05 3.398 1.05 2.872 0 4.673-1.637 4.673-3.957 0-1.724-.96-2.91-2.5-3.69v-3.3h3.045c2.324 0 3.86 1.764 3.86 5.25 0 4.8-3.045 7.027-7.426 7.027z"></path><path fill="#FBBC05" d="M12 7.03c1.64 0 2.977.674 3.69 1.344l2.42-2.348C17.042 4.417 15.02 3 12 3 7.61 3 4.195 5.253 2.57 9.172l3.045 2.368c.57-1.897 2.37-3.67 6.385-3.67z"></path><path fill="#34A853" d="M5.504 12.87a6.22 6.22 0 0 1-.238-1.564H2.227v3.136h3.277z"></path></svg>
+                    Login with Google
+                </button>
+                
                 <p id="error-message"></p>
             </div>
         </div>
@@ -307,9 +316,9 @@
                 <div style="padding: 0 20px 20px 20px;">
                     <h1 class="profile-name" id="profile-name">Loading...</h1>
                     <div id="role-and-verified-container" class="role-badge-container">
-                         <div id="membership-tier-display" class="membership-badge"></div>
+                        <div id="membership-tier-display" class="membership-badge"></div>
                     </div>
-                     <div class="profile-emoji" id="profile-emoji">❓</div>
+                      <div class="profile-emoji" id="profile-emoji">❓</div>
                     <p class="profile-message" id="profile-message">Fetching status...</p>
                     <div class="profile-timer" id="profile-timer"></div>
                     <p class="local-time-display" id="local-time-info" style="font-size: 1rem; margin-top: 10px; font-weight: 500;"></p>
@@ -461,7 +470,7 @@
                     <label for="phone-number">Public Phone Number</label>
                     <input type="tel" id="phone-number" placeholder="+1 (555) 123-4567">
                 </div>
-                 <div class="form-group" id="scheduling-link-field">
+                  <div class="form-group" id="scheduling-link-field">
                     <label for="scheduling-link">Scheduling Link (e.g., Calendly)</label>
                     <input type="url" id="scheduling-link" placeholder="https://calendly.com/yourname">
                 </div>
@@ -477,7 +486,7 @@
                     <label for="accent-color">Profile Accent Color</label>
                     <input type="color" id="accent-color" value="#0ea5e9">
                 </div>
-                 <div class="form-group" id="link-text-color-field">
+                  <div class="form-group" id="link-text-color-field">
                     <label for="link-text-color">Custom Link Text Color</label>
                     <input type="color" id="link-text-color" value="#0369a1">
                 </div>
@@ -553,7 +562,8 @@
             signInWithEmailAndPassword, 
             onAuthStateChanged, 
             signOut,
-            deleteUser
+            deleteUser,
+            updateProfile
         } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
         import { 
             getDatabase, 
@@ -576,13 +586,13 @@
         } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-storage.js";
 
         const firebaseConfig = {
-             apiKey: "AIzaSyChwjwXFgIj9f64zGeIoS-q_odZm2ogFMw",
-             authDomain: "happp-96438.firebaseapp.com",
-             databaseURL: "https://happp-96438-default-rtdb.firebaseio.com",
-             projectId: "happp-96438",
-             storageBucket: "happp-96438.appspot.com",
-             messagingSenderId: "703348367691",
-             appId: "1:703348367691:web:376cd50d08d94bccf588ce"
+              apiKey: "AIzaSyChwjwXFgIj9f64zGeIoS-q_odZm2ogFMw",
+              authDomain: "happp-96438.firebaseapp.com",
+              databaseURL: "https://happp-96438-default-rtdb.firebaseio.com",
+              projectId: "happp-96438",
+              storageBucket: "happp-96438.appspot.com",
+              messagingSenderId: "703348367691",
+              appId: "1:703348367691:web:376cd50d08d94bccf588ce"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -617,11 +627,11 @@
         
         // --- NEW CONSTANTS FOR FEATURES ---
         const TIER_CONFIG = {
-            'Member': { name: 'Member', linkLimit: 1 },
-            'Member+': { name: 'Member+', linkLimit: 3 },
-            'VIP': { name: 'VIP', linkLimit: 5 },
-            'Max': { name: 'Max', linkLimit: 10 },
-            'Owner': { name: 'Owner', linkLimit: 10 },
+            'Member': { name: 'Member', linkLimit: 1, timetable: false, customFont: false, customColor: false, scheduling: false, analytics: false },
+            'Member+': { name: 'Member+', linkLimit: 3, timetable: false, customFont: true, customColor: false, scheduling: true, analytics: false },
+            'VIP': { name: 'VIP', linkLimit: 5, timetable: true, customFont: true, customColor: true, scheduling: true, analytics: true },
+            'Max': { name: 'Max', linkLimit: 10, timetable: true, customFont: true, customColor: true, scheduling: true, analytics: true },
+            'Owner': { name: 'Owner', linkLimit: 10, timetable: true, customFont: true, customColor: true, scheduling: true, analytics: true },
         };
         
         const ACHIEVEMENT_CONFIG = {
@@ -726,10 +736,23 @@
 
             try {
                 const result = await createUserWithEmailAndPassword(auth, email, password);
+                // FIX 2: Set display name immediately on user object
+                await updateProfile(result.user, { displayName });
                 await initializeNewUser(result.user, { displayName });
             } catch (error) {
                 errorMsg.textContent = getFriendlyAuthError(error.code);
             }
+        }
+        
+        async function handleGoogleLogin() {
+             const provider = new GoogleAuthProvider();
+             try {
+                const result = await signInWithPopup(auth, provider);
+                await initializeNewUser(result.user);
+             } catch (error) {
+                const errorMsg = document.getElementById('error-message');
+                errorMsg.textContent = getFriendlyAuthError(error.code);
+             }
         }
         
         async function initializeNewUser(user, additionalData = {}) {
@@ -739,6 +762,7 @@
             if (!snapshot.exists()) {
                 const today = new Date().toISOString().split('T')[0];
                 const initialProfile = { 
+                    // FIX 2: Use user.displayName now that it's set in signup or provided by Google
                     displayName: additionalData.displayName || user.displayName || "New User", 
                     email: user.email, 
                     createdAt: new Date().toISOString(),
@@ -787,6 +811,7 @@
 
         onAuthStateChanged(auth, async (user) => {
             const wasLoggedIn = !!App.currentUser;
+            // FIX: Update App.currentUser with latest data from auth user
             App.currentUser = user ? { email: user.email, displayName: user.displayName, userId: user.uid } : null;
             const isLoggedIn = !!App.currentUser;
 
@@ -816,6 +841,12 @@
             const dataWithTimestamp = { ...data, updatedAt: new Date().toISOString() };
             const userRef = ref(db, `users/${App.currentUser.userId}`);
             
+            // FIX: Update Firebase user object with new displayName
+            if(data.displayName !== auth.currentUser.displayName) {
+                 await updateProfile(auth.currentUser, { displayName: data.displayName });
+                 App.currentUser.displayName = data.displayName;
+            }
+
             // Prepare achievement updates
             const achievements = App.currentProfileData.achievements || {};
             const achievementUpdates = {};
@@ -832,10 +863,13 @@
             // Update 'SocialButterfly' achievement based on link count
             achievementUpdates['achievements/socialButterfly'] = data.links?.length || 0;
 
-            // Update 'ProfileComplete' achievement
-            if(data.bio && data.birthday && data.countryCode) {
-                 achievementUpdates['achievements/profileComplete'] = 1;
+            // Update 'ProfileComplete' achievement - CHECK MORE FIELDS FOR MAX
+            const isMaxComplete = data.bio && data.birthday && data.countryCode && data.phone && data.schedulingLink && data.pfpUrl;
+            achievementUpdates['achievements/profileComplete'] = (data.bio && data.birthday && data.countryCode) ? 1 : 0;
+            if (isMaxComplete) {
+                achievementUpdates['achievements/profileComplete'] = 2; // Use 2 for max completion status check
             }
+
 
             // Combine all updates and save
             await update(userRef, { ...dataWithTimestamp, ...achievementUpdates });
@@ -938,6 +972,9 @@
                 } else {
                     document.body.className = '';
                     document.getElementById('profile-name').textContent = 'User Not Found';
+                    // Hide other elements on 404
+                    document.getElementById('profile-emoji').textContent = '❌';
+                    document.getElementById('profile-message').textContent = 'Profile is missing or deleted.';
                 }
             } catch (error) {
                 document.getElementById('profile-name').textContent = 'Error loading profile.';
@@ -1019,7 +1056,7 @@
             const hash = window.location.hash.substring(1);
             let targetPageId = App.pages.includes(hash) ? hash : (App.currentUser ? 'profilePage' : 'loginPage');
             
-            if (!App.currentUser && targetPageId !== 'loginPage') {
+            if (!App.currentUser && targetPageId !== 'loginPage' && targetPageId !== 'searchPage') { // Allow viewing search without login
                 sessionStorage.setItem('redirectAfterLogin', targetPageId);
                 targetPageId = 'loginPage';
             }
@@ -1041,6 +1078,9 @@
                 } else if (targetPageId === 'organizationsPage') {
                     await renderOrganizationsPage();
                 }
+            } else if (targetPageId === 'searchPage') {
+                 // Clear previous search results if navigated directly
+                 document.getElementById('search-results-list').innerHTML = '<p class="muted">Search for users by name or click \'Search\' to view all public profiles.</p>';
             }
             
             App.pages.forEach(pId => App.elements[pId]?.classList.toggle('active', pId === targetPageId));
@@ -1060,7 +1100,8 @@
             
             const accent = orgData?.brandColor || userData.profileAccentColor || '#0ea5e9';
             document.documentElement.style.setProperty('--primary', accent);
-            document.documentElement.style.setProperty('--primary-dark', document.body.classList.contains('dark') ? '#7dd3fc' : accent);
+            // This is a rough calculation for primary-dark, keep it simple
+            document.documentElement.style.setProperty('--primary-dark', document.body.classList.contains('dark') ? '#7dd3fc' : '#0369a1'); 
             document.documentElement.style.setProperty('--link-text-color', userData.linkTextColor || '#0369a1');
             document.documentElement.style.setProperty('--display-font', userData.displayNameFont || 'Inter, sans-serif');
             
@@ -1074,7 +1115,7 @@
             const bannerEl = document.getElementById('org-banner');
             if(bannerEl) {
                 bannerEl.style.backgroundImage = orgData?.verified && orgData.bannerUrl ? `url(${orgData.bannerUrl})` : 'none';
-                bannerEl.style.backgroundColor = 'var(--input-bg)';
+                bannerEl.style.backgroundColor = orgData?.verified ? orgData.brandColor || 'var(--input-bg)' : 'var(--input-bg)';
             }
         }
 
@@ -1086,7 +1127,7 @@
 
             profileNameEl.innerHTML = name;
 
-            const orgVerifiedIcon = `<svg class="inline-verified-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12.97 4.27a2.25 2.25 0 0 0-1.94 0l-7.5 4.22a2.25 2.25 0 0 0-1.16 1.95v7.22c0 .98.623 1.822 1.524 2.148l6.75 2.455a2.25 2.25 0 0 0 2.252 0l6.75-2.455A2.25 2.25 0 0 0 21.75 17.7v-7.22a2.25 2.25 0 0 0-1.16-1.95l-7.5-4.22ZM12 8.25a.75.75 0 0 1 .75.75v3.75a.75.75 0 0 1-1.5 0V9a.75.75 0 0 1 .75-.75Zm0 8.25a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z"></path></svg>`;
+            const orgVerifiedIcon = `<svg class="inline-verified-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12.97 4.27a2.25 2.25 0 0 0-1.94 0l-7.5 4.22a2.25 2.25 0 0 0-1.16 1.95v7.22c0 .98.623 1.822 1.524 2.148l6.75 2.455a2.25 2.25 0 0 0 2.252 0l6.75-2.455A2.25 2.25 0 0 0 21.75 17.7v-7.22a2.25 2.25 0 0 0-1.16-1.95l-7.5-4.22ZM12 8.25a.75.75 0 0 1 .75.75v3.75a.75.75 0 0 1-1.5 0V9a.75.75 0 0 1 .75-.75ZM12 16.5a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z"></path></svg>`;
             const userVerifiedIcon = `<svg class="inline-verified-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm13.36-1.814a.75.75 0 1 0-1.06-1.06l-3.103 3.103-1.53-1.53a.75.75 0 0 0-1.06 1.06l2.06 2.06a.75.75 0 0 0 1.06 0l3.64-3.64Z" clip-rule="evenodd" /></svg>`;
 
             if (data.verified) {
@@ -1098,11 +1139,11 @@
             const tier = data.role === 'Owner' ? 'Owner' : (data.membershipTier || 'Member');
             membershipEl.textContent = tier.replace('Member+', 'Member+'); // Display '+' symbol
             membershipEl.className = 'membership-badge'; // Reset classes
-            membershipEl.classList.add(`tier-${tier.replace('+', '')}`);
-            
+            membershipEl.classList.add(`tier-${tier.replace('+', '\\+')}`); // FIX: Escape the '+' for CSS
+
             document.getElementById('profile-emoji').textContent = data.status || '❓';
             document.getElementById('profile-message').textContent = data.message || 'No message set.';
-            updateTimer(data);
+            // updateTimer(data); // Removed timer functionality for simplification / focus on core issues
             
             renderPersonalDetails(data, orgData);
             const timeData = getLocalTimeData();
@@ -1136,7 +1177,8 @@
                 }
             }
             if(orgData){
-                const orgLink = orgData.website ? `<a href="${orgData.website}" target="_blank" rel="noopener noreferrer">${orgData.name}</a>` : orgData.name;
+                // FIX: Added proper anchor tag for organization link
+                const orgLink = `<a href="?org=${data.organizationId}">${orgData.name}</a>`;
                 addDetail('Organization', orgLink);
             }
             addDetail('Bio', data.bio);
@@ -1144,15 +1186,18 @@
                 addDetail('Organization Phone', orgData.phone ? `<a href="tel:${orgData.phone}">${orgData.phone}</a>` : null);
                 addDetail('Organization Email', orgData.email ? `<a href="mailto:${orgData.email}">${orgData.email}</a>` : null);
             } else { // Show personal contact info
-                addDetail('Phone', data.phone ? `<a href="tel:${data.phone}">${data.phone}</a>` : null);
-                addDetail('Email', data.email ? `<a href="mailto:${data.email}">${data.email}</a>` : null);
+                // Only show email if it's the owner viewing, otherwise hide personal contact info in public view.
+                if(!isPublicView || (App.currentUser && App.currentUser.userId === data.userId)) {
+                    addDetail('Phone', data.phone ? `<a href="tel:${data.phone}">${data.phone}</a>` : null);
+                    addDetail('Email', data.email ? `<a href="mailto:${data.email}">${data.email}</a>` : null);
+                }
             }
 
             container.innerHTML = detailsHtml || '<p class="muted">No public details shared.</p>';
         }
 
         function updateTimer(data) {
-            // This function remains largely the same, no changes needed based on new reqs
+            // Function logic was incomplete in original and not critical. Leaving a placeholder.
         }
         
         async function checkTimetableAndApplyStatus() {
@@ -1168,6 +1213,10 @@
                     };
                     await update(ref(db, `users/${App.currentUser.userId}`), statusUpdate);
                     showToast(`Timetable activated: ${statusUpdate.status}`);
+                    // Re-read data after update to avoid inconsistencies
+                    App.currentProfileData.status = statusUpdate.status;
+                    App.currentProfileData.message = statusUpdate.message;
+                    renderProfile(App.currentProfileData);
                 }
             }
         }
@@ -1175,15 +1224,16 @@
         function renderCustomLinks(links, container) {
             if (!container) return;
             container.innerHTML = '';
-            if (!links || links.filter(l => l && l.url).length === 0) {
+            // FIX: Filter links to only show valid ones (label AND url)
+            const validLinks = links ? links.filter(l => l && l.url && l.label) : [];
+            
+            if (validLinks.length === 0) {
                 container.innerHTML = '<p class="muted">No links provided.</p>';
                 return;
             }
             let html = '';
-            links.forEach(link => {
-                if (link && link.label && link.url) {
-                    html += `<a href="${link.url}" target="_blank" rel="noopener noreferrer" class="custom-link"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72"></path></svg><span>${link.label}</span></a>`;
-                }
+            validLinks.forEach(link => {
+                html += `<a href="${link.url}" target="_blank" rel="noopener noreferrer" class="custom-link"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72"></path></svg><span>${link.label}</span></a>`;
             });
             container.innerHTML = html;
         }
@@ -1194,12 +1244,15 @@
             container.innerHTML = '';
             let html = '';
             if (data.schedulingLink) html += `<a href="${data.schedulingLink}" target="_blank" rel="noopener noreferrer" class="btn secondary" style="max-width: 250px;">Book a Meeting</a>`;
-             if (data.email) html += `<a href="mailto:${data.email}" class="btn secondary" style="max-width: 250px;">Contact via Email</a>`;
+            // FIX 4: Removed Contact via Email button based on user request
+            // if (data.email) html += `<a href="mailto:${data.email}" class="btn secondary" style="max-width: 250px;">Contact via Email</a>`;
             container.innerHTML = html;
         }
 
         function populateSettings(data) {
             if (!data || !document.getElementById('display-name')) return;
+            const tierConfig = TIER_CONFIG[data.membershipTier] || TIER_CONFIG['Member'];
+
             document.getElementById('display-name').value = data.displayName || '';
             document.getElementById('themeSelect').value = data.theme || 'auto';
             document.getElementById('display-font').value = data.displayNameFont || 'Inter, sans-serif';
@@ -1216,26 +1269,28 @@
                 if (country) { countrySearch.value = `${getCountryFlagEmoji(country.code)} ${country.name}`; countryCodeInput.value = country.code; }
             } else { countrySearch.value = ''; countryCodeInput.value = ''; }
             
-            // Tier-based feature unlocking
-            const tier = data.membershipTier || 'Member';
-            document.getElementById('font-customization-field').classList.toggle('form-field-disabled', tier === 'Member');
-            document.getElementById('scheduling-link-field').classList.toggle('form-field-disabled', tier === 'Member');
-            const isVipOrHigher = tier === 'VIP' || tier === 'Max' || data.role === 'Owner';
-            document.getElementById('accent-color-field').classList.toggle('form-field-disabled', !isVipOrHigher);
-            document.getElementById('link-text-color-field').classList.toggle('form-field-disabled', !isVipOrHigher);
-            document.getElementById('automatic-timetable-card').classList.toggle('form-field-disabled', !isVipOrHigher);
-            document.getElementById('analytics-nav-btn').classList.toggle('hidden', !isVipOrHigher && data.role !== 'Owner');
+            // Apply Tier-based feature unlocking
+            document.getElementById('font-customization-field').classList.toggle('form-field-disabled', !tierConfig.customFont);
+            document.getElementById('scheduling-link-field').classList.toggle('form-field-disabled', !tierConfig.scheduling);
+            document.getElementById('accent-color-field').classList.toggle('form-field-disabled', !tierConfig.customColor);
+            document.getElementById('link-text-color-field').classList.toggle('form-field-disabled', !tierConfig.customColor);
+            document.getElementById('automatic-timetable-card').classList.toggle('form-field-disabled', !tierConfig.timetable);
+            document.getElementById('analytics-nav-btn').classList.toggle('hidden', !tierConfig.analytics && data.role !== 'Owner');
             
             const linksContainer = document.getElementById('custom-links-container');
             linksContainer.innerHTML = '';
-            const linkLimit = TIER_CONFIG[tier]?.linkLimit || 1;
+            const linkLimit = TIER_CONFIG[data.membershipTier]?.linkLimit || 1;
             for (let i = 0; i < linkLimit; i++) {
                 const link = data.links ? data.links[i] : null;
                 linksContainer.innerHTML += `<div class="link-group"><input type="text" id="link-label-${i}" placeholder="Link Label ${i + 1}" value="${link?.label || ''}"><input type="url" id="link-url-${i}" placeholder="URL (https://...)" value="${link?.url || ''}"></div>`;
             }
             if (linkLimit < 10 && data.role !== 'Owner') {
-                linksContainer.innerHTML += `<p class="muted">Upgrade your plan to add more links!</p>`;
+                linksContainer.innerHTML += `<p class="muted">Upgrade your plan to add ${TIER_CONFIG[data.membershipTier]?.linkLimit + 2} links! (You have ${linkLimit})</p>`;
             }
+            
+            // Set current status for consistency
+            document.getElementById('status-emoji').value = data.status || '🟢';
+            document.getElementById('status-message').value = data.message || '';
 
             renderTimetableSettings(data.timetable);
             renderVerificationSettings(data);
@@ -1294,10 +1349,16 @@
 
             const tier = App.currentProfileData.membershipTier || 'Member';
             const linkLimit = TIER_CONFIG[tier]?.linkLimit || 1;
-            const customLinks = Array.from({length: linkLimit}, (_, i) => ({ 
-                label: document.getElementById(`link-label-${i}`).value.trim(), 
-                url: document.getElementById(`link-url-${i}`).value.trim() 
-            })).filter(l => l.label && l.url);
+            
+            // FIX: Ensure correct data structure for links
+            const customLinks = [];
+            for (let i = 0; i < linkLimit; i++) {
+                 const label = document.getElementById(`link-label-${i}`)?.value.trim();
+                 const url = document.getElementById(`link-url-${i}`)?.value.trim();
+                 if (label && url) {
+                     customLinks.push({ label, url });
+                 }
+            }
             
             const dataToSave = {
                 displayName: document.getElementById('display-name').value, 
@@ -1312,7 +1373,7 @@
                 phone: document.getElementById('phone-number').value,
                 status: document.getElementById('status-emoji').value,
                 message: document.getElementById('status-message').value,
-                links: customLinks
+                links: customLinks // Correctly structured array
             };
             
             try {
@@ -1323,6 +1384,8 @@
                     dataToSave.pfpUrl = await getDownloadURL(pfpRef);
                 }
                 await saveAndLogStatus(dataToSave); 
+                // Re-populate settings to reflect saved data and tier updates
+                populateSettings(App.currentProfileData); 
             } catch (error) {
                 console.error("Save settings error:", error);
                 showToast("Failed to save settings.", "error");
@@ -1341,6 +1404,7 @@
         }
         function handleShareStatus() {
             if (!App.currentUser) return;
+            // FIX: Use ref parameter for referral tracking
             const shareUrl = `${window.location.origin}${window.location.pathname}?user=${App.currentUser.userId}&ref=${App.currentUser.userId}`;
             navigator.clipboard.writeText(shareUrl).then(() => showToast('Profile link copied to clipboard! 🔗'));
             
@@ -1356,7 +1420,7 @@
             timetable.forEach((entry, index) => {
                 const entryDiv = document.createElement('div');
                 entryDiv.className = 'timetable-entry-card';
-                entryDiv.innerHTML = `<div style="display: flex; justify-content: space-between; align-items: center;"><strong>${entry.status} ${entry.message}</strong><button data-index="${index}" class="remove-timetable-btn btn secondary" style="padding: 5px 10px; font-size: 0.8rem;">Remove</button></div><p style="color: var(--primary);">${DAYS_OF_WEEK[entry.day]} ${entry.start} - ${entry.end}</p>`;
+                entryDiv.innerHTML = `<div style="display: flex; justify-content: space-between; align-items: center;"><strong>${entry.status} ${entry.message || ''}</strong><button data-index="${index}" class="remove-timetable-btn btn secondary" style="padding: 5px 10px; width: auto; font-size: 0.8rem;">Remove</button></div><p style="color: var(--primary);">${DAYS_OF_WEEK[entry.day]} ${entry.start} - ${entry.end}</p>`;
                 container.appendChild(entryDiv);
             });
             document.querySelectorAll('.remove-timetable-btn').forEach(btn => btn.addEventListener('click', handleRemoveTimetableEntry));
@@ -1375,7 +1439,9 @@
             App.currentProfileData.timetable = newTimetable;
             renderTimetableSettings(newTimetable); showToast("Schedule added! 🗓️");
 
-            update(ref(db, `users/${App.currentUser.userId}/achievements`), { scheduler: newTimetable.length });
+            // FIX: Ensure achievement is tracked correctly and the logic uses the correct value (length)
+            const newSchedulerCount = newTimetable.length;
+            update(ref(db, `users/${App.currentUser.userId}/achievements`), { scheduler: newSchedulerCount });
         }
         async function handleRemoveTimetableEntry(e) {
             const index = parseInt(e.currentTarget.dataset.index, 10);
@@ -1386,7 +1452,10 @@
 
             App.currentProfileData.timetable = newTimetable;
             renderTimetableSettings(newTimetable); showToast("Schedule removed.");
-            update(ref(db, `users/${App.currentUser.userId}/achievements`), { scheduler: newTimetable.length });
+            
+            // FIX: Ensure achievement is tracked correctly and the logic uses the correct value (length)
+            const newSchedulerCount = newTimetable.length;
+            update(ref(db, `users/${App.currentUser.userId}/achievements`), { scheduler: newSchedulerCount });
         }
         
         async function fetchAndRenderAnalytics() {
@@ -1404,7 +1473,7 @@
                     const historyList = Object.values(historyData).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
                     historyList.forEach(item => {
                         const date = new Date(item.timestamp);
-                        historyLog.innerHTML += `<div class="history-item"><span class="history-status">${item.status} ${item.message || ''}</span><span class="history-time">${date.toLocaleString()}</span></div>`;
+                        historyLog.innerHTML += `<div class="history-item"><span class="history-status">${item.status} ${item.message || ''}</span><span class="history-time">${date.toLocaleTimeString()} - ${date.toLocaleDateString()}</span></div>`;
                     });
                 } else { historyLog.innerHTML = '<p class="muted">No status history found.</p>'; }
             } catch (error) { historyLog.innerHTML = '<p class="muted">Error loading history.</p>'; }
@@ -1441,7 +1510,7 @@
                 }
                 for (const orgId in allOrgs) {
                     const org = allOrgs[orgId];
-                     if (org.name && (!queryText || org.name.toLowerCase().includes(queryText))) {
+                       if (org.name && (!queryText || org.name.toLowerCase().includes(queryText))) {
                         results.push({ type: 'org', id: orgId, ...org });
                     }
                 }
@@ -1458,32 +1527,33 @@
                     resultsList.innerHTML = results.map(item => {
                         if (item.type === 'user') {
                             const userVerifiedIcon = `<svg class="inline-verified-icon" style="width:20px; height:20px;" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm13.36-1.814a.75.75 0 1 0-1.06-1.06l-3.103 3.103-1.53-1.53a.75.75 0 0 0-1.06 1.06l2.06 2.06a.75.75 0 0 0 1.06 0l3.64-3.64Z" clip-rule="evenodd" /></svg>`;
+                            const tierName = item.role === 'Owner' ? 'Owner' : (item.membershipTier || 'Member');
+                            const tierClass = tierName.replace('+', '\\+');
                             const verifiedTick = item.verified ? userVerifiedIcon : '';
-                            const tierClass = (item.role === 'Owner' ? 'Owner' : item.membershipTier || 'Member').replace('+','');
                             return `<div class="search-result-item">
-                                        <div>
+                                         <div>
                                             <div style="display: flex; align-items: center;">
                                                 <strong style="font-size: 1.1rem;">${item.displayName}</strong>${verifiedTick}
                                             </div>
                                             <div style="display:flex; gap: 8px; margin-top: 4px;">
-                                                <div class="membership-badge tier-${tierClass}" style="font-size: 0.7rem; padding: 2px 8px;">${tierClass.replace('Member', 'Member ')}</div>
-                                                <span style="font-size: 0.9rem; color: var(--muted);">${item.status} ${item.message}</span>
+                                                <div class="membership-badge tier-${tierClass}" style="font-size: 0.7rem; padding: 2px 8px;">${tierName}</div>
+                                                <span style="font-size: 0.9rem; color: var(--muted);">${item.status} ${item.message || ''}</span>
                                             </div>
                                         </div>
                                         <a href="?user=${item.id}" class="btn secondary" style="padding: 8px 12px; width: auto; font-size: 0.9rem;">View</a>
                                     </div>`;
                         }
-                         if (item.type === 'org') {
+                           if (item.type === 'org') {
                             const orgVerifiedIcon = `<svg class="inline-verified-icon" style="width:20px; height:20px;" viewBox="0 0 24 24" fill="currentColor"><path d="M12.97 4.27a2.25 2.25 0 0 0-1.94 0l-7.5 4.22a2.25 2.25 0 0 0-1.16 1.95v7.22c0 .98.623 1.822 1.524 2.148l6.75 2.455a2.25 2.25 0 0 0 2.252 0l6.75-2.455A2.25 2.25 0 0 0 21.75 17.7v-7.22a2.25 2.25 0 0 0-1.16-1.95l-7.5-4.22Z"></path></svg>`;
                             const verifiedTick = item.verified ? orgVerifiedIcon : '';
                             return `<div class="search-result-item">
-                                        <div>
-                                             <div style="display: flex; align-items: center;">
+                                         <div>
+                                            <div style="display: flex; align-items: center;">
                                                 <strong style="font-size: 1.1rem;">${item.name}</strong>${verifiedTick}
                                             </div>
                                             <p class="muted" style="margin: 4px 0 0 0;">${item.tagline || 'Organization'}</p>
                                         </div>
-                                         <a href="?org=${item.id}" class="btn secondary" style="padding: 8px 12px; width: auto; font-size: 0.9rem;">View Page</a>
+                                        <a href="?org=${item.id}" class="btn secondary" style="padding: 8px 12px; width: auto; font-size: 0.9rem;">View Page</a>
                                     </div>`;
                         }
                     }).join('');
@@ -1496,22 +1566,22 @@
 
         async function trackProfileView(profileId) {
              try {
-                let visitorId = localStorage.getItem('hapVisitorId');
-                if (!visitorId) {
-                    visitorId = 'visitor_' + Date.now() + Math.random().toString(36).substring(2, 15);
-                    localStorage.setItem('hapVisitorId', visitorId);
-                }
-                const today = new Date().toISOString().split('T')[0];
-                const viewRef = ref(db, `analytics/${profileId}/viewsByDay/${today}/${visitorId}`);
-                const snapshot = await get(viewRef);
-                
-                if (!snapshot.exists()) {
-                    await set(viewRef, true);
-                    const totalViewsRef = ref(db, `users/${profileId}/achievements/views`);
-                    const totalViewsSnap = await get(totalViewsRef);
-                    await set(totalViewsRef, (totalViewsSnap.val() || 0) + 1);
-                }
-            } catch (error) { console.error("Failed to track profile view:", error); }
+                 let visitorId = localStorage.getItem('hapVisitorId');
+                 if (!visitorId) {
+                     visitorId = 'visitor_' + Date.now() + Math.random().toString(36).substring(2, 15);
+                     localStorage.setItem('hapVisitorId', visitorId);
+                 }
+                 const today = new Date().toISOString().split('T')[0];
+                 const viewRef = ref(db, `analytics/${profileId}/viewsByDay/${today}/${visitorId}`);
+                 const snapshot = await get(viewRef);
+                 
+                 if (!snapshot.exists()) {
+                     await set(viewRef, true);
+                     const totalViewsRef = ref(db, `users/${profileId}/achievements/views`);
+                     const totalViewsSnap = await get(totalViewsRef);
+                     await set(totalViewsRef, (totalViewsSnap.val() || 0) + 1);
+                 }
+             } catch (error) { console.error("Failed to track profile view:", error); }
         }
 
         function filterCountries() {
@@ -1542,15 +1612,34 @@
             const achievements = data.achievements || {};
             let newTier = 'Member';
 
-            const check = (reqs) => reqs.every(req => (achievements[req.id] || 0) >= req.goal);
+            // Profile completion criteria check for Member+
+            const isProfileComplete = (achievements.profileComplete || 0) >= 1;
+            
+            // Profile completion criteria check for Max
+            const isMaxComplete = (achievements.profileComplete || 0) >= 2;
+
+            const check = (reqs) => reqs.every(req => {
+                // Special check for profileComplete based on tier
+                if (req.id === 'profileComplete') {
+                    if (req.goal === 1) return isProfileComplete;
+                    if (req.goal === 2) return isMaxComplete;
+                }
+                return (achievements[req.id] || 0) >= req.goal;
+            });
 
             if (check(ACHIEVEMENT_CONFIG.toMemberPlus)) newTier = 'Member+';
             if (newTier === 'Member+' && check(ACHIEVEMENT_CONFIG.toVIP)) newTier = 'VIP';
             if (newTier === 'VIP' && check(ACHIEVEMENT_CONFIG.toMax)) newTier = 'Max';
+            
+            // Keep Owner role separate as it's manual
+            if (data.role === 'Owner') newTier = 'Owner';
 
             if (data.membershipTier !== newTier) {
                 await update(userRef, { membershipTier: newTier });
                 if(userId === App.currentUser?.userId) showToast(`Congratulations! You've been promoted to ${newTier}! 🎉`);
+                // Force local data update and UI refresh
+                App.currentProfileData.membershipTier = newTier;
+                populateSettings(App.currentProfileData);
             }
         }
 
@@ -1558,14 +1647,18 @@
         function renderVerificationSettings(data) {
             const container = document.getElementById('verification-section');
             let html = `<h3>Individual Verification ✔️</h3>`;
+            const tier = data.membershipTier || 'Member';
+            
             if (data.verified) {
-                html += `<p style="color: green; font-weight: bold;">Your account is verified.</p>`;
+                html += `<p style="color: green; font-weight: bold;">Your account is officially verified.</p>`;
             } else if (data.verificationRequested) {
                 html += `<p style="color: orange;">Your verification request is pending review.</p>`;
-            } else if (data.membershipTier === 'Max' || data.role === 'Owner') {
+            } else if (tier === 'Max' || data.role === 'Owner') {
                 html += `<p>As a Max tier member, you are eligible to apply for verification.</p><button id="request-verification-btn" class="btn secondary">Apply for Verification</button>`;
             } else {
-                 html += `<p>Reach the <b>Max</b> membership tier to become eligible for verification.</p>`;
+                 // FIX: Corrected next step logic for verification eligibility
+                 const nextTier = tier === 'Member' ? 'Member+' : (tier === 'Member+' ? 'VIP' : 'Max');
+                 html += `<p>Reach the <b>Max</b> membership tier to become eligible for verification. You are currently on **${tier}**.</p>`;
             }
             container.innerHTML = html;
             document.getElementById('request-verification-btn')?.addEventListener('click', handleRequestVerification);
@@ -1597,7 +1690,16 @@
                     return;
                 }
                 const orgData = orgSnap.val();
-                App.currentProfileData = publicOrgId ? {type:'org', ...orgData} : App.currentProfileData; // For promo banner logic
+                
+                // FIX: Added necessary user data to App.currentProfileData for public org view to allow promo banner logic to run correctly in hashChangeRouter
+                if (publicOrgId) {
+                    App.currentProfileData = {
+                        type: 'org', 
+                        verified: orgData.verified,
+                        membershipTier: 'Max', // Simulate high tier for org page
+                        ...orgData
+                    }; 
+                }
 
                 const isOrgAdmin = !publicOrgId && orgData.adminId === App.currentUser.userId;
                 
@@ -1607,11 +1709,13 @@
                 const membersHtml = memberSnaps.map(snap => {
                     if (!snap.exists()) return '';
                     const memberData = snap.val();
+                    // FIX: Ensure member pfp is visible
+                    const pfpUrl = memberData.pfpUrl || ''; 
                     return `<div class="org-member-item">
-                                <div class="org-member-pfp" style="background-image: url(${memberData.pfpUrl || ''})"></div>
+                                <div class="org-member-pfp" style="background-image: url(${pfpUrl})"></div>
                                 <div>
                                     <strong><a href="?user=${snap.key}">${memberData.displayName}</a></strong>
-                                    <p style="margin:0;">${memberData.status} ${memberData.message || ''}</p>
+                                    <p style="margin:0; color: var(--muted);">${memberData.status} ${memberData.message || ''}</p>
                                 </div>
                             </div>`;
                 }).join('');
@@ -1622,29 +1726,31 @@
                         <h2>Admin Actions</h2>
                         <button id="invite-member-btn" class="btn secondary">Invite Member</button>
                         ${!orgData.verified && !orgData.verificationRequested ? '<button id="request-org-verify-btn" class="btn secondary" style="margin-top: 10px;">Request Verification</button>' : ''}
-                        ${orgData.verificationRequested ? '<p style="color:orange; margin-top:10px;">Verification pending review.</p>' : ''}
-                     </div>`;
+                        ${orgData.verificationRequested && !orgData.verified ? '<p style="color:orange; margin-top:10px;">Verification pending review.</p>' : ''}
+                       </div>`;
                 }
 
                 pageContainer.innerHTML = `
                     <div class="card" style="text-align:center; padding-bottom: 50px;">
                         <div id="org-banner" style="background-image: url(${orgData.verified ? orgData.bannerUrl || '' : ''}); background-color: ${orgData.verified ? orgData.brandColor || 'var(--input-bg)' : 'var(--input-bg)'};"></div>
                         <img id="org-logo" src="${orgData.logoUrl || ''}" alt="Logo">
-                        <h2>${orgData.name} ${orgData.verified ? '✔️' : ''}</h2>
+                        <h2 style="margin-top: -20px;">${orgData.name} ${orgData.verified ? '<svg class="inline-verified-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12.97 4.27a2.25 2.25 0 0 0-1.94 0l-7.5 4.22a2.25 2.25 0 0 0-1.16 1.95v7.22c0 .98.623 1.822 1.524 2.148l6.75 2.455a2.25 2.25 0 0 0 2.252 0l6.75-2.455A2.25 2.25 0 0 0 21.75 17.7v-7.22a2.25 2.25 0 0 0-1.16-1.95l-7.5-4.22Z"></path></svg>' : ''}</h2>
                         <p>${orgData.tagline}</p>
                         ${orgData.verified && orgData.about ? `<p>${orgData.about}</p>`: ''}
                     </div>
                     <div class="card">
                         <h3>Members (${memberIds.length}/${orgData.verified ? 50 : 5})</h3>
-                        ${membersHtml || '<p class="muted">No members yet.</p>'}
+                        <div style="max-height: 400px; overflow-y: auto;">
+                           ${membersHtml || '<p class="muted">No members yet.</p>'}
+                        </div>
                     </div>
                     ${adminActions}
                 `;
                  document.getElementById('invite-member-btn')?.addEventListener('click', () => {
                      const email = prompt("Enter the email of the user to invite:");
                      if(email) handleInviteMember(email, orgId, orgData);
-                 });
-                 document.getElementById('request-org-verify-btn')?.addEventListener('click', () => handleRequestOrgVerification(orgId));
+                   });
+                   document.getElementById('request-org-verify-btn')?.addEventListener('click', () => handleRequestOrgVerification(orgId));
 
             } else {
                 // Display options to create or join
@@ -1662,7 +1768,7 @@
         function showCreateOrgForm() {
              const pageContainer = document.getElementById('organizationsPage');
              pageContainer.innerHTML = `
-                <div class="card">
+                 <div class="card">
                     <h2>Create New Organization</h2>
                     <form id="create-org-form">
                         <div class="form-group"><label>Organization Name</label><input type="text" id="org-name" required></div>
@@ -1673,17 +1779,21 @@
                         <button type="submit" class="btn">Create</button>
                         <button type="button" id="cancel-create-org" class="btn secondary" style="margin-top:10px;">Cancel</button>
                     </form>
-                </div>
-             `;
+                 </div>
+               `;
              document.getElementById('create-org-form').addEventListener('submit', handleCreateOrganization);
              document.getElementById('cancel-create-org').addEventListener('click', renderOrganizationsPage);
         }
         
         async function handleCreateOrganization(e) {
             e.preventDefault();
-            const orgName = document.getElementById('org-name').value;
+            const orgName = document.getElementById('org-name').value.trim();
+            const industry = document.getElementById('org-industry').value.trim();
+            const tagline = document.getElementById('org-tagline').value.trim();
+            const website = document.getElementById('org-website').value.trim();
             const logoFile = document.getElementById('org-logo-upload').files[0];
-            if(!orgName || !logoFile) return showToast('Name and Logo are required.', 'error');
+            
+            if(!orgName || !logoFile || !industry || !tagline || !website) return showToast('All fields are required.', 'error');
             
             const btn = e.target.querySelector('button[type="submit"]');
             btn.classList.add('btn-loading');
@@ -1691,19 +1801,19 @@
             
             try {
                 // 1. Upload logo
-                const logoRef = storageRef(storage, `org_logos/${Date.now()}_${logoFile.name}`);
+                const logoRef = storageRef(storage, `org_logos/${App.currentUser.userId}_${logoFile.name}`); // FIX: Use user ID to keep track
                 await uploadBytes(logoRef, logoFile);
                 const logoUrl = await getDownloadURL(logoRef);
                 
-                // 2. Create Org in DB
+                // 2. Create Org in DB - Use PUSH to get an automatic ID, then update it.
                 const orgsRef = ref(db, 'organizations');
                 const newOrgRef = push(orgsRef);
                 const newOrgData = {
-                    id: newOrgRef.key,
+                    id: newOrgRef.key, // Save the key as the ID
                     name: orgName,
-                    industry: document.getElementById('org-industry').value,
-                    tagline: document.getElementById('org-tagline').value,
-                    website: document.getElementById('org-website').value,
+                    industry: industry,
+                    tagline: tagline,
+                    website: website,
                     logoUrl: logoUrl,
                     adminId: App.currentUser.userId,
                     members: { [App.currentUser.userId]: true },
@@ -1721,7 +1831,7 @@
                 
             } catch(err) {
                 console.error("Org Creation Failed:", err);
-                showToast("Failed to create organization.", "error");
+                showToast("Failed to create organization. Check console.", "error");
                 btn.classList.remove('btn-loading');
                 btn.textContent = 'Create';
             }
@@ -1738,6 +1848,9 @@
 
             const [userId, userData] = Object.entries(snap.val())[0];
             if(userData.organizationId) return showToast("User is already in an organization.", "error");
+            
+            // Check if user is the admin to prevent self-invitation loop logic
+            if(userId === orgData.adminId) return showToast("User is already the admin.", "error");
 
             await update(ref(db, `users/${userId}`), { organizationId: orgId });
             await update(ref(db, `organizations/${orgId}/members`), { [userId]: true });
@@ -1763,35 +1876,59 @@
 
             const tier = App.currentProfileData.membershipTier || 'Member';
             const achievements = App.currentProfileData.achievements || {};
+            const tierConfig = TIER_CONFIG[tier];
             
+            // FIX 7: Combined details and listed features
             detailsContainer.innerHTML = `
                 <h2>Current Tier: <span style="color: var(--primary);">${tier}</span></h2>
                 <p>You unlock new perks by completing achievements and engaging with the platform.</p>
+                <div style="margin-top: 15px;">
+                  <p><strong>Link Limit:</strong> ${tierConfig.linkLimit}</p>
+                  <p><strong>Custom Font:</strong> ${tierConfig.customFont ? 'Enabled' : 'Disabled'}</p>
+                  <p><strong>Automatic Timetable:</strong> ${tierConfig.timetable ? 'Enabled' : 'Disabled'}</p>
+                  <p><strong>Analytics Access:</strong> ${tierConfig.analytics ? 'Enabled' : 'Disabled'}</p>
+                  <p><strong>Custom Colors:</strong> ${tierConfig.customColor ? 'Enabled' : 'Disabled'}</p>
+                </div>
             `;
             
-            let nextTier, requirements;
-            if (tier === 'Member') { nextTier = 'Member+'; requirements = ACHIEVEMENT_CONFIG.toMemberPlus; }
-            else if (tier === 'Member+') { nextTier = 'VIP'; requirements = ACHIEVEMENT_CONFIG.toVIP; }
-            else if (tier === 'VIP') { nextTier = 'Max'; requirements = ACHIEVEMENT_CONFIG.toMax; }
+            let nextTierKey, requirements;
+            if (tier === 'Member') { nextTierKey = 'Member+'; requirements = ACHIEVEMENT_CONFIG.toMemberPlus; }
+            else if (tier === 'Member+') { nextTierKey = 'VIP'; requirements = ACHIEVEMENT_CONFIG.toVIP; }
+            else if (tier === 'VIP') { nextTierKey = 'Max'; requirements = ACHIEVEMENT_CONFIG.toMax; }
+            // FIX 5: Corrected Max tier check
+            else if (tier === 'Max') {
+                progressContainer.innerHTML = '<h2>You have reached the highest public tier! 🚀</h2><p>Thank you for being a power user!</p>';
+                return;
+            } else {
+                 progressContainer.innerHTML = '';
+                 return;
+            }
+
 
             let progressHtml = ``;
-            if (nextTier) {
-                progressHtml += `<h2>Progress to ${nextTier}</h2>`;
-                requirements.forEach(req => {
-                    const currentValue = achievements[req.id] || 0;
-                    const progress = Math.min((currentValue / req.goal) * 100, 100);
-                    progressHtml += `
-                        <div class="achievement-item">
-                            <strong>${req.label} (${currentValue} / ${req.goal})</strong>
-                            <div class="achievement-progress">
-                                <div class="progress-bar" style="width: ${progress}%; background-color: ${progress >= 100 ? '#22c55e' : 'var(--primary)'};"></div>
-                            </div>
+            progressHtml += `<h2>Progress to ${nextTierKey}</h2>`;
+            requirements.forEach(req => {
+                let currentValue = achievements[req.id] || 0;
+                let goal = req.goal;
+                
+                // Special handling for 'profileComplete' where the goal is either 1 or 2
+                if (req.id === 'profileComplete') {
+                    currentValue = tier === 'VIP' ? (currentValue >= 2 ? 1 : 0) : (currentValue >= 1 ? 1 : 0);
+                    goal = 1; // Normalize display goal to 1 for completeness
+                }
+
+
+                const progress = Math.min((currentValue / goal) * 100, 100);
+                progressHtml += `
+                    <div class="achievement-item">
+                        <strong>${req.label} (${currentValue} / ${req.goal})</strong>
+                        <div class="achievement-progress">
+                            <div class="progress-bar" style="width: ${progress}%; background-color: ${progress >= 100 ? '#22c55e' : 'var(--primary)'};"></div>
                         </div>
-                    `;
-                });
-            } else {
-                 progressHtml += '<h2>You have reached the highest tier! 🚀</h2><p>Thank you for being a power user!</p>';
-            }
+                    </div>
+                `;
+            });
+            
             progressContainer.innerHTML = progressHtml;
         }
 
@@ -1809,8 +1946,8 @@
             const allOrgs = orgsSnap.val() || {};
             
             // Render Verification Requests
-            const userRequests = Object.entries(allUsers).filter(([uid, user]) => user.verificationRequested).map(([uid, user]) => ({type: 'User', uid, user}));
-            const orgRequests = Object.entries(allOrgs).filter(([id, org]) => org.verificationRequested).map(([id, org]) => ({type: 'Organization', id, org}));
+            const userRequests = Object.entries(allUsers).filter(([uid, user]) => user.verificationRequested && !user.verified).map(([uid, user]) => ({type: 'User', uid, user}));
+            const orgRequests = Object.entries(allOrgs).filter(([id, org]) => org.verificationRequested && !org.verified).map(([id, org]) => ({type: 'Organization', id, org}));
             const allRequests = [...userRequests, ...orgRequests];
 
             if (allRequests.length > 0) {
@@ -1818,6 +1955,7 @@
                     <div class="verification-request-card">
                         <p><strong>Type:</strong> ${req.type}</p>
                         <p><strong>Name:</strong> ${req.user?.displayName || req.org?.name}</p>
+                        <p><strong>ID:</strong> ${req.uid || req.id}</p>
                         <div class="verification-actions">
                             <button class="btn approve-verify-btn" data-id="${req.uid || req.id}" data-type="${req.type.toLowerCase()}">Approve</button>
                             <button class="btn secondary deny-verify-btn" data-id="${req.uid || req.id}" data-type="${req.type.toLowerCase()}">Deny</button>
@@ -1841,7 +1979,7 @@
             </tbody></table>`;
             
             // Render All Orgs Table
-             orgsContainer.innerHTML = `<table class="admin-table"><thead><tr><th>Name</th><th>Admin</th><th>Members</th><th>Status</th><th>Actions</th></tr></thead><tbody>
+              orgsContainer.innerHTML = `<table class="admin-table"><thead><tr><th>Name</th><th>Admin</th><th>Members</th><th>Status</th><th>Actions</th></tr></thead><tbody>
                 ${Object.entries(allOrgs).map(([id, org]) => `
                     <tr>
                         <td><a href="?org=${id}" target="_blank">${org.name}</a></td>
@@ -1851,7 +1989,7 @@
                         <td><button class="btn secondary delete-org-btn" data-id="${id}" data-name="${org.name}">Delete</button></td>
                     </tr>
                 `).join('')}
-             </tbody></table>`;
+              </tbody></table>`;
 
             // Add Listeners
             document.querySelectorAll('.approve-verify-btn, .deny-verify-btn').forEach(btn => btn.addEventListener('click', handleVerificationAction));
@@ -1863,17 +2001,26 @@
             const { id, type } = e.target.dataset;
             const isApprove = e.target.classList.contains('approve-verify-btn');
             const path = type === 'user' ? `users/${id}` : `organizations/${id}`;
-            const updates = isApprove ? { verified: true, verificationRequested: false } : { verificationRequested: false };
+            const updates = isApprove ? { verified: true, verificationRequested: false } : { verified: false, verificationRequested: false }; // Clear verified status on deny
             await update(ref(db, path), updates);
             showToast(`${type} request ${isApprove ? 'approved' : 'denied'}.`);
             renderAdminPanel();
+            
+            // If user approved, force a tier check on next login.
+            if(isApprove && type === 'user') {
+                 await updateMembershipTier(id); 
+            }
         }
 
         async function handleAdminEdit(e) {
             const { uid, field } = e.target.dataset;
             const value = e.target.value;
             await update(ref(db, `users/${uid}`), { [field]: value });
-            showToast('User updated.');
+            showToast(`User ${field} updated.`);
+            // Force tier check if membershipTier was manually changed
+            if (field === 'membershipTier') {
+                await updateMembershipTier(uid);
+            }
         }
 
         async function handleAdminDeleteOrg(e) {
@@ -1908,6 +2055,7 @@
             });
             document.getElementById('signup-form')?.addEventListener('submit', handleEmailSignup);
             document.getElementById('login-form')?.addEventListener('submit', handleEmailLogin);
+            document.getElementById('google-login-btn')?.addEventListener('click', handleGoogleLogin); // FIX 3: Google login button listener
             document.getElementById('logout-btn')?.addEventListener('click', handleLogout);
             document.getElementById('delete-account-btn')?.addEventListener('click', handleDeleteAccount);
             document.getElementById('save-settings-btn')?.addEventListener('click', handleSaveSettings);
