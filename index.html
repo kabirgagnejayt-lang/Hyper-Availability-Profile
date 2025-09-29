@@ -111,18 +111,16 @@
         }
         .profile-emoji { font-size: 4rem; line-height: 1; margin: 16px 0; }
         
-        /* Updated Profile Name Styling */
         .profile-name { 
             font-weight: 700; margin: 0; font-family: var(--display-font); 
             display: flex; justify-content: center; align-items: center; 
             font-size: 2.25rem;
-            color: var(--text); /* Default Text Color */
+            color: var(--text);
         }
         .profile-name.is-owner {
-            color: #ef4444; /* Red color for Owners */
+            color: #ef4444;
         }
         
-        /* Updated Role Display Container */
         .role-badge-container {
             display: flex;
             justify-content: center;
@@ -139,22 +137,20 @@
             width: fit-content;
         }
 
-        /* --- ADDED ROLE STYLES --- */
         .role-owner { 
-            background-color: #ef4444; /* Red BG */
+            background-color: #ef4444;
             color: white !important; 
         }
         .role-member { 
-            background-color: #3b82f6; /* Blue BG */
+            background-color: #3b82f6;
             color: white !important; 
         }
 
-        /* Verified Badge Style */
         .verified-badge {
             display: inline-flex;
             align-items: center;
             gap: 4px;
-            background-color: #1e3a8a; /* Dark Blue */
+            background-color: #1e3a8a;
             color: white;
             font-size: 0.7rem;
             font-weight: 600;
@@ -162,9 +158,8 @@
             border-radius: 6px;
         }
         
-        /* Inline Verified Icon Style */
         .inline-verified-icon {
-            color: #0ea5e9; /* Primary color */
+            color: #0ea5e9;
             margin-left: 8px;
             width: 24px; 
             height: 24px;
@@ -237,7 +232,6 @@
             z-index: 5000; display: none; border-bottom: 2px solid #ef4444;
         }
         
-        /* Loading Spinner for Save Button */
         .btn-loading {
             pointer-events: none;
             opacity: 0.8;
@@ -645,14 +639,11 @@
             update,
             push, 
             query, 
-            orderByChild,
-            equalTo,
             orderByKey, 
             limitToLast 
         } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-database.js";
 
         // Your web app's Firebase configuration
-        // IMPORTANT: Replace with your actual Firebase API Key and config!
         const firebaseConfig = {
             apiKey: "AIzaSyChwjwXFgIj9f64zGeIoS-q_odZm2ogFMw",
             authDomain: "happp-96438.firebaseapp.com",
@@ -684,7 +675,7 @@
         let timetableCheckInterval;
         let isPublicView = false;
         let publicViewInterval = null;
-        let isAuthResolved = false; // Flag to fix initial loading/routing bug
+        let isAuthResolved = false;
 
         const App = {
             pages: ['loginPage', 'profilePage', 'searchPage', 'analyticsPage', 'settingsPage'],
@@ -743,7 +734,8 @@
             return { time: timeStr, offset: `UTC${sign}${hours}:${minutes}`, hour: localTime.getHours() };
         }
 
-        // --- FIREBASE AUTHENTICATION ---
+        // --- [UPDATED] FIREBASE AUTHENTICATION ---
+        // These functions now ONLY handle authentication, not navigation.
         async function handleGoogleLogin() {
             const provider = new GoogleAuthProvider();
             try {
@@ -767,12 +759,6 @@
                     };
                     await set(userRef, initialProfile);
                 }
-                
-                // --- FIX: Explicitly set up the session before navigating ---
-                await setupUserSession();
-                
-                navigateTo('profilePage', true); 
-
             } catch (error) {
                 document.getElementById('error-message').textContent = error.message;
             }
@@ -807,12 +793,6 @@
                     privacy: { email: 'public', phone: 'private', school: 'private', bio: 'public', age: 'public', gender: 'private', hobbies: 'public', country: 'public', timezone: 'public' } 
                 };
                 await set(userRef, initialProfile);
-                
-                // --- FIX: Explicitly set up the session before navigating ---
-                await setupUserSession();
-                
-                navigateTo('profilePage', true); 
-
             } catch (error) {
                 errorMsg.textContent = error.message;
             }
@@ -833,34 +813,42 @@
 
         function handleLogout() {
             signOut(auth);
-            window.location.hash = 'loginPage';
-            window.location.search = '';
         }
 
-        onAuthStateChanged(auth, user => {
+        // --- [UPDATED] onAuthStateChanged ---
+        // This is now the single source of truth for handling all auth state changes.
+        onAuthStateChanged(auth, async (user) => {
+            const wasLoggedIn = !!App.currentUser;
             App.currentUser = user ? { email: user.email, displayName: user.displayName, userId: user.uid, pfpUrl: user.photoURL } : null;
+            const isLoggedIn = !!App.currentUser;
 
+            // Handle the initial page load routing
             if (!isAuthResolved) {
-                isAuthResolved = true; 
-
+                isAuthResolved = true;
                 const isPublicProfileView = new URLSearchParams(window.location.search).has('user');
-
-                if (user && !isPublicProfileView) {
-                    setupUserSession();
+                if (!isPublicProfileView) {
+                    if (isLoggedIn) {
+                        await setupUserSession();
+                        navigateTo('profilePage');
+                    } else {
+                        navigateTo('loginPage');
+                    }
+                } else {
+                    hashChangeRouter(); // Let the router handle the public view
                 }
-
-                hashChangeRouter();
-
-            } else {
-                const isPublicProfileView = new URLSearchParams(window.location.search).has('user');
-                
-                if (isPublicProfileView) return; 
-
-                if (user && window.location.hash.substring(1) === 'loginPage') {
-                    navigateTo('profilePage');
-                } else if (!user && window.location.hash.substring(1) !== 'loginPage') {
-                    navigateTo('loginPage');
-                }
+                return;
+            }
+            
+            // Handle login/logout events after the initial load
+            if (isLoggedIn && !wasLoggedIn) {
+                // This block runs when a user logs in or signs up successfully
+                await setupUserSession();
+                navigateTo('profilePage', true);
+            } else if (!isLoggedIn && wasLoggedIn) {
+                // This block runs when a user logs out
+                App.currentProfileData = null;
+                clearInterval(timetableCheckInterval);
+                navigateTo('loginPage', true);
             }
         });
 
@@ -914,7 +902,6 @@
                 if (data) {
                     App.currentProfileData = data;
                     applyVisuals(data);
-                    renderProfile(data);
                     populateSettings(data);
                     await checkTimetableAndApplyStatus();
                     timetableCheckInterval = setInterval(checkTimetableAndApplyStatus, 60000);
@@ -1010,32 +997,25 @@
                 return;
             }
             
-            const wasPublicView = isPublicView;
             isPublicView = false;
             document.getElementById('create-hap-promo')?.classList.add('hidden');
             document.body.style.paddingBottom = "100px";
 
             if (!isAuthResolved) return; 
 
-            if (wasPublicView && App.currentUser) {
-                await setupUserSession();
-                const hash = window.location.hash.substring(1);
-                const targetPageId = App.pages.includes(hash) ? hash : 'profilePage';
-                App.pages.forEach(pId => App.elements[pId]?.classList.toggle('active', pId === targetPageId));
-                document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.page === targetPageId));
-                App.elements.mainHeader?.classList.remove('hidden');
-                return;
-            }
-
             const hash = window.location.hash.substring(1);
             let targetPageId = App.pages.includes(hash) ? hash : (App.currentUser ? 'profilePage' : 'loginPage');
+
             if (!App.currentUser && targetPageId !== 'loginPage') {
                 targetPageId = 'loginPage';
-                window.location.hash = 'loginPage';
             }
 
-            if (targetPageId === 'analyticsPage' && App.currentUser) {
-                await fetchAndRenderAnalytics();
+            if (App.currentUser) {
+                if(targetPageId === 'profilePage' && App.currentProfileData) {
+                    renderProfile(App.currentProfileData);
+                } else if (targetPageId === 'analyticsPage') {
+                    await fetchAndRenderAnalytics();
+                }
             }
             
             App.pages.forEach(pId => App.elements[pId]?.classList.toggle('active', pId === targetPageId));
@@ -1192,9 +1172,8 @@
         }
         
         async function checkTimetableAndApplyStatus() {
-            if (!App.currentUser) return;
+            if (!App.currentUser || !App.currentProfileData) return;
             const data = App.currentProfileData;
-            if (!data) return;
             if (data.endTime && new Date(data.endTime).getTime() > Date.now()) return; 
             
             const activeSchedule = findActiveSchedule(data);
@@ -1335,11 +1314,6 @@
                 await set(analyticsRef, null);
 
                 showToast("Account and all associated data successfully deleted. 👋");
-                setTimeout(() => {
-                    window.location.hash = 'loginPage';
-                    window.location.search = '';
-                }, 500);
-
             } catch (error) {
                 console.error("Account Deletion Error:", error.code, error.message);
                 
