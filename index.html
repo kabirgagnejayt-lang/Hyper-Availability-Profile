@@ -87,7 +87,7 @@
         input[type="color"] { width: 100%; height: 44px; padding: 0; border: none; background: transparent; cursor: pointer; }
         input:focus, select:focus, textarea:focus { outline: 2px solid var(--primary); border-color: var(--primary); }
         input[type="file"] { padding: 10px; }
-        .form-field-disabled { opacity: 0.6; pointer-events: none; }
+        .form-field-disabled, .form-field-disabled > * { opacity: 0.6; pointer-events: none; }
         .form-field-disabled label { text-decoration: line-through; }
 
         .btn {
@@ -138,7 +138,7 @@
         
         .inline-verified-icon {
             color: #0ea5e9; margin-left: 8px;
-            width: 24px; height: 24px;
+            width: 24px; height: 24px; flex-shrink: 0;
         }
 
         .profile-message { font-size: 1.2rem; color: var(--muted); min-height: 28px; }
@@ -309,6 +309,7 @@
                     <div id="role-and-verified-container" class="role-badge-container">
                          <div id="membership-tier-display" class="membership-badge"></div>
                     </div>
+                     <div class="profile-emoji" id="profile-emoji">❓</div>
                     <p class="profile-message" id="profile-message">Fetching status...</p>
                     <div class="profile-timer" id="profile-timer"></div>
                     <p class="local-time-display" id="local-time-info" style="font-size: 1rem; margin-top: 10px; font-weight: 500;"></p>
@@ -362,6 +363,7 @@
                 </div>
             </div>
         </div>
+
         <div id="analyticsPage" class="page">
             <div class="card">
                 <h2>Profile View Analytics 📈</h2>
@@ -633,7 +635,7 @@
                 { id: 'expressive', label: 'Use 3 Different Status Emojis', goal: 3 },
                 { id: 'referral', label: 'Refer 1 New User', goal: 1 },
             ],
-            toVip: [
+            toVIP: [
                 { id: 'scheduler', label: 'Add 2 Timetable Entries', goal: 2 },
                 { id: 'socialButterfly', label: 'Add 3 Custom Links', goal: 3 },
                 { id: 'views', label: 'Get 10 Profile Views', goal: 10 },
@@ -642,7 +644,7 @@
                 { id: 'referral', label: 'Refer 3 New Users', goal: 3 },
             ],
             toMax: [
-                { id: 'profileComplete', label: 'Fill Out All Optional Info Fields', goal: 1 },
+                { id: 'profileComplete', label: 'Fill Out All Optional Info Fields', goal: 1 }, // Simplified goal for demo
                 { id: 'scheduler', label: 'Add 2 Timetable Entries', goal: 2 },
                 { id: 'socialButterfly', label: 'Add 3 Custom Links', goal: 3 },
                 { id: 'views', label: 'Get 30 Profile Views', goal: 30 },
@@ -813,13 +815,39 @@
         async function saveAndLogStatus(data) {
             const dataWithTimestamp = { ...data, updatedAt: new Date().toISOString() };
             const userRef = ref(db, `users/${App.currentUser.userId}`);
-            const historyRef = ref(db, `history/${App.currentUser.userId}`);
             
-            await update(userRef, dataWithTimestamp);
-            await push(historyRef, { status: data.status, message: data.message, timestamp: dataWithTimestamp.updatedAt });
+            // Prepare achievement updates
+            const achievements = App.currentProfileData.achievements || {};
+            const achievementUpdates = {};
 
+            // Update emoji count for 'Expressive' achievement
+            const newEmoji = data.status;
+            const newUsedEmojis = achievements.usedEmojis || {};
+            if (!newUsedEmojis[newEmoji]) {
+                newUsedEmojis[newEmoji] = true;
+                achievementUpdates['achievements/usedEmojis'] = newUsedEmojis;
+                achievementUpdates['achievements/expressive'] = Object.keys(newUsedEmojis).length;
+            }
+
+            // Update 'SocialButterfly' achievement based on link count
+            achievementUpdates['achievements/socialButterfly'] = data.links?.length || 0;
+
+            // Update 'ProfileComplete' achievement
+            if(data.bio && data.birthday && data.countryCode) {
+                 achievementUpdates['achievements/profileComplete'] = 1;
+            }
+
+            // Combine all updates and save
+            await update(userRef, { ...dataWithTimestamp, ...achievementUpdates });
+
+            // Log status to history
+            const historyRef = ref(db, `history/${App.currentUser.userId}`);
+            await push(historyRef, { status: data.status, message: data.message, timestamp: dataWithTimestamp.updatedAt });
+            
+            // Re-fetch user data to have the latest state
             const snapshot = await get(userRef);
             App.currentProfileData = snapshot.val() || {};
+            
             applyVisuals(App.currentProfileData);
             renderProfile(App.currentProfileData);
             
@@ -835,17 +863,22 @@
             try {
                 const userRef = ref(db, `users/${App.currentUser.userId}`);
                 const snapshot = await get(userRef);
-                const data = snapshot.val();
-                if (data) {
+                
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
                     App.currentProfileData = data;
                     
                     // Track login for Loyal User achievement
                     const today = new Date().toISOString().split('T')[0];
-                    if (!data.achievements.loginHistory?.[today]) {
-                       const loginHistoryRef = ref(db, `users/${App.currentUser.userId}/achievements/loginHistory/${today}`);
-                       await set(loginHistoryRef, true);
-                       const loyalUserCount = Object.keys(data.achievements.loginHistory || {}).length + 1;
-                       await update(ref(db, `users/${App.currentUser.userId}/achievements`), { loyalUser: loyalUserCount });
+                    const loginHistory = data.achievements?.loginHistory || {};
+                    if (!loginHistory[today]) {
+                       const updates = {};
+                       updates[`achievements/loginHistory/${today}`] = true;
+                       updates['achievements/loyalUser'] = Object.keys(loginHistory).length + 1;
+                       await update(userRef, updates);
+                       // Update local state to prevent re-writing on this session
+                       App.currentProfileData.achievements.loyalUser = updates['achievements/loyalUser'];
+                       App.currentProfileData.achievements.loginHistory = {...loginHistory, [today]: true};
                     }
 
                     applyVisuals(data);
@@ -856,9 +889,16 @@
                     await checkTimetableAndApplyStatus();
                     timetableCheckInterval = setInterval(checkTimetableAndApplyStatus, 60000);
                 } else {
-                    // Handle case where user exists in Auth but not in DB
+                    // FIX: If user exists in Auth but not DB, create their profile and then reload the data. No recursion.
                     await initializeNewUser(auth.currentUser);
-                    await setupUserSession(); // Retry
+                    const newSnapshot = await get(userRef); // Re-fetch after creation
+                    if(newSnapshot.exists()){
+                        App.currentProfileData = newSnapshot.val();
+                        applyVisuals(App.currentProfileData);
+                        populateSettings(App.currentProfileData);
+                    } else {
+                        throw new Error("Failed to create and retrieve user profile after initialization.");
+                    }
                 }
             } catch (error) {
                 console.error("Failed to load user data:", error);
@@ -887,9 +927,14 @@
                         userData.status = activeSchedule.status;
                         userData.message = activeSchedule.message;
                     }
-                    App.currentProfileData = userData;
+                    App.currentProfileData = userData; // Store the viewed profile data
                     
                     renderProfile(userData, orgData);
+
+                    // Track the view after rendering
+                    if (!App.currentUser || App.currentUser.userId !== userId) {
+                        trackProfileView(userId);
+                    }
                 } else {
                     document.body.className = '';
                     document.getElementById('profile-name').textContent = 'User Not Found';
@@ -902,6 +947,9 @@
 
         // --- ROUTING & STATE MANAGEMENT ---
         function navigateTo(pageId, isInternal = false) {
+            const currentHash = window.location.hash.substring(1);
+            if (pageId === currentHash && !isInternal) return; // Prevent redundant navigation
+
             if (isInternal) {
                 const cleanUrl = window.location.origin + window.location.pathname;
                 window.history.pushState({}, '', cleanUrl);
@@ -917,28 +965,37 @@
 
             const params = new URLSearchParams(window.location.search);
             const userIdFromUrl = params.get('user');
+            const orgIdFromUrl = params.get('org');
             const refIdFromUrl = params.get('ref');
             
             if(refIdFromUrl && !App.currentUser) {
                  sessionStorage.setItem('referrerId', refIdFromUrl);
             }
 
-            if (userIdFromUrl) {
+            if (userIdFromUrl || orgIdFromUrl) {
                 isPublicView = true;
                 
                 App.pages.forEach(pId => App.elements[pId]?.classList.remove('active'));
-                App.elements.profilePage?.classList.add('active');
-
+                
                 document.body.style.paddingBottom = "20px";
                 App.elements.mainHeader?.classList.add('hidden');
                 
-                await displayPublicProfile(userIdFromUrl);
-                publicViewInterval = setInterval(() => displayPublicProfile(userIdFromUrl), 30000);
+                if (userIdFromUrl) {
+                    App.elements.profilePage?.classList.add('active');
+                    await displayPublicProfile(userIdFromUrl);
+                    publicViewInterval = setInterval(() => displayPublicProfile(userIdFromUrl), 30000);
+                }
+                 if(orgIdFromUrl) {
+                    App.elements.organizationsPage?.classList.add('active');
+                    await renderOrganizationsPage(orgIdFromUrl); // Pass org ID for public view
+                }
 
                 const promoCard = document.getElementById('create-hap-promo');
                 const tier = App.currentProfileData?.membershipTier;
+                const isOrgVerified = App.currentProfileData?.type === 'org' && App.currentProfileData?.verified;
+
                 if (promoCard) {
-                    promoCard.classList.toggle('hidden', tier === 'Max' || tier === 'Owner');
+                    promoCard.classList.toggle('hidden', tier === 'Max' || tier === 'Owner' || isOrgVerified);
                     const promoBtn = document.getElementById('promo-action-btn');
                     if (App.currentUser) {
                         if (App.currentUser.userId === userIdFromUrl) {
@@ -982,7 +1039,7 @@
                 } else if (targetPageId === 'adminPage') {
                     renderAdminPanel();
                 } else if (targetPageId === 'organizationsPage') {
-                    renderOrganizationsPage();
+                    await renderOrganizationsPage();
                 }
             }
             
@@ -1016,8 +1073,8 @@
 
             const bannerEl = document.getElementById('org-banner');
             if(bannerEl) {
-                bannerEl.style.backgroundImage = orgData?.bannerUrl ? `url(${orgData.bannerUrl})` : 'none';
-                bannerEl.style.backgroundColor = orgData?.bannerUrl ? 'transparent' : 'var(--input-bg)';
+                bannerEl.style.backgroundImage = orgData?.verified && orgData.bannerUrl ? `url(${orgData.bannerUrl})` : 'none';
+                bannerEl.style.backgroundColor = 'var(--input-bg)';
             }
         }
 
@@ -1027,15 +1084,15 @@
             const membershipEl = document.getElementById('membership-tier-display');
             const name = data.displayName || 'Unnamed User';
 
-            profileNameEl.textContent = name;
             profileNameEl.innerHTML = name;
 
+            const orgVerifiedIcon = `<svg class="inline-verified-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12.97 4.27a2.25 2.25 0 0 0-1.94 0l-7.5 4.22a2.25 2.25 0 0 0-1.16 1.95v7.22c0 .98.623 1.822 1.524 2.148l6.75 2.455a2.25 2.25 0 0 0 2.252 0l6.75-2.455A2.25 2.25 0 0 0 21.75 17.7v-7.22a2.25 2.25 0 0 0-1.16-1.95l-7.5-4.22ZM12 8.25a.75.75 0 0 1 .75.75v3.75a.75.75 0 0 1-1.5 0V9a.75.75 0 0 1 .75-.75Zm0 8.25a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z"></path></svg>`;
+            const userVerifiedIcon = `<svg class="inline-verified-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm13.36-1.814a.75.75 0 1 0-1.06-1.06l-3.103 3.103-1.53-1.53a.75.75 0 0 0-1.06 1.06l2.06 2.06a.75.75 0 0 0 1.06 0l3.64-3.64Z" clip-rule="evenodd" /></svg>`;
+
             if (data.verified) {
-                const inlineTickSvg = `<svg class="inline-verified-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm13.36-1.814a.75.75 0 1 0-1.06-1.06l-3.103 3.103-1.53-1.53a.75.75 0 0 0-1.06 1.06l2.06 2.06a.75.75 0 0 0 1.06 0l3.64-3.64Z" clip-rule="evenodd" /></svg>`;
-                profileNameEl.innerHTML += inlineTickSvg;
+                profileNameEl.innerHTML += userVerifiedIcon;
             } else if (orgData?.verified) {
-                 const inlineTickSvg = `<svg class="inline-verified-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12.97 4.27a2.25 2.25 0 0 0-1.94 0l-7.5 4.22a2.25 2.25 0 0 0-1.16 1.95v7.22c0 .98.623 1.822 1.524 2.148l6.75 2.455a2.25 2.25 0 0 0 2.252 0l6.75-2.455A2.25 2.25 0 0 0 21.75 17.7v-7.22a2.25 2.25 0 0 0-1.16-1.95l-7.5-4.22ZM12 8.25a.75.75 0 0 1 .75.75v3.75a.75.75 0 0 1-1.5 0V9a.75.75 0 0 1 .75-.75Zm0 8.25a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z"></path></svg>`;
-                 profileNameEl.innerHTML += inlineTickSvg;
+                profileNameEl.innerHTML += orgVerifiedIcon;
             }
 
             const tier = data.role === 'Owner' ? 'Owner' : (data.membershipTier || 'Member');
@@ -1050,10 +1107,6 @@
             renderPersonalDetails(data, orgData);
             const timeData = getLocalTimeData();
             document.getElementById('local-time-info').textContent = `Local Time: ${timeData.time} (${timeData.offset})`;
-
-            if (isPublicView && (!App.currentUser || App.currentUser.userId !== data.userId)) {
-                trackProfileView(data.userId);
-            }
 
             renderCustomLinks(data.links, document.getElementById('profile-links'));
             renderActionLinks(data);
@@ -1083,13 +1136,17 @@
                 }
             }
             if(orgData){
-                const orgLink = orgData.website ? `<a href="${orgData.website}" target="_blank">${orgData.name}</a>` : orgData.name;
+                const orgLink = orgData.website ? `<a href="${orgData.website}" target="_blank" rel="noopener noreferrer">${orgData.name}</a>` : orgData.name;
                 addDetail('Organization', orgLink);
             }
             addDetail('Bio', data.bio);
-            addDetail('Age', calculateAge(data.birthday));
-            addDetail('Phone', data.phone ? `<a href="tel:${data.phone}">${data.phone}</a>` : null);
-            addDetail('Email', data.email ? `<a href="mailto:${data.email}">${data.email}</a>` : null);
+            if(isPublicView && orgData?.verified){ // Show org contact info if verified
+                addDetail('Organization Phone', orgData.phone ? `<a href="tel:${orgData.phone}">${orgData.phone}</a>` : null);
+                addDetail('Organization Email', orgData.email ? `<a href="mailto:${orgData.email}">${orgData.email}</a>` : null);
+            } else { // Show personal contact info
+                addDetail('Phone', data.phone ? `<a href="tel:${data.phone}">${data.phone}</a>` : null);
+                addDetail('Email', data.email ? `<a href="mailto:${data.email}">${data.email}</a>` : null);
+            }
 
             container.innerHTML = detailsHtml || '<p class="muted">No public details shared.</p>';
         }
@@ -1099,9 +1156,9 @@
         }
         
         async function checkTimetableAndApplyStatus() {
-             if (!App.currentUser || !App.currentProfileData) return;
+            if (!App.currentUser || !App.currentProfileData) return;
             const data = App.currentProfileData;
-            // No time-based status active, check timetable
+            
             const activeSchedule = findActiveSchedule(data);
             if (activeSchedule) {
                 if (data.status !== activeSchedule.status || data.message !== activeSchedule.message) {
@@ -1400,7 +1457,8 @@
                 if (results.length > 0) {
                     resultsList.innerHTML = results.map(item => {
                         if (item.type === 'user') {
-                            const verifiedTick = item.verified ? `<svg class="inline-verified-icon" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm13.36-1.814a.75.75 0 1 0-1.06-1.06l-3.103 3.103-1.53-1.53a.75.75 0 0 0-1.06 1.06l2.06 2.06a.75.75 0 0 0 1.06 0l3.64-3.64Z" clip-rule="evenodd" /></svg>`: '';
+                            const userVerifiedIcon = `<svg class="inline-verified-icon" style="width:20px; height:20px;" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm13.36-1.814a.75.75 0 1 0-1.06-1.06l-3.103 3.103-1.53-1.53a.75.75 0 0 0-1.06 1.06l2.06 2.06a.75.75 0 0 0 1.06 0l3.64-3.64Z" clip-rule="evenodd" /></svg>`;
+                            const verifiedTick = item.verified ? userVerifiedIcon : '';
                             const tierClass = (item.role === 'Owner' ? 'Owner' : item.membershipTier || 'Member').replace('+','');
                             return `<div class="search-result-item">
                                         <div>
@@ -1408,7 +1466,7 @@
                                                 <strong style="font-size: 1.1rem;">${item.displayName}</strong>${verifiedTick}
                                             </div>
                                             <div style="display:flex; gap: 8px; margin-top: 4px;">
-                                                <div class="membership-badge tier-${tierClass}" style="font-size: 0.7rem; padding: 2px 8px;">${tierClass}</div>
+                                                <div class="membership-badge tier-${tierClass}" style="font-size: 0.7rem; padding: 2px 8px;">${tierClass.replace('Member', 'Member ')}</div>
                                                 <span style="font-size: 0.9rem; color: var(--muted);">${item.status} ${item.message}</span>
                                             </div>
                                         </div>
@@ -1416,7 +1474,8 @@
                                     </div>`;
                         }
                          if (item.type === 'org') {
-                            const verifiedTick = item.verified ? `<svg class="inline-verified-icon" viewBox="0 0 24 24"><path d="M12.97 4.27a2.25 2.25 0 0 0-1.94 0l-7.5 4.22a2.25 2.25 0 0 0-1.16 1.95v7.22c0 .98.623 1.822 1.524 2.148l6.75 2.455a2.25 2.25 0 0 0 2.252 0l6.75-2.455A2.25 2.25 0 0 0 21.75 17.7v-7.22a2.25 2.25 0 0 0-1.16-1.95l-7.5-4.22Z"></path></svg>` : '';
+                            const orgVerifiedIcon = `<svg class="inline-verified-icon" style="width:20px; height:20px;" viewBox="0 0 24 24" fill="currentColor"><path d="M12.97 4.27a2.25 2.25 0 0 0-1.94 0l-7.5 4.22a2.25 2.25 0 0 0-1.16 1.95v7.22c0 .98.623 1.822 1.524 2.148l6.75 2.455a2.25 2.25 0 0 0 2.252 0l6.75-2.455A2.25 2.25 0 0 0 21.75 17.7v-7.22a2.25 2.25 0 0 0-1.16-1.95l-7.5-4.22Z"></path></svg>`;
+                            const verifiedTick = item.verified ? orgVerifiedIcon : '';
                             return `<div class="search-result-item">
                                         <div>
                                              <div style="display: flex; align-items: center;">
@@ -1424,7 +1483,7 @@
                                             </div>
                                             <p class="muted" style="margin: 4px 0 0 0;">${item.tagline || 'Organization'}</p>
                                         </div>
-                                         <a href="?org=${item.id}" class="btn secondary" style="padding: 8px 12px; width: auto; font-size: 0.9rem;">View</a>
+                                         <a href="?org=${item.id}" class="btn secondary" style="padding: 8px 12px; width: auto; font-size: 0.9rem;">View Page</a>
                                     </div>`;
                         }
                     }).join('');
@@ -1486,12 +1545,12 @@
             const check = (reqs) => reqs.every(req => (achievements[req.id] || 0) >= req.goal);
 
             if (check(ACHIEVEMENT_CONFIG.toMemberPlus)) newTier = 'Member+';
-            if (newTier === 'Member+' && check(ACHIEVEMENT_CONFIG.toVip)) newTier = 'VIP';
+            if (newTier === 'Member+' && check(ACHIEVEMENT_CONFIG.toVIP)) newTier = 'VIP';
             if (newTier === 'VIP' && check(ACHIEVEMENT_CONFIG.toMax)) newTier = 'Max';
 
             if (data.membershipTier !== newTier) {
                 await update(userRef, { membershipTier: newTier });
-                if(userId === App.currentUser.userId) showToast(`Congratulations! You've been promoted to ${newTier}! 🎉`);
+                if(userId === App.currentUser?.userId) showToast(`Congratulations! You've been promoted to ${newTier}! 🎉`);
             }
         }
 
@@ -1522,45 +1581,40 @@
         }
         
         // Organization
-        async function renderOrganizationsPage() {
+        async function renderOrganizationsPage(publicOrgId = null) {
             const pageContainer = document.getElementById('organizationsPage');
-            pageContainer.innerHTML = ''; // Clear previous content
-            
-            if (!App.currentProfileData) {
-                pageContainer.innerHTML = '<div class="card"><p>Loading...</p></div>';
-                return;
-            }
+            pageContainer.innerHTML = '<div class="card"><p>Loading...</p></div>';
 
-            const orgId = App.currentProfileData.organizationId;
+            const orgId = publicOrgId || App.currentProfileData?.organizationId;
+
             if (orgId) {
                 const orgSnap = await get(ref(db, `organizations/${orgId}`));
-                const orgData = orgSnap.val();
-                if(!orgData) {
-                    // Data inconsistency, user is part of a deleted org. Clean up.
-                    await update(ref(db, `users/${App.currentUser.userId}`), { organizationId: null });
-                    renderOrganizationsPage(); // Re-render
+                if (!orgSnap.exists()) {
+                    pageContainer.innerHTML = '<div class="card"><h2>Organization Not Found</h2></div>';
+                    if (!publicOrgId && App.currentProfileData?.organizationId) {
+                        await update(ref(db, `users/${App.currentUser.userId}`), { organizationId: null });
+                    }
                     return;
                 }
+                const orgData = orgSnap.val();
+                App.currentProfileData = publicOrgId ? {type:'org', ...orgData} : App.currentProfileData; // For promo banner logic
+
+                const isOrgAdmin = !publicOrgId && orgData.adminId === App.currentUser.userId;
                 
-                // Display Org Dashboard
-                const isOrgAdmin = orgData.adminId === App.currentUser.userId;
-                let membersHtml = '<p class="muted">Loading members...</p>';
-                if(orgData.members) {
-                    const memberIds = Object.keys(orgData.members);
-                    const memberPromises = memberIds.map(id => get(ref(db, `users/${id}`)));
-                    const memberSnaps = await Promise.all(memberPromises);
-                    membersHtml = memberSnaps.map(snap => {
-                        const memberData = snap.val();
-                        if(!memberData) return '';
-                        return `<div class="org-member-item">
-                                    <div class="org-member-pfp" style="background-image: url(${memberData.pfpUrl || ''})"></div>
-                                    <div>
-                                        <strong>${memberData.displayName}</strong>
-                                        <p style="margin:0;">${memberData.status} ${memberData.message || ''}</p>
-                                    </div>
-                                </div>`
-                    }).join('');
-                }
+                const memberIds = Object.keys(orgData.members || {});
+                const memberPromises = memberIds.map(id => get(ref(db, `users/${id}`)));
+                const memberSnaps = await Promise.all(memberPromises);
+                const membersHtml = memberSnaps.map(snap => {
+                    if (!snap.exists()) return '';
+                    const memberData = snap.val();
+                    return `<div class="org-member-item">
+                                <div class="org-member-pfp" style="background-image: url(${memberData.pfpUrl || ''})"></div>
+                                <div>
+                                    <strong><a href="?user=${snap.key}">${memberData.displayName}</a></strong>
+                                    <p style="margin:0;">${memberData.status} ${memberData.message || ''}</p>
+                                </div>
+                            </div>`;
+                }).join('');
                 
                 let adminActions = '';
                 if(isOrgAdmin) {
@@ -1573,14 +1627,16 @@
                 }
 
                 pageContainer.innerHTML = `
-                    <div class="card" style="text-align:center;">
+                    <div class="card" style="text-align:center; padding-bottom: 50px;">
+                        <div id="org-banner" style="background-image: url(${orgData.verified ? orgData.bannerUrl || '' : ''}); background-color: ${orgData.verified ? orgData.brandColor || 'var(--input-bg)' : 'var(--input-bg)'};"></div>
                         <img id="org-logo" src="${orgData.logoUrl || ''}" alt="Logo">
                         <h2>${orgData.name} ${orgData.verified ? '✔️' : ''}</h2>
                         <p>${orgData.tagline}</p>
+                        ${orgData.verified && orgData.about ? `<p>${orgData.about}</p>`: ''}
                     </div>
                     <div class="card">
-                        <h3>Members (${Object.keys(orgData.members || {}).length}/${orgData.verified ? 50 : 5})</h3>
-                        ${membersHtml}
+                        <h3>Members (${memberIds.length}/${orgData.verified ? 50 : 5})</h3>
+                        ${membersHtml || '<p class="muted">No members yet.</p>'}
                     </div>
                     ${adminActions}
                 `;
@@ -1715,7 +1771,7 @@
             
             let nextTier, requirements;
             if (tier === 'Member') { nextTier = 'Member+'; requirements = ACHIEVEMENT_CONFIG.toMemberPlus; }
-            else if (tier === 'Member+') { nextTier = 'VIP'; requirements = ACHIEVEMENT_CONFIG.toVip; }
+            else if (tier === 'Member+') { nextTier = 'VIP'; requirements = ACHIEVEMENT_CONFIG.toVIP; }
             else if (tier === 'VIP') { nextTier = 'Max'; requirements = ACHIEVEMENT_CONFIG.toMax; }
 
             let progressHtml = ``;
@@ -1776,7 +1832,7 @@
             usersContainer.innerHTML = `<table class="admin-table"><thead><tr><th>Name</th><th>Email</th><th>Tier</th><th>Role</th></tr></thead><tbody>
                 ${Object.entries(allUsers).map(([uid, user]) => `
                     <tr>
-                        <td><a href="?user=${uid}">${user.displayName}</a></td>
+                        <td><a href="?user=${uid}" target="_blank">${user.displayName}</a></td>
                         <td>${user.email}</td>
                         <td><select class="admin-edit-field" data-uid="${uid}" data-field="membershipTier">${Object.keys(TIER_CONFIG).map(t => `<option value="${t}" ${user.membershipTier === t ? 'selected' : ''}>${t}</option>`).join('')}</select></td>
                         <td><select class="admin-edit-field" data-uid="${uid}" data-field="role">${['Member', 'Owner'].map(r => `<option value="${r}" ${user.role === r ? 'selected' : ''}>${r}</option>`).join('')}</select></td>
@@ -1788,11 +1844,11 @@
              orgsContainer.innerHTML = `<table class="admin-table"><thead><tr><th>Name</th><th>Admin</th><th>Members</th><th>Status</th><th>Actions</th></tr></thead><tbody>
                 ${Object.entries(allOrgs).map(([id, org]) => `
                     <tr>
-                        <td>${org.name}</td>
+                        <td><a href="?org=${id}" target="_blank">${org.name}</a></td>
                         <td>${allUsers[org.adminId]?.displayName || 'N/A'}</td>
                         <td>${Object.keys(org.members || {}).length}</td>
                         <td>${org.verified ? 'Verified' : 'Unverified'}</td>
-                        <td><button class="btn secondary delete-org-btn" data-id="${id}">Delete</button></td>
+                        <td><button class="btn secondary delete-org-btn" data-id="${id}" data-name="${org.name}">Delete</button></td>
                     </tr>
                 `).join('')}
              </tbody></table>`;
@@ -1807,7 +1863,7 @@
             const { id, type } = e.target.dataset;
             const isApprove = e.target.classList.contains('approve-verify-btn');
             const path = type === 'user' ? `users/${id}` : `organizations/${id}`;
-            const updates = isApprove ? { verified: true, verificationRequested: null } : { verificationRequested: null };
+            const updates = isApprove ? { verified: true, verificationRequested: false } : { verificationRequested: false };
             await update(ref(db, path), updates);
             showToast(`${type} request ${isApprove ? 'approved' : 'denied'}.`);
             renderAdminPanel();
@@ -1821,8 +1877,8 @@
         }
 
         async function handleAdminDeleteOrg(e) {
-            const { id } = e.target.dataset;
-            if(confirm(`Really delete organization ${id}? This will also remove the org link from all its members.`)) {
+            const { id, name } = e.target.dataset;
+            if(confirm(`Really delete organization "${name}"? This will also remove the org link from all its members.`)) {
                 // This is a simplified delete. For production, a Cloud Function would be safer.
                 const orgSnap = await get(ref(db, `organizations/${id}`));
                 const orgData = orgSnap.val();
