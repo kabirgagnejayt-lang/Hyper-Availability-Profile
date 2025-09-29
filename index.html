@@ -86,16 +86,6 @@
         input[type="file"] { padding: 10px; }
         .form-field-disabled, .form-field-disabled > * { opacity: 0.6; pointer-events: none; }
         .form-field-disabled label { text-decoration: line-through; }
-
-        .btn {
-            background: var(--primary); color: white; border: none; padding: 12px 18px;
-            border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s ease;
-            width: 100%; text-align: center; display: inline-flex; justify-content: center; align-items: center; gap: 8px;
-        }
-        .btn:hover { background-color: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        .btn.secondary { background: var(--primary-light); color: var(--primary-dark); }
-        .btn.secondary:hover { background-color: var(--primary); color: white; }
-        .form-group { margin-bottom: 20px; }
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
 
@@ -281,7 +271,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M10.5 3.75a6.75 6.75 0 1 0 0 13.5 6.75 6.75 0 0 0 0-13.5ZM2.25 10.5a8.25 8.25 0 1 1 14.59 5.28l4.69 4.69a.75.75 0 1 1-1.06 1.06l-4.69-4.69A8.25 8.25 0 0 1 2.25 10.5Z" clip-rule="evenodd"></path></svg>
                 <span>Search</span>
             </button>
-            <button id="analytics-nav-btn" class="nav-btn" data-page="analyticsPage">
+            <button id="analytics-nav-btn" data-page="analyticsPage" class="nav-btn">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M10.5 4.5a.75.75 0 0 0-1.5 0V7.5a.75.75 0 0 0 1.5 0V4.5ZM17.25 5.25a.75.75 0 0 0-1.5 0V9a.75.75 0 0 0 1.5 0V5.25ZM14.25 7.5a.75.75 0 0 0-1.5 0v10.5a.75.75 0 0 0 1.5 0V7.5ZM21 9a.75.75 0 0 0-1.5 0v7.5a.75.75 0 0 0 1.5 0V9ZM3.75 12a.75.75 0 0 0-1.5 0v4.5a.75.75 0 0 0 1.5 0V12Z"></path><path fill-rule="evenodd" d="M3 3a1.5 1.5 0 0 0-1.5 1.5V19.5A1.5 1.5 0 0 0 3 21h18a1.5 1.5 0 0 0 1.5-1.5V4.5A1.5 1.5 0 0 0 21 3H3ZM5.25 19.5h13.5V4.5H5.25v15Z" clip-rule="evenodd"></path></svg>
                 <span>Analytics</span>
             </button>
@@ -766,7 +756,7 @@
             try {
                 const result = await createUserWithEmailAndPassword(auth, email, password);
                 await updateProfile(result.user, { displayName });
-                await initializeNewUser(result.user, { displayName });
+                await initializeNewUser(result.user, { displayName, accountType: 'personal' });
             } catch (error) {
                 errorMsg.textContent = getFriendlyAuthError(error.code);
             }
@@ -819,7 +809,7 @@
              const provider = new GoogleAuthProvider();
              try {
                 const result = await signInWithPopup(auth, provider);
-                await initializeNewUser(result.user);
+                await initializeNewUser(result.user, { accountType: 'personal' });
              } catch (error) {
                 const errorMsg = document.getElementById('error-message');
                 errorMsg.textContent = getFriendlyAuthError(error.code);
@@ -869,6 +859,7 @@
                 navigateTo('loginPage', true);
             }
         });
+
 
         async function initializeNewUser(user, additionalData = {}) {
             const userRef = ref(db, `users/${user.uid}`);
@@ -971,7 +962,7 @@
                     }
                     
                     applyVisuals(userData, orgData); 
-                    renderProfile(userData, orgData);
+                    await renderProfile(userData, orgData);
 
                     if (!App.currentUser || App.currentUser.userId !== userId) {
                         trackProfileView(userId);
@@ -987,236 +978,6 @@
                 console.error("Error loading public profile:", error);
             }
         }
-        
-        async function saveAndLogStatus(data) {
-            const dataWithTimestamp = { ...data, updatedAt: new Date().toISOString() };
-            const userRef = ref(db, `users/${App.currentUser.userId}`);
-            
-            if(data.displayName !== auth.currentUser.displayName) {
-                 await updateProfile(auth.currentUser, { displayName: data.displayName });
-                 App.currentUser.displayName = data.displayName;
-                 if (!data.pfpUrl) dataWithTimestamp.pfpText = data.displayName.charAt(0).toUpperCase();
-            }
-
-            const achievements = App.currentProfileData.achievements || {};
-            const achievementUpdates = {};
-
-            const newEmoji = data.status;
-            const newUsedEmojis = achievements.usedEmojis || {};
-            if (!newUsedEmojis[newEmoji]) {
-                newUsedEmojis[newEmoji] = true;
-                achievementUpdates['achievements/usedEmojis'] = newUsedEmojis;
-                achievementUpdates['achievements/expressive'] = Object.keys(newUsedEmojis).length;
-            }
-
-            achievementUpdates['achievements/socialButterfly'] = data.links?.length || 0;
-
-            const isMaxComplete = data.bio && data.birthday && data.countryCode && data.phone && data.schedulingLink && data.pfpUrl;
-            if (isMaxComplete) {
-                achievementUpdates['achievements/profileComplete'] = 2; 
-            } else if (data.bio && data.birthday && data.countryCode) {
-                achievementUpdates['achievements/profileComplete'] = 1; 
-            } else {
-                achievementUpdates['achievements/profileComplete'] = 0;
-            }
-
-            await update(userRef, { ...dataWithTimestamp, ...achievementUpdates });
-
-            const historyRef = ref(db, `history/${App.currentUser.userId}`);
-            await push(historyRef, { status: data.status, message: data.message, timestamp: dataWithTimestamp.updatedAt });
-            
-            const snapshot = await get(userRef);
-            App.currentProfileData = snapshot.val() || {};
-            
-            applyVisuals(App.currentProfileData);
-            renderProfile(App.currentProfileData);
-            
-            await updateMembershipTier(App.currentUser.userId);
-            
-            showToast('Settings Saved & Status Updated! 💾');
-            navigateTo('profilePage');
-        }
-
-        function navigateTo(pageId, isInternal = false) {
-            const currentHash = window.location.hash.substring(1);
-            if (pageId === currentHash && !isInternal) return;
-
-            if (isInternal) {
-                const cleanUrl = window.location.origin + window.location.pathname;
-                window.history.pushState({}, '', cleanUrl);
-            }
-            window.location.hash = pageId;
-        }
-
-        async function hashChangeRouter() {
-            if(publicViewInterval) clearInterval(publicViewInterval);
-            if (!isAuthResolved) return;
-
-            const params = new URLSearchParams(window.location.search);
-            const userIdFromUrl = params.get('user');
-            const orgIdFromUrl = params.get('org');
-            const refIdFromUrl = params.get('ref');
-            
-            if(refIdFromUrl && !App.currentUser) {
-                sessionStorage.setItem('referrerId', refIdFromUrl);
-            }
-
-            if (userIdFromUrl || orgIdFromUrl) {
-                isPublicView = true;
-                
-                App.pages.forEach(pId => App.elements[pId]?.classList.remove('active'));
-                
-                document.body.style.paddingBottom = "20px";
-                App.elements.mainHeader?.classList.add('hidden');
-                
-                let adShouldShow = true;
-                if (userIdFromUrl) {
-                    App.elements.profilePage?.classList.add('active');
-                    await displayPublicProfile(userIdFromUrl);
-                    const tier = App.currentProfileData?.membershipTier;
-                    if (tier && !TIER_CONFIG[tier]?.ads) {
-                        adShouldShow = false;
-                    }
-                }
-                if(orgIdFromUrl) {
-                    App.elements.organizationsPage?.classList.add('active');
-                    await renderOrganizationsPage(orgIdFromUrl);
-                    const tier = App.currentOrgData?.tier;
-                    if(tier && !ORG_TIER_CONFIG[tier]?.ads){
-                        adShouldShow = false;
-                    }
-                }
-
-                const promoCard = document.getElementById('create-hap-promo');
-                if (promoCard) {
-                    promoCard.classList.toggle('hidden', !adShouldShow);
-                    const promoBtn = document.getElementById('promo-action-btn');
-                    if (App.currentUser) {
-                        const isOwnProfile = (userIdFromUrl && App.currentUser.userId === userIdFromUrl) || (orgIdFromUrl && App.currentUser.userId === orgIdFromUrl);
-                        if (isOwnProfile) {
-                            promoCard.classList.add('hidden');
-                        } else {
-                            promoBtn.textContent = 'Go to My Dashboard';
-                            const page = App.currentProfileData?.accountType === 'organization' ? 'orgDashboardPage' : 'profilePage';
-                            promoBtn.onclick = () => navigateTo(page, true);
-                        }
-                    } else {
-                        promoBtn.textContent = 'Get Started Now';
-                        promoBtn.onclick = () => navigateTo('loginPage', true);
-                    }
-                }
-                return;
-            }
-            
-            isPublicView = false;
-            document.getElementById('create-hap-promo')?.classList.add('hidden');
-
-            const hash = window.location.hash.substring(1);
-            let targetPageId;
-
-            if (App.currentUser) {
-                if (App.currentProfileData?.accountType === 'organization') {
-                    targetPageId = hash === 'orgDashboardPage' ? hash : 'orgDashboardPage';
-                    document.body.style.paddingBottom = "20px";
-                } else {
-                    targetPageId = App.pages.includes(hash) ? hash : 'profilePage';
-                    document.body.style.paddingBottom = "100px";
-                }
-            } else {
-                targetPageId = 'loginPage';
-            }
-            
-            if (!App.currentUser && targetPageId !== 'loginPage' && targetPageId !== 'searchPage') {
-                sessionStorage.setItem('redirectAfterLogin', targetPageId);
-                targetPageId = 'loginPage';
-            }
-
-            if (App.currentUser) {
-                if (targetPageId === 'adminPage' && App.currentProfileData.membershipTier !== 'Owner') {
-                    targetPageId = 'profilePage';
-                }
-                
-                if (App.currentProfileData?.accountType === 'organization') {
-                    if (targetPageId === 'orgDashboardPage') renderOrgDashboard();
-                } else {
-                    if(targetPageId === 'profilePage' && App.currentProfileData) {
-                        const orgSnap = App.currentProfileData.organizationId ? await get(ref(db, `organizations/${App.currentProfileData.organizationId}`)) : null;
-                        renderProfile(App.currentProfileData, orgSnap?.val());
-                    } else if (targetPageId === 'analyticsPage') {
-                        await fetchAndRenderAnalytics();
-                    } else if (targetPageId === 'tiersPage') {
-                        renderTiersPage();
-                    } else if (targetPageId === 'adminPage') {
-                        renderAdminPanel();
-                    } else if (targetPageId === 'organizationsPage') {
-                        await renderOrganizationsPage();
-                    }
-                }
-            }
-            
-            App.pages.forEach(pId => App.elements[pId]?.classList.toggle('active', pId === targetPageId));
-            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.page === targetPageId));
-            App.elements.mainHeader?.classList.toggle('hidden', !App.currentUser || targetPageId === 'loginPage' || targetPageId === 'orgDashboardPage');
-            window.scrollTo(0, 0);
-        }
-
-        function applyVisuals(userData) {
-            if (!userData) return;
-            const theme = userData.theme || 'auto';
-            const isNight = new Date().getHours() >= 20 || new Date().getHours() < 6;
-            
-            document.body.className = (theme === 'dark' || (theme === 'auto' && isNight)) ? 'dark' : '';
-            
-            const accent = userData.profileAccentColor || '#0ea5e9';
-            document.documentElement.style.setProperty('--primary', accent);
-            document.documentElement.style.setProperty('--link-text-color', userData.linkTextColor || '#0369a1');
-            document.documentElement.style.setProperty('--display-font', userData.displayNameFont || 'Inter, sans-serif');
-            
-            const pfpElement = document.getElementById('profile-pfp');
-            if(pfpElement) {
-                if (userData.pfpUrl) {
-                    pfpElement.style.backgroundImage = `url(${userData.pfpUrl})`;
-                    pfpElement.textContent = '';
-                } else if (userData.pfpText) {
-                    pfpElement.style.backgroundImage = 'none';
-                    pfpElement.textContent = userData.pfpText;
-                }
-                pfpElement.style.borderColor = accent;
-            }
-        }
-
-        async function renderProfile(data, orgData = null) {
-            if (!data) return;
-            const profileNameEl = document.getElementById('profile-name');
-            const membershipEl = document.getElementById('membership-tier-display');
-            const orgLinkContainer = document.getElementById('profile-organization-link');
-            
-            profileNameEl.innerHTML = data.displayName || 'Unnamed User';
-
-            const userVerifiedIcon = `<svg class="inline-verified-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm13.36-1.814a.75.75 0 1 0-1.06-1.06l-3.103 3.103-1.53-1.53a.75.75 0 0 0-1.06 1.06l2.06 2.06a.75.75 0 0 0 1.06 0l3.64-3.64Z" clip-rule="evenodd" /></svg>`;
-            if (data.verified) {
-                profileNameEl.innerHTML += userVerifiedIcon;
-            }
-
-            const tier = data.membershipTier || 'Member';
-            profileNameEl.classList.toggle('is-owner', tier === 'Owner');
-
-            membershipEl.textContent = TIER_CONFIG[tier]?.name || tier;
-            membershipEl.className = 'membership-badge';
-            membershipEl.classList.add(`tier-${tier}`);
-
-            orgLinkContainer.innerHTML = '';
-            if (data.organizationId) {
-                const orgSnap = await get(ref(db, `organizations/${data.organizationId}/name`));
-                if(orgSnap.exists()) {
-                    orgLinkContainer.innerHTML = `<a href="?org=${data.organizationId}">Part of ${orgSnap.val()}</a>`;
-                }
-            }
-
-            document.getElementById('profile-emoji').textContent = data.status || '❓';
-            document.getElementById('profile-message').textContent = data.message || 'No message set.';
-        }
-
     </script>
 </body>
 </html>
