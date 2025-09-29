@@ -242,12 +242,15 @@
             animation: spin 1s linear infinite;
         }
         /* Styles for Admin Panel & My Plan */
-        .admin-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .admin-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 0.9rem; }
         .admin-table th, .admin-table td { padding: 12px; border: 1px solid var(--border-color); text-align: left; }
         .admin-table th { background-color: var(--input-bg); }
         .achievement-item { margin-bottom: 15px; }
-        .achievement-progress { width: 100%; background: var(--input-bg); border-radius: 8px; height: 10px; overflow: hidden; }
+        .achievement-progress { width: 100%; background: var(--input-bg); border-radius: 8px; height: 10px; overflow: hidden; margin-top: 6px; }
         .progress-bar { height: 100%; background: var(--primary); border-radius: 8px; transition: width 0.5s ease; }
+        .verification-request-card { background: var(--input-bg); padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+        .verification-request-card p { margin: 0 0 10px 0; }
+        .verification-actions { display: flex; gap: 10px; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -264,7 +267,7 @@
             <button class="nav-btn" data-page="myPlanPage">
                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12.963 2.286a.75.75 0 0 0-1.071 1.052A11.202 11.202 0 0 1 18 10.5c0 1.25-.22 2.454-.626 3.565a.75.75 0 1 0 1.393.572A12.702 12.702 0 0 0 19.5 10.5c0-6.233-4.743-11.24-10.743-11.24a.75.75 0 0 0-.794.704Z" clip-rule="evenodd" /><path d="M3.75 6A1.5 1.5 0 0 1 5.25 4.5h6A1.5 1.5 0 0 1 12.75 6v1.5a.75.75 0 0 0 1.5 0V6A3 3 0 0 0 11.25 3h-6A3 3 0 0 0 2.25 6v12A3 3 0 0 0 5.25 21h6a3 3 0 0 0 3-3V16.5a.75.75 0 0 0-1.5 0V18a1.5 1.5 0 0 1-1.5 1.5h-6A1.5 1.5 0 0 1 3.75 18V6Z" /></svg>
                  <span>My Plan</span>
-             </button>
+              </button>
             
             <button class="nav-btn" data-page="searchPage">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M10.5 3.75a6.75 6.75 0 1 0 0 13.5 6.75 6.75 0 0 0 0-13.5ZM2.25 10.5a8.25 8.25 0 1 1 14.59 5.28l4.69 4.69a.75.75 0 1 1-1.06 1.06l-4.69-4.69A8.25 8.25 0 0 1 2.25 10.5Z" clip-rule="evenodd"></path></svg>
@@ -282,43 +285,43 @@
              <button id="admin-nav-btn" class="nav-btn hidden" data-page="adminPage">
                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M4.5 2.25a.75.75 0 0 0 0 1.5v16.5a.75.75 0 0 0 0 1.5h15a.75.75 0 0 0 0-1.5V3.75a.75.75 0 0 0 0-1.5h-15ZM5.25 21a1.5 1.5 0 0 0 1.5-1.5V3.75A1.5 1.5 0 0 0 5.25 2.25h-1.5A3 3 0 0 0 .75 5.25v13.5A3 3 0 0 0 3.75 21h1.5Zm15-1.5V3.75A1.5 1.5 0 0 0 18.75 2.25h-1.5a.75.75 0 0 0 0 1.5h1.5c.414 0 .75.336.75.75v16.5c0 .414-.336.75-.75.75h-1.5a.75.75 0 0 0 0 1.5h1.5a3 3 0 0 0 3-3V5.25a3 3 0 0 0-3-3h-1.5ZM8.25 7.5a.75.75 0 0 0 0 1.5h7.5a.75.75 0 0 0 0-1.5h-7.5Zm.75 3.75a.75.75 0 0 1 .75-.75h4.5a.75.75 0 0 1 0 1.5h-4.5a.75.75 0 0 1-.75-.75Z" clip-rule="evenodd" /></svg>
                  <span>Admin</span>
-             </button>
+              </button>
         </nav>
     </header>
 
     <div class="container">
 
         <div id="loginPage" class="page">
-             <div class="card">
-                 <h1>Hyper Availability</h1>
-                 <p style="text-align: center;">Your real-time public status page.</p>
+              <div class="card">
+                    <h1>Hyper Availability</h1>
+                    <p style="text-align: center;">Your real-time public status page.</p>
                 
-                 <button id="google-login-btn" class="btn" style="margin-top: 20px;">
-                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4C12.955 4 4 12.955 4 24s8.955 20 20 20s20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"></path><path fill="#FF3D00" d="m6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4C16.318 4 9.656 8.337 6.306 14.691z"></path><path fill="#4CAF50" d="m24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238A11.91 11.91 0 0 1 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"></path><path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303a12.04 12.04 0 0 1-4.087 5.571l6.19 5.238C44.434 36.333 48 30.651 48 24c0-1.341-.138-2.65-.389-3.917z"></path></svg>
-                     <span>Sign in with Google</span>
-                 </button>
+                    <button id="google-login-btn" class="btn" style="margin-top: 20px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4C12.955 4 4 12.955 4 24s8.955 20 20 20s20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"></path><path fill="#FF3D00" d="m6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4C16.318 4 9.656 8.337 6.306 14.691z"></path><path fill="#4CAF50" d="m24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238A11.91 11.91 0 0 1 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"></path><path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303a12.04 12.04 0 0 1-4.087 5.571l6.19 5.238C44.434 36.333 48 30.651 48 24c0-1.341-.138-2.65-.389-3.917z"></path></svg>
+                        <span>Sign in with Google</span>
+                    </button>
 
-                 <div style="text-align: center; color: var(--muted); margin: 20px 0; font-weight: 500;">OR</div>
+                    <div style="text-align: center; color: var(--muted); margin: 20px 0; font-weight: 500;">OR</div>
 
-                 <div class="auth-tabs">
-                     <div class="tab active" data-tab="login">Login</div>
-                     <div class="tab" data-tab="signup">Sign Up</div>
-                 </div>
+                    <div class="auth-tabs">
+                        <div class="tab active" data-tab="login">Login</div>
+                        <div class="tab" data-tab="signup">Sign Up</div>
+                    </div>
 
-                 <form id="login-form">
-                     <div class="form-group"><input type="email" id="login-email" placeholder="Email" required></div>
-                     <div class="form-group"><input type="password" id="login-password" placeholder="Password" required></div>
-                     <button type="submit" class="btn secondary">Login</button>
-                 </form>
+                    <form id="login-form">
+                        <div class="form-group"><input type="email" id="login-email" placeholder="Email" required></div>
+                        <div class="form-group"><input type="password" id="login-password" placeholder="Password" required></div>
+                        <button type="submit" class="btn secondary">Login</button>
+                    </form>
 
-                 <form id="signup-form" class="hidden">
-                     <div class="form-group"><input type="text" id="signup-name" placeholder="Display Name" required></div>
-                     <div class="form-group"><input type="email" id="signup-email" placeholder="Email" required></div>
-                     <div class="form-group"><input type="password" id="signup-password" placeholder="Password (min. 6 chars)" required></div>
-                     <button type="submit" class="btn secondary">Create Account</button>
-                 </form>
-                 <p id="error-message"></p>
-             </div>
+                    <form id="signup-form" class="hidden">
+                        <div class="form-group"><input type="text" id="signup-name" placeholder="Display Name" required></div>
+                        <div class="form-group"><input type="email" id="signup-email" placeholder="Email" required></div>
+                        <div class="form-group"><input type="password" id="signup-password" placeholder="Password (min. 6 chars)" required></div>
+                        <button type="submit" class="btn secondary">Create Account</button>
+                    </form>
+                    <p id="error-message"></p>
+                </div>
         </div>
 
         <div id="profilePage" class="page">
@@ -402,34 +405,34 @@
             </div>
         </div>
         <div id="analyticsPage" class="page">
-             <div class="card">
-                 <h2>Profile View Analytics 📈</h2>
-                 <p class="muted">Views from unique visitors over different time periods.</p>
-                 <div class="analytics-grid" id="view-analytics-grid">
-                     <div class="analytics-metric"><p class="metric-value" id="views-total">0</p><p class="metric-label">Total Views</p></div>
-                     <div class="analytics-metric"><p class="metric-value" id="views-today">0</p><p class="metric-label">Views Today</p></div>
-                     <div class="analytics-metric"><p class="metric-value" id="views-week">0</p><p class="metric-label">Views Last 7 Days</p></div>
-                     <div class="analytics-metric"><p class="metric-value" id="views-month">0</p><p class="metric-label">Views Last 30 Days</p></div>
-                 </div>
-             </div>
-             
-             <div class="card">
-                 <h2>Status Distribution (Last 30 Days) 📊</h2>
-                 <p class="muted">Breakdown of time spent in each major status category.</p>
-                 <div id="status-distribution-container">
-                     <p class="muted">Loading distribution data...</p>
-                 </div>
-                 <div class="analytics-grid" style="margin-top: 15px;">
-                      <div class="analytics-metric" style="background: var(--primary-light);"><p class="metric-value" id="timetable-utilization">0%</p><p class="metric-label">Timetable Utilization</p></div>
-                 </div>
-             </div>
+              <div class="card">
+                    <h2>Profile View Analytics 📈</h2>
+                    <p class="muted">Views from unique visitors over different time periods.</p>
+                    <div class="analytics-grid" id="view-analytics-grid">
+                        <div class="analytics-metric"><p class="metric-value" id="views-total">0</p><p class="metric-label">Total Views</p></div>
+                        <div class="analytics-metric"><p class="metric-value" id="views-today">0</p><p class="metric-label">Views Today</p></div>
+                        <div class="analytics-metric"><p class="metric-value" id="views-week">0</p><p class="metric-label">Views Last 7 Days</p></div>
+                        <div class="analytics-metric"><p class="metric-value" id="views-month">0</p><p class="metric-label">Views Last 30 Days</p></div>
+                    </div>
+                </div>
+                
+              <div class="card">
+                    <h2>Status Distribution (Last 30 Days) 📊</h2>
+                    <p class="muted">Breakdown of time spent in each major status category.</p>
+                    <div id="status-distribution-container">
+                        <p class="muted">Loading distribution data...</p>
+                    </div>
+                    <div class="analytics-grid" style="margin-top: 15px;">
+                         <div class="analytics-metric" style="background: var(--primary-light);"><p class="metric-value" id="timetable-utilization">0%</p><p class="metric-label">Timetable Utilization</p></div>
+                    </div>
+                </div>
 
-             <div class="card">
-                 <h2>Status History Timeline (Last 10)</h2>
-                 <div id="history-log">
-                     <p class="muted">Loading history...</p>
-                 </div>
-             </div>
+              <div class="card">
+                    <h2>Status History Timeline (Last 10)</h2>
+                    <div id="history-log">
+                        <p class="muted">Loading history...</p>
+                    </div>
+                </div>
         </div>
 
         <!-- NEW: My Plan Page -->
@@ -460,7 +463,7 @@
                     <p class="muted">Loading requests...</p>
                 </div>
             </div>
-             <div class="card">
+              <div class="card">
                 <h2>All Users</h2>
                 <div id="admin-all-users" style="max-height: 400px; overflow-y: auto;">
                     <p class="muted">Loading users...</p>
@@ -662,6 +665,16 @@
             </div>
 
             <div class="card">
+                <h2>Verification & Organization</h2>
+                <div id="verification-section">
+                    <!-- This will be populated by JS -->
+                </div>
+                 <div id="organization-section" style="margin-top: 20px;">
+                    <!-- This will be populated by JS -->
+                 </div>
+            </div>
+
+            <div class="card">
                 <button id="save-settings-btn" class="btn">Save & Update Status</button>
                 <button id="logout-btn" class="btn secondary" style="margin-top: 12px;">Logout</button>
                 <button id="delete-account-btn" class="btn" style="margin-top: 20px; background-color: #ef4444; color: white;">Delete My HAP Account Permanently</button>
@@ -698,8 +711,17 @@
             orderByKey, 
             limitToLast 
         } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-database.js";
+        // NEW: Import Firebase Storage for PFP uploads
+        import { 
+            getStorage, 
+            ref as storageRef, 
+            uploadBytes, 
+            getDownloadURL 
+        } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-storage.js";
 
         // Your web app's Firebase configuration
+        // IMPORTANT: While Firebase API keys are not secret, for production apps,
+        // it's best practice to restrict them in the Google Cloud Console (e.g., to your domain).
         const firebaseConfig = {
             apiKey: "AIzaSyChwjwXFgIj9f64zGeIoS-q_odZm2ogFMw",
             authDomain: "happp-96438.firebaseapp.com",
@@ -714,6 +736,7 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getDatabase(app);
+        const storage = getStorage(app); // NEW: Initialize storage
 
         // --- GLOBAL ERROR CATCH ---
         window.onerror = function(message, source, lineno, colno, error) {
@@ -739,6 +762,18 @@
             currentUser: null,
             currentProfileData: null,
         };
+        
+        // --- [NEW] CONSTANTS FOR FEATURES ---
+        const TIER_LIMITS = { 'Member': 2, 'Member+': 4, 'Vip': 7, 'Max': 10, 'Owner': 10 };
+        const ACHIEVEMENT_DEFINITIONS = {
+            profileComplete: { label: "Profile Completionist", goal: 1, nextTier: 'Member+' },
+            firstShare: { label: "Social Butterfly", goal: 1, nextTier: 'Member+' },
+            scheduler: { label: "Master Planner", goal: 1, nextTier: 'Member+' },
+            referralCount: { label: "Community Builder", goal: 5, nextTier: 'Vip' },
+            views: { label: "Popular Profile", goal: 50, nextTier: 'Vip' },
+            expressive: { label: "Expressive User", goal: 1, nextTier: 'Max' }, //
+        };
+
 
         const DAYS_OF_WEEK = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
         const TIMEZONE_MAP = { 'auto': new Date().getTimezoneOffset() * -1, 'UTC-12:00': -720, 'UTC-11:00': -660, 'UTC-10:00': -600, 'UTC-09:30': -570, 'UTC-09:00': -540, 'UTC-08:00': -480, 'UTC-07:00': -420, 'UTC-06:00': -360, 'UTC-05:00': -300, 'UTC-04:00': -240, 'UTC-03:30': -210, 'UTC-03:00': -180, 'UTC-02:00': -120, 'UTC-01:00': -60, 'UTC+00:00': 0, 'UTC+01:00': 60, 'UTC+02:00': 120, 'UTC+03:00': 180, 'UTC+03:30': 210, 'UTC+04:00': 240, 'UTC+04:30': 270, 'UTC+05:00': 300, 'UTC+05:30': 330, 'UTC+05:45': 345, 'UTC+06:00': 360, 'UTC+06:30': 390, 'UTC+07:00': 420, 'UTC+08:00': 480, 'UTC+08:45': 525, 'UTC+09:00': 540, 'UTC+09:30': 570, 'UTC+10:00': 600, 'UTC+10:30': 630, 'UTC+11:00': 660, 'UTC+12:00': 720, 'UTC+12:45': 765, 'UTC+13:00': 780, 'UTC+14:00': 840 };
@@ -789,36 +824,30 @@
             const minutes = String(absOffset % 60).padStart(2, '0');
             return { time: timeStr, offset: `UTC${sign}${hours}:${minutes}`, hour: localTime.getHours() };
         }
+        // [FIX] New utility for user-friendly error messages
+        function getFriendlyAuthError(errorCode) {
+            switch (errorCode) {
+                case 'auth/invalid-credential':
+                case 'auth/wrong-password':
+                    return 'Invalid email or password. Please try again.';
+                case 'auth/email-already-in-use':
+                    return 'An account with this email already exists.';
+                case 'auth/weak-password':
+                    return 'Your password must be at least 6 characters long.';
+                default:
+                    return 'An unexpected error occurred. Please try again.';
+            }
+        }
+
 
         // --- [UPDATED] FIREBASE AUTHENTICATION ---
-        // These functions now ONLY handle authentication, not navigation.
         async function handleGoogleLogin() {
             const provider = new GoogleAuthProvider();
             try {
                 const result = await signInWithPopup(auth, provider);
-                const user = result.user;
-                const userRef = ref(db, `users/${user.uid}`);
-                const snapshot = await get(userRef);
-
-                if (!snapshot.exists()) {
-                    const initialProfile = { 
-                        displayName: user.displayName, 
-                        email: user.email, 
-                        pfpUrl: user.photoURL, 
-                        status: '🟢', 
-                        message: 'Ready for the day!', 
-                        theme: 'auto', 
-                        role: 'Member',
-                        membershipTier: 'Member', // NEW
-                        verified: false,
-                        achievements: { profileComplete: false, scheduler: false, socialButterfly: false, firstShare: false, views: 0, loyalUser: false, expressive: false, referralCount: 0 }, // NEW
-                        privacy: { email: 'public', phone: 'private', school: 'private', bio: 'public', age: 'public', gender: 'private', hobbies: 'public', country: 'public', timezone: 'public' }, 
-                        updatedAt: new Date().toISOString() 
-                    };
-                    await set(userRef, initialProfile);
-                }
+                await initializeNewUser(result.user);
             } catch (error) {
-                document.getElementById('error-message').textContent = error.message;
+                document.getElementById('error-message').textContent = getFriendlyAuthError(error.code);
             }
         }
 
@@ -837,24 +866,52 @@
 
             try {
                 const result = await createUserWithEmailAndPassword(auth, email, password);
-                const user = result.user;
-                const userRef = ref(db, `users/${user.uid}`);
+                await initializeNewUser(result.user, { displayName });
+            } catch (error) {
+                errorMsg.textContent = getFriendlyAuthError(error.code);
+            }
+        }
+        
+        // [NEW] Centralized function for creating new user profiles in DB
+        async function initializeNewUser(user, additionalData = {}) {
+            const userRef = ref(db, `users/${user.uid}`);
+            const snapshot = await get(userRef);
+
+            if (!snapshot.exists()) {
                 const initialProfile = { 
-                    displayName: displayName, 
+                    displayName: additionalData.displayName || user.displayName, 
                     email: user.email, 
+                    pfpUrl: user.photoURL || null, 
+                    createdAt: new Date().toISOString(),
                     status: '🟢', 
                     message: 'Ready for the day!', 
                     theme: 'auto', 
                     role: 'Member',
-                    membershipTier: 'Member', // NEW
+                    membershipTier: 'Member',
                     verified: false,
-                    achievements: { profileComplete: false, scheduler: false, socialButterfly: false, firstShare: false, views: 0, loyalUser: false, expressive: false, referralCount: 0 }, // NEW
-                    updatedAt: new Date().toISOString(), 
-                    privacy: { email: 'public', phone: 'private', school: 'private', bio: 'public', age: 'public', gender: 'private', hobbies: 'public', country: 'public', timezone: 'public' } 
+                    // [NEW] Fully implemented achievements object
+                    achievements: { 
+                        profileComplete: false, 
+                        scheduler: false, 
+                        firstShare: false, 
+                        views: 0, 
+                        loyalUser: false, 
+                        expressive: false, 
+                        referralCount: 0 
+                    }, 
+                    privacy: { email: 'public', phone: 'private', school: 'private', bio: 'public', age: 'public', gender: 'private', hobbies: 'public', country: 'public', timezone: 'public' }, 
+                    updatedAt: new Date().toISOString() 
                 };
                 await set(userRef, initialProfile);
-            } catch (error) {
-                errorMsg.textContent = error.message;
+                
+                // [NEW] Handle referrals on signup
+                const referrerId = sessionStorage.getItem('referrerId');
+                if (referrerId) {
+                    const referrerRef = ref(db, `users/${referrerId}/achievements/referralCount`);
+                    const referrerSnap = await get(referrerRef);
+                    await set(referrerRef, (referrerSnap.val() || 0) + 1);
+                    sessionStorage.removeItem('referrerId');
+                }
             }
         }
 
@@ -867,7 +924,7 @@
             try {
                 await signInWithEmailAndPassword(auth, email, password);
             } catch (error) {
-                errorMsg.textContent = error.message;
+                errorMsg.textContent = getFriendlyAuthError(error.code);
             }
         }
 
@@ -891,7 +948,10 @@
             }
             
             if (isLoggedIn && !wasLoggedIn) {
-                navigateTo('profilePage', true);
+                // [FIX] Redirect to intended page after login, or default to profile
+                const redirectTarget = sessionStorage.getItem('redirectAfterLogin');
+                sessionStorage.removeItem('redirectAfterLogin');
+                navigateTo(redirectTarget || 'profilePage', true);
             } else if (!isLoggedIn && wasLoggedIn) {
                 App.currentProfileData = null;
                 clearInterval(timetableCheckInterval);
@@ -913,13 +973,12 @@
             const snapshot = await get(userRef);
             App.currentProfileData = snapshot.val() || {};
             renderProfile(App.currentProfileData);
+            
+            // [NEW] Check for 'Expressive' achievement
+            await updateAchievements(App.currentUser.userId, App.currentProfileData);
         }
 
         async function saveAndLogStatus(data) {
-            const saveBtn = document.getElementById('save-settings-btn');
-            saveBtn.textContent = 'Saving...';
-            saveBtn.classList.add('btn-loading');
-            
             const dataWithTimestamp = { ...data, updatedAt: new Date().toISOString() };
             const userRef = ref(db, `users/${App.currentUser.userId}`);
             const historyRef = ref(db, `history/${App.currentUser.userId}`);
@@ -932,8 +991,8 @@
             applyVisuals(App.currentProfileData);
             renderProfile(App.currentProfileData);
             
-            saveBtn.textContent = 'Save & Update Status';
-            saveBtn.classList.remove('btn-loading');
+            // [NEW] Check achievements after saving
+            await updateAchievements(App.currentUser.userId, App.currentProfileData);
             
             showToast('Settings Saved & Status Updated! 💾');
             navigateTo('profilePage');
@@ -1018,6 +1077,12 @@
 
             const params = new URLSearchParams(window.location.search);
             const userIdFromUrl = params.get('user');
+            const refIdFromUrl = params.get('ref'); // [NEW] Check for referral
+            
+            // [NEW] Store referrer ID if present and user is not logged in
+            if(refIdFromUrl && !App.currentUser) {
+                 sessionStorage.setItem('referrerId', refIdFromUrl);
+            }
 
             if (userIdFromUrl) {
                 isPublicView = true;
@@ -1058,6 +1123,8 @@
             let targetPageId = App.pages.includes(hash) ? hash : (App.currentUser ? 'profilePage' : 'loginPage');
             
             if (!App.currentUser && targetPageId !== 'loginPage') {
+                // [FIX] Store intended page before redirecting to login
+                sessionStorage.setItem('redirectAfterLogin', targetPageId);
                 targetPageId = 'loginPage';
             }
 
@@ -1203,7 +1270,7 @@
             }
             if(data.gender) detailsHtml += getDetailHTML('Gender', data.gender.charAt(0).toUpperCase() + data.gender.slice(1), 'gender');
             detailsHtml += getDetailHTML('Hobbies', data.hobbies, 'hobbies');
-            detailsHtml += getDetailHTML('School/Affiliation', data.school, 'school');
+            detailsHtml += getDetailHTML('School/Affiliation', data.school || data.organizationName, 'school');
             detailsHtml += getDetailHTML('Phone', data.phone, 'phone');
             container.innerHTML = detailsHtml || '<p class="muted">No public details shared.</p>';
         }
@@ -1327,13 +1394,23 @@
                 if (country) { countrySearch.value = `${getCountryFlagEmoji(country.code)} ${country.name}`; countryCodeInput.value = country.code; }
             } else { countrySearch.value = ''; countryCodeInput.value = ''; }
             
+            // [FIX] Render link inputs based on membership tier
             const linksContainer = document.getElementById('custom-links-container');
             linksContainer.innerHTML = '';
-            for (let i = 0; i < 10; i++) { // Increased to 10 for Max tier
+            const userTier = data.membershipTier || 'Member';
+            const linkLimit = TIER_LIMITS[userTier] || 2;
+            for (let i = 0; i < linkLimit; i++) {
                 const link = data.links ? data.links[i] : null;
                 linksContainer.innerHTML += `<div class="link-group"><input type="text" id="link-label-${i}" placeholder="Label ${i + 1}" value="${link?.label || ''}"><input type="url" id="link-url-${i}" placeholder="https://..." value="${link?.url || ''}"></div>`;
             }
+            if (linkLimit < 10) {
+                 linksContainer.innerHTML += `<p class="muted">Upgrade to a higher tier to add more links!</p>`;
+            }
+
             renderTimetableSettings(data.timetable);
+            // [NEW] Render verification and org sections
+            renderVerificationSettings(data);
+            renderOrganizationSettings(data);
         }
         
         // --- EVENT HANDLERS & LOGIC ---
@@ -1344,15 +1421,16 @@
             
             window.addEventListener('hashchange', hashChangeRouter);
             addEventListeners();
-            // Moved initial routing to onAuthStateChanged to prevent race conditions
+            // Initial routing is now handled in onAuthStateChanged to prevent race conditions
         }
         
+        // [FIXED] Account Deletion Logic
         async function handleDeleteAccount() {
             if (!App.currentUser) return;
             
             const displayName = App.currentProfileData?.displayName || 'your account';
 
-            const confirmation = prompt(`To CONFIRM permanent deletion, please type your Display Name: "${displayName}"\n\nWARNING: You will be logged out and may need to sign in again immediately to complete the deletion.`);
+            const confirmation = prompt(`To CONFIRM permanent deletion, please type your Display Name: "${displayName}"`);
             
             if (confirmation !== displayName) {
                 return showToast("Account deletion cancelled.");
@@ -1366,15 +1444,13 @@
             }
 
             try {
-                await user.delete(); 
+                // --- FIX: Delete database records FIRST ---
+                await set(ref(db, `users/${userId}`), null);
+                await set(ref(db, `history/${userId}`), null);
+                await set(ref(db, `analytics/${userId}`), null);
                 
-                const userRef = ref(db, `users/${userId}`);
-                const historyRef = ref(db, `history/${userId}`);
-                const analyticsRef = ref(db, `analytics/${userId}`);
-                
-                await set(userRef, null);
-                await set(historyRef, null);
-                await set(analyticsRef, null);
+                // Now, delete the auth user
+                await user.delete();
 
                 showToast("Account and all associated data successfully deleted. 👋");
             } catch (error) {
@@ -1388,14 +1464,17 @@
                 }
             }
         }
-
+        
+        // [FIXED] Save Settings Logic with PFP Upload to Storage
         async function handleSaveSettings() {
             if (!App.currentUser) return;
             const saveBtn = document.getElementById('save-settings-btn');
             saveBtn.textContent = 'Saving...';
             saveBtn.classList.add('btn-loading');
 
-            const customLinks = Array.from({length: 10}, (_, i) => ({ label: document.getElementById(`link-label-${i}`).value.trim(), url: document.getElementById(`link-url-${i}`).value.trim() })).filter(l => l.label && l.url);
+            const userTier = App.currentProfileData.membershipTier || 'Member';
+            const linkLimit = TIER_LIMITS[userTier] || 2;
+            const customLinks = Array.from({length: linkLimit}, (_, i) => ({ label: document.getElementById(`link-label-${i}`).value.trim(), url: document.getElementById(`link-url-${i}`).value.trim() })).filter(l => l.label && l.url);
             
             let endTime = null;
             const timeType = document.getElementById('status-time-type').value;
@@ -1434,33 +1513,30 @@
                 }
             };
             
-            const pfpFile = document.getElementById('pfp-upload').files[0];
-            if (pfpFile) {
-                const reader = new FileReader();
-                reader.onload = async (e) => { 
-                    dataToSave.pfpUrl = e.target.result; 
-                    await saveAndLogStatus(dataToSave);
-                    saveBtn.textContent = 'Save & Update Status';
-                    saveBtn.classList.remove('btn-loading');
-                };
-                reader.onerror = () => {
-                    showToast('Failed to read image file.', 'error');
-                    saveBtn.textContent = 'Save & Update Status';
-                    saveBtn.classList.remove('btn-loading');
-                };
-                reader.readAsDataURL(pfpFile);
-            } else { 
+            try {
+                const pfpFile = document.getElementById('pfp-upload').files[0];
+                if (pfpFile) {
+                    // [FIX] Upload to Firebase Storage instead of RTDB
+                    const pfpRef = storageRef(storage, `pfps/${App.currentUser.userId}`);
+                    await uploadBytes(pfpRef, pfpFile);
+                    dataToSave.pfpUrl = await getDownloadURL(pfpRef);
+                }
                 await saveAndLogStatus(dataToSave); 
+            } catch (error) {
+                console.error("Save settings error:", error);
+                showToast("Failed to save settings.", "error");
+            } finally {
+                // [FIX] Ensure button state is reset correctly
                 saveBtn.textContent = 'Save & Update Status';
                 saveBtn.classList.remove('btn-loading');
             }
         }
 
         async function handlePresetClick(e) {
-             const { emoji, message, duration } = e.currentTarget.dataset;
-             const endTime = duration > 0 ? new Date(Date.now() + duration * 60000).toISOString() : null;
-             await updateStatus({ status: emoji, message: message, endTime: endTime, autoResetStatus: true, statusTimeType: 'duration' });
-             showToast(`Status updated: ${emoji}`);
+              const { emoji, message, duration } = e.currentTarget.dataset;
+              const endTime = duration > 0 ? new Date(Date.now() + duration * 60000).toISOString() : null;
+              await updateStatus({ status: emoji, message: message, endTime: endTime, autoResetStatus: true, statusTimeType: 'duration' });
+              showToast(`Status updated: ${emoji}`);
         }
 
         function toggleTimeInputs(type) {
@@ -1492,8 +1568,14 @@
         }
         function handleShareStatus() {
             if (!App.currentUser) return;
-            const shareUrl = `${window.location.origin}${window.location.pathname}?user=${App.currentUser.userId}`;
+            // [NEW] Share link now includes referral param
+            const shareUrl = `${window.location.origin}${window.location.pathname}?user=${App.currentUser.userId}&ref=${App.currentUser.userId}`;
             navigator.clipboard.writeText(shareUrl).then(() => showToast('Profile link copied to clipboard! 🔗'));
+            
+            // [NEW] Trigger 'firstShare' achievement
+            if (!App.currentProfileData.achievements.firstShare) {
+                update(ref(db, `users/${App.currentUser.userId}/achievements`), { firstShare: true });
+            }
         }
         function renderTimetableSettings(timetable = []) {
             const container = document.getElementById('timetable-entries-container');
@@ -1521,6 +1603,11 @@
             
             App.currentProfileData.timetable = newTimetable;
             renderTimetableSettings(newTimetable); showToast("Schedule added! 🗓️");
+
+            // [NEW] Trigger 'scheduler' achievement
+            if (!App.currentProfileData.achievements.scheduler) {
+                 update(ref(db, `users/${App.currentUser.userId}/achievements`), { scheduler: true });
+            }
         }
         async function handleRemoveTimetableEntry(e) {
             const index = parseInt(e.currentTarget.dataset.index, 10);
@@ -1571,10 +1658,8 @@
             } catch (error) { historyLog.innerHTML = '<p class="muted">Error loading history.</p>'; }
 
             try {
-                const analyticsRef = ref(db, `analytics/${userId}/totalViews`);
-                const snapshot = await get(analyticsRef);
-                const totalViews = snapshot.val() || 0;
-                
+                // [NEW] This now reflects the real tracked view count
+                const totalViews = App.currentProfileData.achievements.views || 0;
                 const views = generateSimulatedViews(totalViews); 
 
                 document.getElementById('views-total').textContent = totalViews;
@@ -1617,6 +1702,9 @@
         }
 
         async function handleSearchUsers() {
+            // NOTE FOR PRODUCTION: This client-side search is NOT scalable.
+            // For a real app with many users, implement a dedicated search service
+            // like Algolia, which can be populated via Firebase Cloud Functions.
             const queryText = document.getElementById('user-search-input').value.toLowerCase().trim();
             const resultsList = document.getElementById('search-results-list');
             resultsList.innerHTML = '<p class="muted">Searching...</p>';
@@ -1693,9 +1781,18 @@
                     visitorId = 'visitor_' + Date.now() + Math.random().toString(36).substring(2, 15);
                     localStorage.setItem('hapVisitorId', visitorId);
                 }
-                const uniqueViewRef = ref(db, `analytics/${profileId}/uniqueVisitors/${visitorId}`);
-                await set(uniqueViewRef, true);
-            } catch (error) { console.error("Failed to track unique profile view:", error); }
+                const today = new Date().toISOString().split('T')[0];
+                const viewRef = ref(db, `analytics/${profileId}/viewsByDay/${today}/${visitorId}`);
+                const snapshot = await get(viewRef);
+                
+                // Only increment total if this is a new visitor for today
+                if (!snapshot.exists()) {
+                    await set(viewRef, true);
+                    const totalViewsRef = ref(db, `users/${profileId}/achievements/views`);
+                    const totalViewsSnap = await get(totalViewsRef);
+                    await set(totalViewsRef, (totalViewsSnap.val() || 0) + 1);
+                }
+            } catch (error) { console.error("Failed to track profile view:", error); }
         }
 
         function handleVCardDownload(data) {
@@ -1734,19 +1831,157 @@
             });
         }
         
+        // --- [NEW] FEATURE IMPLEMENTATIONS ---
+
+        // Achievements & Tiers
+        async function updateAchievements(userId, data) {
+            const achievements = data.achievements || {};
+            const updates = {};
+
+            // Profile Complete
+            if (!achievements.profileComplete) {
+                if (data.bio && data.countryCode && data.hobbies && data.school) {
+                    updates.profileComplete = true;
+                }
+            }
+            
+            // Expressive (set to true after 10 status updates)
+            if (!achievements.expressive) {
+                const historySnap = await get(query(ref(db, `history/${userId}`)));
+                if (historySnap.exists() && Object.keys(historySnap.val()).length >= 10) {
+                    updates.expressive = true;
+                }
+            }
+            
+            if (Object.keys(updates).length > 0) {
+                const userAchievementsRef = ref(db, `users/${userId}/achievements`);
+                await update(userAchievementsRef, updates);
+                // After updating, check for tier promotion
+                await updateMembershipTier(userId, { ...data, achievements: { ...achievements, ...updates } });
+            }
+        }
+        
+        async function updateMembershipTier(userId, data) {
+            const achievements = data.achievements;
+            let newTier = 'Member';
+            
+            if (achievements.profileComplete && achievements.firstShare && achievements.scheduler) {
+                newTier = 'Member+';
+            }
+            if (newTier === 'Member+' && achievements.referralCount >= 5 && achievements.views >= 50) {
+                newTier = 'Vip';
+            }
+            if (newTier === 'Vip' && achievements.expressive) { // Add more conditions for MAX tier
+                newTier = 'Max';
+            }
+            
+            if (data.role === 'Owner') newTier = 'Owner';
+
+            if (data.membershipTier !== newTier) {
+                await update(ref(db, `users/${userId}`), { membershipTier: newTier });
+                showToast(`Congratulations! You've been promoted to ${newTier}! 🎉`);
+            }
+        }
+
+        // Verification
+        function renderVerificationSettings(data) {
+            const container = document.getElementById('verification-section');
+            let html = `<h3>Account Verification</h3>`;
+            if (data.verified) {
+                html += `<p style="color: green; font-weight: bold;">Your account is verified.</p>`;
+            } else if (data.verificationRequested) {
+                html += `<p style="color: orange;">Your verification request is pending review.</p>`;
+            } else {
+                html += `<p>Get a verified badge on your profile.</p><button id="request-verification-btn" class="btn secondary">Request Verification</button>`;
+            }
+            container.innerHTML = html;
+            document.getElementById('request-verification-btn')?.addEventListener('click', handleRequestVerification);
+        }
+
+        async function handleRequestVerification() {
+            const reason = prompt("Please provide a reason for your verification request (e.g., public figure, official representative of an organization).");
+            if (reason && reason.trim()) {
+                const updates = { verificationRequested: true, verificationReason: reason.trim() };
+                await update(ref(db, `users/${App.currentUser.userId}`), updates);
+                showToast("Verification request submitted!");
+                renderVerificationSettings({ ...App.currentProfileData, ...updates });
+            } else {
+                showToast("Verification request cancelled.", "error");
+            }
+        }
+        
+        // Organization
+        function renderOrganizationSettings(data) {
+             const container = document.getElementById('organization-section');
+             let html = `<h3>Organization</h3>`;
+             if (data.organizationId) {
+                html += `<p>You are a member of: <strong>${data.organizationName || 'Unnamed Org'}</strong></p>`;
+             } else {
+                html += `<p>Create or join an organization to link with your team.</p><button id="create-org-btn" class="btn secondary">Create Organization</button>`;
+             }
+             container.innerHTML = html;
+             document.getElementById('create-org-btn')?.addEventListener('click', handleCreateOrganization);
+        }
+
+        async function handleCreateOrganization() {
+            const orgName = prompt("Enter the name for your new organization:");
+            if (!orgName || !orgName.trim()) {
+                return showToast("Organization creation cancelled.", "error");
+            }
+            const orgRef = push(ref(db, 'organizations'));
+            const newOrg = {
+                id: orgRef.key,
+                name: orgName.trim(),
+                ownerId: App.currentUser.userId,
+                members: { [App.currentUser.userId]: true },
+                createdAt: new Date().toISOString()
+            };
+            await set(orgRef, newOrg);
+            
+            const userUpdate = { organizationId: newOrg.id, organizationName: newOrg.name };
+            await update(ref(db, `users/${App.currentUser.userId}`), userUpdate);
+
+            showToast(`Organization "${newOrg.name}" created successfully!`);
+            renderOrganizationSettings({ ...App.currentProfileData, ...userUpdate });
+        }
+
+
         // --- NEW PAGE RENDERERS ---
         function renderMyPlanPage() {
-            // Placeholder - this would be built out with detailed progress bars etc.
             const detailsContainer = document.getElementById('my-plan-details');
             const progressContainer = document.getElementById('my-plan-progress');
             if (!App.currentProfileData) return;
 
             const tier = App.currentProfileData.membershipTier || 'Member';
+            const achievements = App.currentProfileData.achievements || {};
+            
             detailsContainer.innerHTML = `
                 <h2>Current Tier: <span style="color: var(--primary);">${tier}</span></h2>
                 <p>This is your current membership level based on your activity and achievements on the platform.</p>
             `;
-            progressContainer.innerHTML = '<h2>Your Progress</h2><p>Feature to track achievements towards the next tier is coming soon!</p>';
+            
+            let progressHtml = `<h2>Progress to Next Tier</h2>`;
+            if (tier === 'Max' || tier === 'Owner') {
+                progressHtml += '<p>You have reached the highest tier! Thank you for being a power user! 🚀</p>';
+            } else {
+                for (const key in ACHIEVEMENT_DEFINITIONS) {
+                    const def = ACHIEVEMENT_DEFINITIONS[key];
+                    const currentValue = achievements[key] || 0;
+                    const goal = def.goal;
+                    const progress = Math.min((currentValue / goal) * 100, 100);
+
+                    progressHtml += `
+                        <div class="achievement-item">
+                            <strong>${def.label} (${currentValue}/${goal})</strong>
+                            <div class="achievement-progress">
+                                <div class="progress-bar" style="width: ${progress}%;"></div>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+
+            progressContainer.innerHTML = progressHtml;
         }
 
         async function renderAdminPanel() {
@@ -1758,27 +1993,72 @@
             usersContainer.innerHTML = '<p class="muted">Loading users...</p>';
             orgsContainer.innerHTML = '<p class="muted">Loading organizations...</p>';
 
-            // In a real app, you would fetch and display data here.
-            // For now, we'll show placeholder content.
-            requestsContainer.innerHTML = '<p>No active verification requests.</p>';
-            
             const usersSnap = await get(ref(db, 'users'));
-            const users = usersSnap.val();
-            if (users) {
-                usersContainer.innerHTML = `<table class="admin-table"><thead><tr><th>Name</th><th>Email</th><th>Tier</th></tr></thead><tbody>
-                ${Object.entries(users).map(([uid, user]) => `
+            const allUsers = usersSnap.val() || {};
+
+            // Render Verification Requests
+            const requests = Object.entries(allUsers).filter(([uid, user]) => user.verificationRequested);
+            if (requests.length > 0) {
+                requestsContainer.innerHTML = requests.map(([uid, user]) => `
+                    <div class="verification-request-card">
+                        <p><strong>User:</strong> ${user.displayName} (${user.email})</p>
+                        <p><strong>Reason:</strong> ${user.verificationReason || 'No reason provided.'}</p>
+                        <div class="verification-actions">
+                            <button class="btn approve-verify-btn" data-uid="${uid}">Approve</button>
+                            <button class="btn secondary deny-verify-btn" data-uid="${uid}">Deny</button>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                requestsContainer.innerHTML = '<p>No active verification requests.</p>';
+            }
+
+            // Render All Users Table
+            if (Object.keys(allUsers).length > 0) {
+                usersContainer.innerHTML = `<table class="admin-table"><thead><tr><th>Name</th><th>Email</th><th>Tier</th><th>Verified</th></tr></thead><tbody>
+                ${Object.entries(allUsers).map(([uid, user]) => `
                     <tr>
                         <td>${user.displayName}</td>
                         <td>${user.email}</td>
                         <td>${user.membershipTier || 'Member'}</td>
+                        <td>${user.verified ? 'Yes' : 'No'}</td>
                     </tr>
                 `).join('')}
                 </tbody></table>`;
             } else {
                 usersContainer.innerHTML = '<p>No users found.</p>';
             }
-
-            orgsContainer.innerHTML = '<p>Organization management is coming soon.</p>';
+            
+            // Render All Orgs Table
+            const orgsSnap = await get(ref(db, 'organizations'));
+            const allOrgs = orgsSnap.val();
+            if (allOrgs) {
+                 orgsContainer.innerHTML = `<table class="admin-table"><thead><tr><th>Org Name</th><th>Owner ID</th><th>Members</th></tr></thead><tbody>
+                ${Object.values(allOrgs).map(org => `
+                    <tr>
+                        <td>${org.name}</td>
+                        <td>${org.ownerId}</td>
+                        <td>${Object.keys(org.members).length}</td>
+                    </tr>
+                `).join('')}
+                </tbody></table>`;
+            } else {
+                orgsContainer.innerHTML = '<p>No organizations found.</p>';
+            }
+            
+            // Add listeners for approve/deny buttons
+            document.querySelectorAll('.approve-verify-btn').forEach(btn => btn.addEventListener('click', async (e) => {
+                const uid = e.target.dataset.uid;
+                await update(ref(db, `users/${uid}`), { verified: true, verificationRequested: null, verificationReason: null });
+                showToast('User verified!');
+                renderAdminPanel(); // Re-render
+            }));
+             document.querySelectorAll('.deny-verify-btn').forEach(btn => btn.addEventListener('click', async (e) => {
+                const uid = e.target.dataset.uid;
+                await update(ref(db, `users/${uid}`), { verificationRequested: null, verificationReason: null });
+                showToast('Request denied.');
+                renderAdminPanel(); // Re-render
+            }));
         }
 
         function addEventListeners() {
@@ -1821,4 +2101,3 @@
     </script>
 </body>
 </html>
-
