@@ -760,14 +760,16 @@
                         status: '🟢', 
                         message: 'Ready for the day!', 
                         theme: 'auto', 
-                        role: 'Member', // NEW DEFAULT
-                        verified: false, // NEW DEFAULT
+                        role: 'Member',
+                        verified: false,
                         privacy: { email: 'public', phone: 'private', school: 'private', bio: 'public', age: 'public', gender: 'private', hobbies: 'public', country: 'public', timezone: 'public' }, 
                         updatedAt: new Date().toISOString() 
                     };
                     await set(userRef, initialProfile);
-                    App.currentProfileData = initialProfile;
                 }
+                
+                // --- FIX: Explicitly set up the session before navigating ---
+                await setupUserSession();
                 
                 navigateTo('profilePage', true); 
 
@@ -799,13 +801,15 @@
                     status: '🟢', 
                     message: 'Ready for the day!', 
                     theme: 'auto', 
-                    role: 'Member', // NEW DEFAULT
-                    verified: false, // NEW DEFAULT
+                    role: 'Member',
+                    verified: false,
                     updatedAt: new Date().toISOString(), 
                     privacy: { email: 'public', phone: 'private', school: 'private', bio: 'public', age: 'public', gender: 'private', hobbies: 'public', country: 'public', timezone: 'public' } 
                 };
                 await set(userRef, initialProfile);
-                App.currentProfileData = initialProfile;
+                
+                // --- FIX: Explicitly set up the session before navigating ---
+                await setupUserSession();
                 
                 navigateTo('profilePage', true); 
 
@@ -833,32 +837,25 @@
             window.location.search = '';
         }
 
-        // FIX: Reworked onAuthStateChanged to correctly handle initial page loads for all scenarios.
         onAuthStateChanged(auth, user => {
             App.currentUser = user ? { email: user.email, displayName: user.displayName, userId: user.uid, pfpUrl: user.photoURL } : null;
 
             if (!isAuthResolved) {
-                // --- This block runs ONLY ONCE on the initial page load ---
-                isAuthResolved = true; // Mark that initialization has happened
+                isAuthResolved = true; 
 
                 const isPublicProfileView = new URLSearchParams(window.location.search).has('user');
 
-                // Set up the user's own session data ONLY IF they are logged in AND not currently viewing a public profile.
                 if (user && !isPublicProfileView) {
                     setupUserSession();
                 }
 
-                // ALWAYS call the router on the initial load to display the correct page (either public profile or user dashboard).
                 hashChangeRouter();
 
             } else {
-                // --- This block runs for subsequent logins/logouts after the page has loaded ---
                 const isPublicProfileView = new URLSearchParams(window.location.search).has('user');
                 
-                // If the user logs in or out while on a public profile page, don't navigate away from it.
                 if (isPublicProfileView) return; 
 
-                // Handle redirection after a user manually logs in or is logged out.
                 if (user && window.location.hash.substring(1) === 'loginPage') {
                     navigateTo('profilePage');
                 } else if (!user && window.location.hash.substring(1) !== 'loginPage') {
@@ -936,7 +933,6 @@
                 if (userData) {
                     userData.userId = userId;
                     
-                    // Apply Visuals immediately to ensure correct background/theme is loaded from settings
                     applyVisuals(userData); 
 
                     const activeSchedule = findActiveSchedule(userData);
@@ -953,7 +949,6 @@
                     
                     renderProfile(userData);
                 } else {
-                    // Fallback theme for non-existent user
                     document.body.className = '';
                     document.getElementById('profile-name').textContent = 'User Not Found';
                 }
@@ -987,10 +982,8 @@
             if (userIdFromUrl) {
                 isPublicView = true;
                 
-                // --- FIX APPLIED: Ensure the profile page is active immediately and clears old classes ---
                 App.pages.forEach(pId => App.elements[pId]?.classList.remove('active'));
                 App.elements.profilePage?.classList.add('active');
-                // -----------------------------------------------------------------------------------------
 
                 document.body.style.paddingBottom = "20px";
                 App.elements.mainHeader?.classList.add('hidden');
@@ -1003,7 +996,6 @@
                     promoCard.classList.remove('hidden');
                     const promoBtn = document.getElementById('promo-action-btn');
                     if (App.currentUser) {
-                        // FIX: Check if viewing own profile and assign navigation to onclick event.
                         if (App.currentUser.userId === userIdFromUrl) {
                             promoCard.classList.add('hidden');
                         } else {
@@ -1023,7 +1015,6 @@
             document.getElementById('create-hap-promo')?.classList.add('hidden');
             document.body.style.paddingBottom = "100px";
 
-            // If Auth is not yet resolved, let onAuthStateChanged handle the first routing step
             if (!isAuthResolved) return; 
 
             if (wasPublicView && App.currentUser) {
@@ -1064,7 +1055,6 @@
             
             const accent = data.profileAccentColor || '#0ea5e9';
             document.documentElement.style.setProperty('--primary', accent);
-            // This needs to check the body's class for correct dark mode rendering of --primary-dark
             document.documentElement.style.setProperty('--primary-dark', document.body.classList.contains('dark') ? '#7dd3fc' : accent);
             document.documentElement.style.setProperty('--link-text-color', data.linkTextColor || '#0369a1');
             document.documentElement.style.setProperty('--display-font', data.displayNameFont || 'Inter, sans-serif');
@@ -1101,31 +1091,25 @@
             const verifiedBadgeEl = document.getElementById('verified-badge');
             const name = data.displayName || 'Unnamed User';
 
-            // 1. Display Name and Inline Tick (Combined)
-            profileNameEl.textContent = name; // Set initial text content
+            profileNameEl.textContent = name;
             profileNameEl.classList.toggle('is-owner', (data.role || '').toLowerCase() === 'owner');
 
-            // Inline Tick: Uses SVG for better detail, appended directly to H1
             if (data.verified) {
                 const inlineTickSvg = `<svg class="inline-verified-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>`;
                 profileNameEl.innerHTML = name + inlineTickSvg;
             }
 
-            // 2. Role Display
             const role = data.role || 'Member';
             roleEl.textContent = role.toUpperCase();
-            roleEl.className = 'role-badge'; // Reset classes
+            roleEl.className = 'role-badge';
             roleEl.classList.add(`role-${role.toLowerCase()}`);
             
-            // 3. Verified Badge (separate, next to role)
             verifiedBadgeEl.classList.toggle('hidden', !data.verified);
             
-            // 4. Status and Timer
             document.getElementById('profile-emoji').textContent = data.status || '❓';
             document.getElementById('profile-message').textContent = data.message || 'No message set.';
             updateTimer(data);
             
-            // 5. Timezone
             renderPersonalDetails(data);
             const timeData = getLocalTimeData(data.timezoneOverride || 'auto');
             const timeInfoEl = document.getElementById('local-time-info');
@@ -1211,7 +1195,6 @@
             if (!App.currentUser) return;
             const data = App.currentProfileData;
             if (!data) return;
-            // Only apply timetable status if a manual timed status has expired or was not set
             if (data.endTime && new Date(data.endTime).getTime() > Date.now()) return; 
             
             const activeSchedule = findActiveSchedule(data);
@@ -1219,7 +1202,6 @@
                 if (data.status !== activeSchedule.status || data.message !== activeSchedule.message) {
                     const [endHour, endMinute] = activeSchedule.end.split(':').map(Number);
                     const endTime = new Date();
-                    // Set end time for today. If end time is before now, set it for tomorrow.
                     endTime.setHours(endHour, endMinute, 0, 0);
                     if (timeToMinutes(activeSchedule.end) <= (new Date().getHours() * 60 + new Date().getMinutes())) endTime.setDate(endTime.getDate() + 1);
 
@@ -1232,7 +1214,6 @@
                     showToast(`Timetable activated: ${activeSchedule.status}`);
                 }
             } else {
-                // If there's no active schedule and the old status was auto-resetting, reset it.
                  if(data.autoResetStatus && data.endTime && new Date(data.endTime).getTime() < Date.now()) await resetStatusToDefault();
             }
         }
@@ -1247,7 +1228,6 @@
             let html = '';
             links.forEach(link => {
                 if (link && link.label && link.url) {
-                    // Use target="_blank" and rel="noopener noreferrer" for security on external links
                     html += `<a href="${link.url}" target="_blank" rel="noopener noreferrer" class="custom-link"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72"></path></svg><span>${link.label}</span></a>`;
                 }
             });
@@ -1344,10 +1324,8 @@
             }
 
             try {
-                // Step 1: Attempt to delete the user from Firebase Authentication
                 await user.delete(); 
                 
-                // Step 2: Delete data from Realtime Database
                 const userRef = ref(db, `users/${userId}`);
                 const historyRef = ref(db, `history/${userId}`);
                 const analyticsRef = ref(db, `analytics/${userId}`);
@@ -1356,7 +1334,6 @@
                 await set(historyRef, null);
                 await set(analyticsRef, null);
 
-                // Step 3: Cleanup and notify
                 showToast("Account and all associated data successfully deleted. 👋");
                 setTimeout(() => {
                     window.location.hash = 'loginPage';
@@ -1366,7 +1343,6 @@
             } catch (error) {
                 console.error("Account Deletion Error:", error.code, error.message);
                 
-                // Handle the specific error where re-authentication is required
                 if (error.code === 'auth/requires-recent-login') {
                     showToast("Security Alert: Please log in again to confirm this permanent action.", "error");
                     handleLogout(); 
@@ -1472,7 +1448,6 @@
 
         function handleGenerateQrCode() {
             if (!App.currentUser) return;
-            // FIX: Remove hash from the generated share URL
             const shareUrl = `${window.location.origin}${window.location.pathname}?user=${App.currentUser.userId}`;
             const img = document.getElementById('profile-qrcode-img'), placeholder = document.getElementById('qrcode-placeholder');
             img.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(shareUrl)}`;
@@ -1480,7 +1455,6 @@
         }
         function handleShareStatus() {
             if (!App.currentUser) return;
-            // FIX: Remove hash from the generated share URL
             const shareUrl = `${window.location.origin}${window.location.pathname}?user=${App.currentUser.userId}`;
             navigator.clipboard.writeText(shareUrl).then(() => showToast('Profile link copied to clipboard! 🔗'));
         }
@@ -1522,15 +1496,13 @@
             renderTimetableSettings(newTimetable); showToast("Schedule removed.");
         }
         
-        // New utility function to simulate view counts based on total for a nicer display
         function generateSimulatedViews(total) {
-            const today = Math.floor(Math.random() * (total > 5 ? 5 : total)); // Max 5 views today, or total
-            const week = Math.floor(total * 0.3) + today; // Approx 30% of total in last week
-            const month = Math.floor(total * 0.6) + week; // Approx 60% of total in last month
+            const today = Math.floor(Math.random() * (total > 5 ? 5 : total));
+            const week = Math.floor(total * 0.3) + today;
+            const month = Math.floor(total * 0.6) + week;
             return { today: today, week: Math.min(week, total), month: Math.min(month, total) };
         }
 
-        // New utility function to simulate status distribution
         function generateSimulatedStatusDistribution() {
             return [
                 { status: '🟢 Available', percent: 45, color: '#22c55e' },
@@ -1546,7 +1518,6 @@
             const historyLog = document.getElementById('history-log');
             const statusDistContainer = document.getElementById('status-distribution-container');
 
-            // --- 1. STATUS HISTORY TIMELINE ---
             try {
                 const historyQuery = query(ref(db, `history/${userId}`), orderByKey(), limitToLast(10));
                 const snapshot = await get(historyQuery);
@@ -1562,13 +1533,11 @@
                 } else { historyLog.innerHTML = '<p class="muted">No status history found.</p>'; }
             } catch (error) { historyLog.innerHTML = '<p class="muted">Error loading history.</p>'; }
 
-            // --- 2. PROFILE VIEW ANALYTICS ---
             try {
                 const analyticsRef = ref(db, `analytics/${userId}/totalViews`);
                 const snapshot = await get(analyticsRef);
                 const totalViews = snapshot.val() || 0;
                 
-                // Simulate deeper metrics based on total
                 const views = generateSimulatedViews(totalViews); 
 
                 document.getElementById('views-total').textContent = totalViews;
@@ -1578,18 +1547,15 @@
 
             } catch (error) { 
                 console.error("Error loading view data:", error);
-                // Fallback for all view metrics
                 const viewGrid = document.getElementById('view-analytics-grid');
                 if (viewGrid) viewGrid.innerHTML = '<p class="muted" style="grid-column: 1 / -1; text-align: center;">Error loading view data.</p>';
             }
             
-            // --- 3. STATUS DISTRIBUTION AND UTILIZATION (Simulated) ---
             try {
                 const distributionData = generateSimulatedStatusDistribution();
                 let distHtml = '';
                 
                 distributionData.forEach(item => {
-                    // Simple visual bar chart representation
                     distHtml += `
                         <div style="margin-bottom: 8px;">
                             <div style="display: flex; justify-content: space-between; font-size: 0.9rem; font-weight: 500;">
@@ -1604,7 +1570,6 @@
                 });
                 statusDistContainer.innerHTML = distHtml;
                 
-                // Timetable Utilization (Placeholder logic)
                 const utilization = App.currentProfileData.timetable?.length > 0 ? (Math.floor(Math.random() * 40) + 60) : 0;
                 document.getElementById('timetable-utilization').textContent = `${utilization}%`;
                 
@@ -1628,42 +1593,31 @@
                 if (allUsers) {
                     for (const userId in allUsers) {
                         const user = allUsers[userId];
-                        // Only include users with a display name and apply search filter
                         if (user.displayName && (!queryText || user.displayName.toLowerCase().includes(queryText))) {
                             results.push({ userId, ...user });
                         }
                     }
                 }
 
-                // --- TIERED SORTING LOGIC ---
-                // 1. Owner (Highest Priority)
-                // 2. Verified (Medium Priority)
-                // 3. Member (Lowest Priority)
                 results.sort((a, b) => {
                     const roleA = (a.role || 'Member').toLowerCase();
                     const roleB = (b.role || 'Member').toLowerCase();
                     const verifiedA = !!a.verified;
                     const verifiedB = !!b.verified;
 
-                    // 1. Owner vs. Non-Owner
                     if (roleA === 'owner' && roleB !== 'owner') return -1;
                     if (roleB === 'owner' && roleA !== 'owner') return 1;
                     
-                    // 2. Verified vs. Non-Verified (Only applies if both are NOT Owner, or both ARE Owner)
-                    // Note: Since 'Owner' status is top-tier, this mostly applies to Members.
                     if (verifiedA && !verifiedB) return -1;
                     if (verifiedB && !verifiedA) return 1;
 
-                    // 3. Alphabetical by display name (Tie-breaker for same tier)
                     const nameA = a.displayName || '';
                     const nameB = b.displayName || '';
                     return nameA.localeCompare(nameB);
                 });
-                // --- END SORTING LOGIC ---
 
                 if (results.length > 0) {
                     resultsList.innerHTML = '';
-                    // Reusing the inline-verified-icon SVG for consistency
                     const verifiedIconSvg = `<svg class="inline-verified-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="color: var(--primary); margin-left: 8px; flex-shrink: 0;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>`;
 
                     results.forEach(user => {
@@ -1786,4 +1740,3 @@
     </script>
 </body>
 </html>
-
