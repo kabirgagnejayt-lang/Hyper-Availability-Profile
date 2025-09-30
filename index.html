@@ -12,7 +12,7 @@
  :root {
  --primary: #0ea5e9; --primary-light: #f0f9ff; --primary-dark: #0369a1;
  --bg: #f8fafc; --card: #ffffff; --text: #0f172a; --muted: #64748b;
- --border-color: #e2e8f0; --input-bg: #f1f5f9;
+ --border-color: #e2e8f0; --input-bg: #f1f59;
  --radius: 12px; --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
  --pfp-bg-day: var(--primary-light);
  --pfp-border-day: var(--primary);
@@ -28,8 +28,21 @@
  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
  @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
  @keyframes spin { 100% { transform: rotate(360deg); } }
+ @keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+  20%, 40%, 60%, 80% { transform: translateX(5px); }
+ }
+ @keyframes unbox {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(1.5); opacity: 0; }
+ }
+ @keyframes feature-reveal {
+  from { opacity: 0; transform: translateY(20px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+ }
  .page.active { animation: fadeIn 0.5s ease-out forwards; }
- .card, .history-item, .search-result-item { animation: fadeSlideUp 0.6s ease-out forwards; animation-delay: 0.1s; opacity: 0; transform: translateY(15px); }
+ .card, .history-item, .search-result-item { animation: fadeSlideUp 0.6s ease-out forwards; opacity: 0; transform: translateY(15px); animation-fill-mode: both; }
  html { font-size: 16px; scroll-behavior: smooth; }
  body {
  margin: 0; padding: 20px 0 100px 0;
@@ -59,7 +72,7 @@
  .container { max-width: 700px; margin: 0 auto; padding: 0 14px; }
  .page { display: none; }
  .page.active { display: block; }
- .card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px; margin-bottom: 20px; transition: background-color 0.4s; }
+ .card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px; margin-bottom: 20px; transition: background-color 0.4s, transform 0.3s ease; }
  h1 { font-size: 2.25rem; font-weight: 700; margin: 0 0 8px 0; text-align: center; }
  h2 { font-size: 1.5rem; font-weight: 600; margin: 0 0 16px 0; padding-bottom: 12px; border-bottom: 1px solid var(--border-color); }
  h3 { font-size: 1.2rem; font-weight: 600; margin-top: 20px; }
@@ -75,16 +88,16 @@
  input[type="color"] { width: 100%; height: 44px; padding: 0; border: none; background: transparent; cursor: pointer; }
  input:focus, select:focus, textarea:focus { outline: 2px solid var(--primary); border-color: var(--primary); }
  input[type="file"] { padding: 10px; }
- .form-field-disabled, .form-field-disabled > * { opacity: 0.6; pointer-events: none; }
- .form-field-disabled label { text-decoration: line-through; }
  .btn {
  background: var(--primary); color: white; border: none; padding: 12px 18px;
  border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s ease;
  width: 100%; text-align: center; display: inline-flex; justify-content: center; align-items: center; gap: 8px;
  }
  .btn:hover { background-color: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+ .btn:active { transform: translateY(0) scale(0.98); }
  .btn.secondary { background: var(--primary-light); color: var(--primary-dark); }
  .btn.secondary:hover { background-color: var(--primary); color: white; }
+ .btn:disabled { background-color: var(--muted); cursor: not-allowed; transform: none; box-shadow: none; }
  .form-group { margin-bottom: 20px; }
  #loginPage .card { margin-top: 40px; }
  .auth-tabs { display: flex; margin-bottom: 25px; border-radius: 10px; background: var(--input-bg); padding: 5px; }
@@ -140,7 +153,8 @@
  .personal-detail-item { font-size: 1rem; padding: 8px 0; border-bottom: 1px dashed var(--border-color); }
  .link-group, .privacy-group { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; margin-bottom: 15px; align-items: center; }
  @media (max-width: 500px) { .link-group, .privacy-group { grid-template-columns: 1fr; } }
- .timetable-entry-card { background: var(--input-bg); border-radius: 8px; padding: 12px; margin-bottom: 8px; }
+ .timetable-entry-card { background: var(--input-bg); border-radius: 8px; padding: 12px; margin-bottom: 8px; transition: transform 0.2s ease; }
+ .timetable-entry-card:hover { transform: translateX(5px); }
  .country-select-wrapper { position: relative; }
  .country-dropdown {
  position: absolute; top: 100%; left: 0; right: 0;
@@ -211,27 +225,40 @@
  #top-ad-container img { max-width: 100%; border-radius: var(--radius); display: block; }
  #bottom-ad-container { font-weight: 500; background-color: var(--input-bg); }
  #create-hap-promo-top {
-    padding: 10px 15px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 15px;
+    padding: 10px 15px; display: flex; align-items: center;
+    justify-content: space-between; gap: 15px;
  }
- #create-hap-promo-top h3, #create-hap-promo-top p {
-    margin: 0;
-    text-align: left;
- }
+ #create-hap-promo-top h3, #create-hap-promo-top p { margin: 0; text-align: left; }
  #create-hap-promo-top h3 { font-size: 1rem; }
  #create-hap-promo-top p { font-size: 0.9rem; }
  #create-hap-promo-top .btn {
-    flex-shrink: 0;
-    padding: 8px 12px;
-    font-size: 0.9rem;
-    width: auto;
+    flex-shrink: 0; padding: 8px 12px; font-size: 0.9rem; width: auto;
  }
  @media (max-width: 500px) {
     #create-hap-promo-top { flex-direction: column; text-align: center; }
     #create-hap-promo-top h3, #create-hap-promo-top p { text-align: center; }
+ }
+ .tier-upgrade-modal {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background-color: rgba(0,0,0,0.6); z-index: 4000;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; visibility: hidden; transition: opacity 0.4s ease, visibility 0.4s;
+ }
+ .tier-upgrade-modal.show { opacity: 1; visibility: visible; }
+ .upgrade-modal-content {
+    background: var(--card); color: var(--text); padding: 30px;
+    border-radius: var(--radius); width: 90%; max-width: 400px;
+    text-align: center; position: relative;
+ }
+ .gift-box { cursor: pointer; font-size: 6rem; transition: transform 0.2s ease; }
+ .gift-box:hover { transform: scale(1.1); animation: shake 0.5s; }
+ .gift-box.unboxing { animation: unbox 0.5s ease-out forwards; }
+ .upgrade-results { display: none; }
+ .upgrade-results.show { display: block; }
+ .unlocked-feature {
+    background-color: var(--input-bg); padding: 10px;
+    border-radius: 8px; margin-bottom: 10px; font-weight: 500;
+    animation: feature-reveal 0.5s ease-out backwards;
  }
  </style>
 </head>
@@ -269,13 +296,7 @@
  </div>
  </div>
  <div id="profilePage" class="page">
- <div id="create-hap-promo-top" class="card hidden">
-    <div>
-        <h3>Like this status page?</h3>
-        <p>Create your own in seconds!</p>
-    </div>
-    <button class="btn" id="promo-action-btn-top">Get Started</button>
- </div>
+ <div id="create-hap-promo-top" class="card hidden"></div>
  <div id="top-ad-container" class="card hidden" style="padding: 10px; text-align: center;"></div>
  <div class="card profile-header">
  <div id="profile-pfp"></div> 
@@ -297,7 +318,7 @@
  <h2>Custom Links</h2>
  <div id="profile-links"><p class="muted">No links provided.</p></div>
  </div>
- <div class="card">
+ <div id="share-profile-card" class="card hidden">
  <h2>Share Profile</h2>
  <div style="text-align: center;">
  <div id="qrcode-container" style="display: inline-block; padding: 15px; background: var(--card); border-radius: 8px; border: 1px solid var(--border-color); min-height: 230px;">
@@ -309,13 +330,7 @@
  <button id="share-status-btn" class="btn" style="margin-top: 10px;">Copy Profile Link</button>
  </div>
  <div id="bottom-ad-container" class="card hidden" style="padding: 20px; text-align: center;"></div>
- <div id="create-hap-promo-bottom" class="card hidden">
-    <h3 style="text-align: center;">Like this status page?</h3>
-    <p style="text-align: center;">Create your own real-time availability profile in seconds!</p>
-    <div style="display: flex; justify-content: center; margin-top: 15px;">
-    <button class="btn" id="promo-action-btn-bottom" style="flex: 0 1 250px;"></button>
-    </div>
- </div>
+ <div id="create-hap-promo-bottom" class="card hidden"></div>
  </div>
  <div id="searchPage" class="page">
  <div class="card">
@@ -534,6 +549,21 @@
  <p>&copy; 2025 HAP | A Demo Project</p>
  </footer>
  <div id="toast"></div>
+ <div id="tier-upgrade-modal" class="tier-upgrade-modal">
+    <div class="upgrade-modal-content">
+        <div id="upgrade-gift-stage">
+            <h2>You've Been Promoted!</h2>
+            <p>Click the gift to reveal your new perks!</p>
+            <div id="gift-box-icon" class="gift-box">🎁</div>
+        </div>
+        <div id="upgrade-results-stage" class="upgrade-results">
+            <h2>Welcome to <span id="new-tier-name"></span>!</h2>
+            <p>You've unlocked these new features:</p>
+            <div id="unlocked-features-list"></div>
+            <button id="close-upgrade-modal-btn" class="btn" style="margin-top: 20px;">Awesome!</button>
+        </div>
+    </div>
+ </div>
  <script type="module">
  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
  import { 
@@ -653,6 +683,18 @@
     { id: 'loyalUser', label: 'Log In on 14 Different Days', goal: 14 },
     { id: 'picturePerfect', label: 'Have a Profile Picture', goal: 1 }
   ]
+ };
+
+ const FEATURE_FRIENDLY_NAMES = {
+    pfp: "Custom Profile Picture",
+    customFont: "Custom Profile Font",
+    customColor: "Custom Profile Colors",
+    timetable: "Automatic Timetable",
+    scheduling: "Scheduling Link Display",
+    analytics: "Profile Analytics",
+    verification: "Verification Eligibility",
+    canCustomizeAds: "Custom Promotional Blocks",
+    canControlPlatformAd: "Platform Ad Controls"
  };
 
  const VERIFICATION_QUESTIONS = [
@@ -803,7 +845,7 @@
  verified: false,
  pfpText: defaultPfpText,
  adsEnabled: false,
- platformAdDisplay: 'both', // Default for new Member users
+ platformAdDisplay: 'both',
  achievements: { 
  profileComplete: 0, scheduler: 0, socialButterfly: 0, firstShare: 0,
  views: 0, loyalUser: 1, expressive: 0, referral: 0, picturePerfect: 0,
@@ -902,48 +944,50 @@
  }
 
  async function saveAndLogStatus(data) {
- const dataWithTimestamp = { ...data, updatedAt: new Date().toISOString() };
- const userRef = ref(db, `users/${App.currentUser.userId}`);
- if(data.displayName !== auth.currentUser.displayName) {
- await updateProfile(auth.currentUser, { displayName: data.displayName });
- App.currentUser.displayName = data.displayName;
- if (!data.pfpUrl) dataWithTimestamp.pfpText = data.displayName.charAt(0).toUpperCase();
- }
+    const dataWithTimestamp = { ...data, updatedAt: new Date().toISOString() };
+    const userRef = ref(db, `users/${App.currentUser.userId}`);
+    if(data.displayName !== auth.currentUser.displayName) {
+        await updateProfile(auth.currentUser, { displayName: data.displayName });
+        App.currentUser.displayName = data.displayName;
+        if (!data.pfpUrl) dataWithTimestamp.pfpText = data.displayName.charAt(0).toUpperCase();
+    }
 
- const achievements = App.currentProfileData.achievements || {};
- const achievementUpdates = {};
+    const achievements = App.currentProfileData.achievements || {};
+    const achievementUpdates = {};
 
- const newEmoji = data.status;
- const newUsedEmojis = achievements.usedEmojis || {};
- if (!newUsedEmojis[newEmoji]) {
- newUsedEmojis[newEmoji] = true;
- achievementUpdates['achievements/usedEmojis'] = newUsedEmojis;
- achievementUpdates['achievements/expressive'] = Object.keys(newUsedEmojis).length;
- }
+    const newEmoji = data.status;
+    const newUsedEmojis = achievements.usedEmojis || {};
+    if (!newUsedEmojis[newEmoji]) {
+        newUsedEmojis[newEmoji] = true;
+        achievementUpdates['achievements/usedEmojis'] = newUsedEmojis;
+        achievementUpdates['achievements/expressive'] = Object.keys(newUsedEmojis).length;
+    }
 
- achievementUpdates['achievements/socialButterfly'] = data.links?.length || 0;
- achievementUpdates['achievements/picturePerfect'] = data.pfpUrl ? 1 : (achievements.picturePerfect || 0);
- const isBasicProfileComplete = data.bio && data.birthday && data.countryCode;
- achievementUpdates['achievements/profileComplete'] = isBasicProfileComplete ? 1 : 0;
- 
- await update(userRef, { ...dataWithTimestamp, ...achievementUpdates });
+    achievementUpdates['achievements/socialButterfly'] = data.links?.length || 0;
+    achievementUpdates['achievements/picturePerfect'] = data.pfpUrl ? 1 : (achievements.picturePerfect || 0);
+    const isBasicProfileComplete = data.bio && data.birthday && data.countryCode;
+    achievementUpdates['achievements/profileComplete'] = isBasicProfileComplete ? 1 : 0;
+    
+    await update(userRef, { ...dataWithTimestamp, ...achievementUpdates });
 
- const historyRef = ref(db, `history/${App.currentUser.userId}`);
- await push(historyRef, { status: data.status, message: data.message, timestamp: dataWithTimestamp.updatedAt });
+    const historyRef = ref(db, `history/${App.currentUser.userId}`);
+    await push(historyRef, { status: data.status, message: data.message, timestamp: dataWithTimestamp.updatedAt });
 
- const updatedSnapshot = await get(userRef);
- App.currentProfileData = updatedSnapshot.val() || {};
- await updateMembershipTier(App.currentUser.userId, App.currentProfileData);
+    const updatedSnapshot = await get(userRef);
+    const oldTier = App.currentProfileData.membershipTier;
+    App.currentProfileData = updatedSnapshot.val() || {};
+    await updateMembershipTier(App.currentUser.userId, App.currentProfileData, oldTier);
 
- const finalSnapshot = await get(userRef);
- App.currentProfileData = finalSnapshot.val() || {};
+    const finalSnapshot = await get(userRef);
+    App.currentProfileData = finalSnapshot.val() || {};
 
- applyVisuals(App.currentProfileData);
- renderProfile(App.currentProfileData);
- populateSettings(App.currentProfileData);
+    applyVisuals(App.currentProfileData);
+    renderProfile(App.currentProfileData);
+    populateSettings(App.currentProfileData);
 
- showToast('Settings Saved & Status Updated! 💾');
- navigateTo('profilePage');
+    if (oldTier === App.currentProfileData.membershipTier) {
+        showToast('Settings Saved & Status Updated! 💾');
+    }
  }
 
  function navigateTo(pageId, isInternal = false) {
@@ -993,7 +1037,6 @@
         const tierConfig = USER_TIER_CONFIG[userTier];
         const requestedPage = App.pages.includes(hash) ? hash : 'profilePage';
 
-        // Page Access Control
         if (requestedPage === 'analyticsPage' && !tierConfig.analytics) {
             targetPageId = 'profilePage';
             showToast("Upgrade to Pro to view analytics.", "error");
@@ -1062,6 +1105,10 @@
  function renderProfile(data) {
     if (!data) return;
     
+    const isOwnerViewing = App.currentUser && App.currentUser.userId === data.userId;
+
+    document.getElementById('share-profile-card').classList.toggle('hidden', !isOwnerViewing);
+
     const profileNameEl = document.getElementById('profile-name');
     const membershipContainer = document.getElementById('membership-tier-display-container');
     const name = data.displayName || 'Unnamed User';
@@ -1098,32 +1145,34 @@
     
     const promoTop = document.getElementById('create-hap-promo-top');
     const promoBottom = document.getElementById('create-hap-promo-bottom');
-    promoTop.classList.add('hidden');
-    promoBottom.classList.add('hidden');
+    promoTop.innerHTML = ''; promoTop.classList.add('hidden');
+    promoBottom.innerHTML = ''; promoBottom.classList.add('hidden');
 
-    const configurePromoButton = (btnIdSuffix) => {
-        const promoBtn = document.getElementById(`promo-action-btn-${btnIdSuffix}`);
-        if(!promoBtn) return;
-        if (App.currentUser && App.currentUser.userId === data.userId) {
-             promoBtn.textContent = 'Go to My Dashboard';
-             promoBtn.onclick = () => navigateTo('profilePage', true);
-        } else {
-            promoBtn.textContent = 'Get Started Now';
-            promoBtn.onclick = () => navigateTo('loginPage', true);
-        }
-    };
-    
+    const topPromoHTML = isOwnerViewing
+        ? `<div><h3>Like this status page?</h3><p>Example ad shown to visitors.</p></div><p style="font-style: italic; margin:0;">Preview</p>`
+        : `<div><h3>Like this status page?</h3><p>Create your own in seconds!</p></div><button class="btn" id="promo-action-btn-top">Get Started</button>`;
+
+    const bottomPromoHTML = isOwnerViewing
+        ? `<h3 style="text-align: center;">Platform Promotion Preview</h3><p style="text-align: center;">This is an example of the ad visitors will see at the bottom of your profile.</p>`
+        : `<h3 style="text-align: center;">Like this status page?</h3><p style="text-align: center;">Create your own real-time availability profile in seconds!</p><div style="display: flex; justify-content: center; margin-top: 15px;"><button class="btn" id="promo-action-btn-bottom" style="flex: 0 1 250px;">Get Started Now</button></div>`;
+
     let platformAdPosition = 'off';
     if(tier === 'Member') platformAdPosition = 'both';
     else if(tierConfig.canControlPlatformAd) platformAdPosition = data.platformAdDisplay || 'off';
     
     if (platformAdPosition === 'top' || platformAdPosition === 'both') {
+        promoTop.innerHTML = topPromoHTML;
         promoTop.classList.remove('hidden');
-        configurePromoButton('top');
+        if (!isOwnerViewing) {
+            promoTop.querySelector('#promo-action-btn-top').onclick = () => navigateTo('loginPage', true);
+        }
     }
     if (platformAdPosition === 'bottom' || platformAdPosition === 'both') {
+        promoBottom.innerHTML = bottomPromoHTML;
         promoBottom.classList.remove('hidden');
-        configurePromoButton('bottom');
+        if (!isOwnerViewing) {
+            promoBottom.querySelector('#promo-action-btn-bottom').onclick = () => navigateTo('loginPage', true);
+        }
     }
  }
 
@@ -1220,14 +1269,13 @@
         if (country) { countrySearch.value = `${getCountryFlagEmoji(country.code)} ${country.name}`; countryCodeInput.value = country.code; }
     } else { countrySearch.value = ''; countryCodeInput.value = ''; }
 
-    document.getElementById('pfp-upload-group').classList.toggle('form-field-disabled', !tierConfig.pfp);
-    document.getElementById('font-customization-field').classList.toggle('form-field-disabled', !tierConfig.customFont);
-    document.getElementById('scheduling-link-field').classList.toggle('form-field-disabled', !tierConfig.scheduling);
-    document.getElementById('accent-color-field').classList.toggle('form-field-disabled', !tierConfig.customColor);
-    document.getElementById('link-text-color-field').classList.toggle('form-field-disabled', !tierConfig.customColor);
-    document.getElementById('automatic-timetable-card').classList.toggle('form-field-disabled', !tierConfig.timetable);
-    document.getElementById('analytics-nav-btn')?.classList.toggle('hidden', !tierConfig.analytics && data.membershipTier !== 'Owner');
-
+    document.getElementById('pfp-upload-group').classList.toggle('hidden', !tierConfig.pfp);
+    document.getElementById('font-customization-field').classList.toggle('hidden', !tierConfig.customFont);
+    document.getElementById('scheduling-link-field').classList.toggle('hidden', !tierConfig.scheduling);
+    document.getElementById('accent-color-field').classList.toggle('hidden', !tierConfig.customColor);
+    document.getElementById('link-text-color-field').classList.toggle('hidden', !tierConfig.customColor);
+    document.getElementById('automatic-timetable-card').classList.toggle('hidden', !tierConfig.timetable);
+    
     const linksContainer = document.getElementById('custom-links-container');
     linksContainer.innerHTML = '';
     const linkLimit = tierConfig.linkLimit;
@@ -1262,6 +1310,15 @@
     platformAdCard.classList.toggle('hidden', !tierConfig.canControlPlatformAd);
     if(tierConfig.canControlPlatformAd) {
         document.getElementById('platform-ad-toggle').value = data.platformAdDisplay || 'off';
+    }
+
+    const qrBtn = document.getElementById('generate-qrcode-btn');
+    if(tier === 'Member') {
+        qrBtn.disabled = true;
+        qrBtn.textContent = "Upgrade to Plus for QR Code";
+    } else {
+        qrBtn.disabled = false;
+        qrBtn.textContent = "Generate QR Code";
     }
  }
 
@@ -1371,8 +1428,8 @@
 
  function handleGenerateQrCode() {
  if (!App.currentUser) return;
- const shareUrl = `${window.location.origin}${window.location.pathname}?user=${App.currentUser.userId}`;
  const img = document.getElementById('profile-qrcode-img'), placeholder = document.getElementById('qrcode-placeholder');
+ const shareUrl = `${window.location.origin}${window.location.pathname}?user=${App.currentUser.userId}`;
  img.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(shareUrl)}`;
  img.onload = () => { img.style.display = 'block'; placeholder.classList.add('hidden'); showToast('QR Code generated! 🖼️'); };
  }
@@ -1448,9 +1505,9 @@
 
  const totalViews = App.currentProfileData.achievements?.views || 0;
  document.getElementById('views-total').textContent = totalViews;
- document.getElementById('views-today').textContent = 'N/A'; // Simplified for now
- document.getElementById('views-week').textContent = 'N/A'; // Simplified for now
- document.getElementById('views-month').textContent = 'N/A'; // Simplified for now
+ document.getElementById('views-today').textContent = 'N/A';
+ document.getElementById('views-week').textContent = 'N/A';
+ document.getElementById('views-month').textContent = 'N/A';
  }
 
  async function handleSearchUsers() {
@@ -1529,7 +1586,7 @@
  });
  }
 
- async function updateMembershipTier(userId, userData) {
+ async function updateMembershipTier(userId, userData, oldTier) {
     const currentTier = userData.membershipTier;
     if (currentTier === 'Owner') return;
 
@@ -1537,7 +1594,6 @@
     const check = (reqs) => reqs.every(req => (achievements[req.id] || 0) >= req.goal);
     
     let newTier = currentTier;
-
     if (currentTier === 'Member' && check(ACHIEVEMENT_CONFIG.toPlus)) {
         newTier = 'Plus';
     }
@@ -1548,17 +1604,40 @@
         newTier = 'Max';
     }
 
-    if (userData.membershipTier !== newTier) {
+    if (newTier !== oldTier) {
         await update(ref(db, `users/${userId}`), { membershipTier: newTier });
         if(userId === App.currentUser?.userId) {
-            showToast(`Congratulations! You've been promoted to ${USER_TIER_CONFIG[newTier].name}! 🎉`);
+            showTierUpgradeAnimation(oldTier, newTier);
         }
     }
  }
 
+ function showTierUpgradeAnimation(oldTier, newTier) {
+    const oldFeatures = USER_TIER_CONFIG[oldTier];
+    const newFeatures = USER_TIER_CONFIG[newTier];
+    const unlockedFeatures = [];
+
+    for (const key in newFeatures) {
+        if (newFeatures[key] === true && oldFeatures[key] === false) {
+            if (FEATURE_FRIENDLY_NAMES[key]) {
+                unlockedFeatures.push(FEATURE_FRIENDLY_NAMES[key]);
+            }
+        }
+    }
+
+    const modal = document.getElementById('tier-upgrade-modal');
+    document.getElementById('new-tier-name').textContent = newFeatures.name;
+    const featuresList = document.getElementById('unlocked-features-list');
+    featuresList.innerHTML = unlockedFeatures.map((feature, i) => 
+        `<div class="unlocked-feature" style="animation-delay: ${i * 0.1}s">${feature}</div>`
+    ).join('');
+
+    modal.classList.add('show');
+ }
+
  function renderVerificationSettings(data) {
  const container = document.getElementById('verification-section');
- if (!container) return;
+ container.classList.toggle('hidden', data.membershipTier === 'Member' || data.membershipTier === 'Plus');
  let html = `<h3>Verification ✔️</h3>`;
  const tierConfig = USER_TIER_CONFIG[data.membershipTier];
 
@@ -1568,8 +1647,6 @@
  html += `<p style="color: orange;">Your verification request is pending review.</p>`;
  } else if (tierConfig?.verification) {
  html += `<p>You are eligible to apply for verification.</p><button id="request-verification-btn" class="btn secondary">Apply for Verification</button>`;
- } else {
- html += `<p>Reach the <b>Pro</b> membership tier to become eligible for verification.</p>`;
  }
  container.innerHTML = html;
  container.querySelector('#request-verification-btn')?.addEventListener('click', handleRequestVerification);
@@ -1628,7 +1705,7 @@
  }
  progressContainer.innerHTML = progressHtml;
  document.getElementById('level-up-btn')?.addEventListener('click', async () => {
-    await updateMembershipTier(App.currentUser.userId, App.currentProfileData);
+    await updateMembershipTier(App.currentUser.userId, App.currentProfileData, App.currentProfileData.membershipTier);
     const finalSnapshot = await get(ref(db, `users/${App.currentUser.userId}`));
     App.currentProfileData = finalSnapshot.val() || {};
     renderTiersPage();
@@ -1720,6 +1797,26 @@
  countrySearch?.addEventListener('keyup', () => filterCountries('country-search', 'country-dropdown'));
  document.addEventListener('click', (e) => {
  if (!e.target.closest('.country-select-wrapper')) countryDropdown?.classList.add('hidden');
+ });
+ 
+ const giftBox = document.getElementById('gift-box-icon');
+ giftBox.addEventListener('click', () => {
+    giftBox.classList.add('unboxing');
+    setTimeout(() => {
+        document.getElementById('upgrade-gift-stage').style.display = 'none';
+        document.getElementById('upgrade-results-stage').classList.add('show');
+    }, 500);
+ });
+
+ document.getElementById('close-upgrade-modal-btn').addEventListener('click', () => {
+    const modal = document.getElementById('tier-upgrade-modal');
+    modal.classList.remove('show');
+    setTimeout(() => {
+        document.getElementById('upgrade-gift-stage').style.display = 'block';
+        document.getElementById('upgrade-results-stage').classList.remove('show');
+        giftBox.classList.remove('unboxing');
+        showToast(`Your new perks are active!`);
+    }, 400);
  });
  }
 
