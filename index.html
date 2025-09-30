@@ -209,6 +209,7 @@
  #org-logo { width: 80px; height: 80px; border-radius: 50%; margin: -40px auto 10px auto; border: 4px solid var(--card); background-color: var(--card); display: block; background-size: cover; background-position: center; }
  .org-member-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border-color); }
  .org-member-pfp { width: 40px; height: 40px; border-radius: 50%; background-color: var(--input-bg); background-size: cover; background-position: center; }
+ #orgDashboardPage .auth-tabs { max-width: 500px; margin-left: auto; margin-right: auto; }
  </style>
 </head>
 <body>
@@ -421,7 +422,7 @@
  </div>
  <div class="card">
  <h2>Visual Customization</h2>
- <div class="form-group">
+ <div class="form-group" id="pfp-upload-group">
  <label for="pfp-upload">Profile Picture (Upload)</label>
  <input type="file" id="pfp-upload" accept="image/*">
  </div>
@@ -553,15 +554,15 @@
  loggedInAccountType: null, 
  };
  const USER_TIER_CONFIG = {
- 'Member': { name: 'Member', linkLimit: 1, timetable: false, customFont: false, customColor: false, scheduling: false, analytics: false, verification: false, showAd: true },
- 'Plus': { name: 'Plus', linkLimit: 3, timetable: true, customFont: true, customColor: false, scheduling: true, analytics: false, verification: false, showAd: true },
- 'Pro': { name: 'Pro', linkLimit: 5, timetable: true, customFont: true, customColor: true, scheduling: true, analytics: true, verification: true, showAd: true },
- 'Max': { name: 'Max', linkLimit: 10, timetable: true, customFont: true, customColor: true, scheduling: true, analytics: true, verification: true, showAd: false },
- 'Owner': { name: 'Owner', linkLimit: 10, timetable: true, customFont: true, customColor: true, scheduling: true, analytics: true, verification: true, showAd: false },
+ 'Member': { name: 'Member', linkLimit: 1, timetable: false, customFont: false, customColor: false, scheduling: false, analytics: false, verification: false, showAd: true, pfp: false },
+ 'Plus': { name: 'Plus', linkLimit: 3, timetable: true, customFont: true, customColor: false, scheduling: true, analytics: false, verification: false, showAd: true, pfp: true },
+ 'Pro': { name: 'Pro', linkLimit: 5, timetable: true, customFont: true, customColor: true, scheduling: true, analytics: true, verification: true, showAd: true, pfp: true },
+ 'Max': { name: 'Max', linkLimit: 10, timetable: true, customFont: true, customColor: true, scheduling: true, analytics: true, verification: true, showAd: false, pfp: true },
+ 'Owner': { name: 'Owner', linkLimit: 10, timetable: true, customFont: true, customColor: true, scheduling: true, analytics: true, verification: true, showAd: false, pfp: true },
  };
  const ORG_TIER_CONFIG = {
- 'Organization': { name: 'Organization', linkLimit: 3, customFont: false, customColor: false, analytics: true, verification: true, showAd: true },
- 'Organization-Max': { name: 'Organization Max', linkLimit: 10, customFont: true, customColor: true, analytics: true, verification: true, showAd: false },
+ 'Organization': { name: 'Organization', linkLimit: 3, customFont: false, customColor: false, analytics: true, verification: true, showAd: true, pfp: false },
+ 'Organization-Max': { name: 'Organization Max', linkLimit: 10, customFont: true, customColor: true, analytics: true, verification: true, showAd: false, pfp: true },
  };
  const ACHIEVEMENT_CONFIG = {
  toPlus: [ { id: 'socialButterfly', label: 'Add 1 Custom Link', goal: 1 }, { id: 'firstShare', label: 'Share Profile Once', goal: 1 }, { id: 'loyalUser', label: 'Log In on 3 Different Days', goal: 3 } ],
@@ -687,8 +688,9 @@
  const wasLoggedIn = !!App.currentUser;
  App.currentUser = account ? { email: account.email, displayName: account.displayName, userId: account.uid } : null;
  const isLoggedIn = !!App.currentUser;
+ let accountType;
  if (isLoggedIn) {
- await setupSession(account.uid);
+ accountType = await setupSession(account.uid);
  }
  if (!isAuthResolved) {
  isAuthResolved = true;
@@ -697,10 +699,7 @@
  if (isLoggedIn && !wasLoggedIn) {
  const redirectTarget = sessionStorage.getItem('redirectAfterLogin');
  sessionStorage.removeItem('redirectAfterLogin');
- let destination = 'profilePage';
- if (App.loggedInAccountType === 'organization') {
- destination = 'orgDashboardPage';
- }
+ let destination = accountType === 'user' ? 'profilePage' : 'orgDashboardPage';
  navigateTo(redirectTarget || destination, true);
  } else if (!isLoggedIn && wasLoggedIn) {
  App.currentProfileData = null;
@@ -761,7 +760,7 @@
  }
  }
  async function setupSession(accountId) {
- if (!accountId) return;
+ if (!accountId) return null;
  if (timetableCheckInterval) clearInterval(timetableCheckInterval);
  const userRef = ref(db, `users/${accountId}`);
  const orgRef = ref(db, `organizations/${accountId}`);
@@ -798,6 +797,7 @@
  document.querySelector('#admin-nav-btn').classList.toggle('hidden', data.membershipTier !== 'Owner');
  await checkTimetableAndApplyStatus();
  timetableCheckInterval = setInterval(checkTimetableAndApplyStatus, 60000);
+ return 'user';
  } else if (orgSnap.exists()) {
  App.loggedInAccountType = 'organization';
  App.currentProfileData = orgSnap.val();
@@ -811,9 +811,11 @@
  </nav>
  `;
  document.getElementById('view-public-org-page-btn').onclick = () => window.open(`?org=${accountId}`, '_blank');
+ return 'organization';
  } else {
  console.error("Account exists but no profile in users/ or organizations/");
  handleLogout();
+ return null;
  }
  }
  async function displayPublicProfile(userId) {
@@ -989,20 +991,16 @@
  document.documentElement.style.setProperty('--display-font', userData?.displayNameFont || 'Inter, sans-serif');
  const pfpElement = document.getElementById('profile-pfp');
  if(pfpElement && userData) {
- if (userData.pfpUrl) {
+ const tierConfig = USER_TIER_CONFIG[userData.membershipTier || 'Member'];
+ if (tierConfig.pfp && userData.pfpUrl) {
  pfpElement.style.backgroundImage = `url(${userData.pfpUrl})`;
  pfpElement.textContent = '';
  } else {
  pfpElement.style.backgroundImage = 'none';
- pfpElement.textContent = userData.pfpText || '';
+ pfpElement.textContent = userData.pfpText || userData.displayName.charAt(0).toUpperCase();
  }
  pfpElement.style.backgroundColor = isNight ? '#1e293b' : 'var(--primary-light)';
  pfpElement.style.borderColor = accent;
- }
- const bannerEl = document.getElementById('org-banner');
- if(bannerEl && orgData) {
- bannerEl.style.backgroundImage = orgData.verified && orgData.bannerUrl ? `url(${orgData.bannerUrl})` : 'none';
- bannerEl.style.backgroundColor = orgData.verified ? orgData.brandColor || 'var(--input-bg)' : 'var(--input-bg)';
  }
  }
  function renderProfile(data, orgData = null) {
@@ -1111,6 +1109,11 @@
  const country = COUNTRY_LIST.find(c => c.code === data.countryCode);
  if (country) { countrySearch.value = `${getCountryFlagEmoji(country.code)} ${country.name}`; countryCodeInput.value = country.code; }
  } else { countrySearch.value = ''; countryCodeInput.value = ''; }
+ const pfpGroup = document.getElementById('pfp-upload-group');
+ pfpGroup.classList.toggle('form-field-disabled', !tierConfig.pfp);
+ if (!tierConfig.pfp && !pfpGroup.querySelector('.muted')) {
+ pfpGroup.insertAdjacentHTML('beforeend', '<p class="muted">Upgrade to Plus to add a profile picture.</p>');
+ }
  document.getElementById('font-customization-field').classList.toggle('form-field-disabled', !tierConfig.customFont);
  document.getElementById('scheduling-link-field').classList.toggle('form-field-disabled', !tierConfig.scheduling);
  document.getElementById('accent-color-field').classList.toggle('form-field-disabled', !tierConfig.customColor);
@@ -1175,7 +1178,8 @@
  saveBtn.textContent = 'Saving...';
  saveBtn.classList.add('btn-loading');
  const tier = App.currentProfileData.membershipTier || 'Member';
- const linkLimit = USER_TIER_CONFIG[tier]?.linkLimit || 1;
+ const tierConfig = USER_TIER_CONFIG[tier];
+ const linkLimit = tierConfig.linkLimit || 1;
  const customLinks = [];
  for (let i = 0; i < linkLimit; i++) {
  const label = document.getElementById(`link-label-${i}`)?.value.trim();
@@ -1204,7 +1208,7 @@
  }
  try {
  const pfpFile = document.getElementById('pfp-upload').files[0];
- if (pfpFile) {
+ if (pfpFile && tierConfig.pfp) {
  const pfpRef = storageRef(storage, `pfps/${App.currentUser.userId}/${pfpFile.name}`);
  await uploadBytes(pfpRef, pfpFile);
  dataToSave.pfpUrl = await getDownloadURL(pfpRef);
@@ -1372,7 +1376,7 @@
  option.innerHTML = `<span class="flag-emoji">${getCountryFlagEmoji(country.code)}</span> <span>${country.name}</span>`;
  option.onclick = () => {
  document.getElementById(inputId).value = `${getCountryFlagEmoji(country.code)} ${country.name}`;
- document.getElementById(inputId.replace('search', 'code')).value = country.code;
+ document.getElementById(inputId.replace('-search', '-code')).value = country.code;
  dropdown.classList.add('hidden');
  };
  dropdown.appendChild(option);
@@ -1657,37 +1661,67 @@
  }
  }
  }
- async function renderOrgDashboard() {
+ function renderOrgDashboard() {
  const page = document.getElementById('orgDashboardPage');
- page.innerHTML = '';
- const data = App.currentProfileData;
  page.innerHTML = `
  <div class="card">
- <h2>🏢 Organization Dashboard</h2>
- <p>Manage your organization's public profile and members here.</p>
+ <h2>🏢 ${App.currentProfileData.name}</h2>
+ <div class="auth-tabs">
+ <div class="tab active" data-view="preview">Dashboard Preview</div>
+ <div class="tab" data-view="settings">Settings</div>
+ <div class="tab" data-view="tiers">Tiers</div>
+ <div class="tab" data-view="members">Members</div>
  </div>
+ <div id="org-dashboard-content"></div>
+ </div>
+ `;
+ const contentContainer = document.getElementById('org-dashboard-content');
+ 
+ const switchView = (view) => {
+ contentContainer.innerHTML = '';
+ if (view === 'preview') renderOrgDashboardPreview(contentContainer);
+ else if (view === 'settings') renderOrgSettingsPage(contentContainer);
+ else if (view === 'tiers') renderOrgTiersPage(contentContainer);
+ else if (view === 'members') renderOrgMembersPage(contentContainer);
+ }
+ 
+ page.querySelector('.auth-tabs').addEventListener('click', (e) => {
+ if(e.target.classList.contains('tab')) {
+ page.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+ e.target.classList.add('active');
+ switchView(e.target.dataset.view);
+ }
+ });
+ 
+ switchView('preview'); // Default view
+ }
+ async function renderOrgDashboardPreview(container) {
+ container.innerHTML = '<p class="muted">Loading preview...</p>';
+ await renderOrganizationsPage(App.currentUser.userId, container);
+ }
+ function renderOrgSettingsPage(container) {
+ const data = App.currentProfileData;
+ const tierConfig = ORG_TIER_CONFIG[data.tier];
+ container.innerHTML = `
  <div class="card">
  <h2>Mandatory Information</h2>
  <div class="form-group"><label>Organization Name</label><input type="text" id="org-dash-name" value="${data.name || ''}"></div>
  <div class="form-group"><label>Login Email</label><input type="email" id="org-dash-email" value="${data.email || ''}" disabled></div>
- <div class="form-group">
- <label>Country</label>
- <input type="text" value="${COUNTRY_LIST.find(c=>c.code === data.countryCode)?.name || ''}" disabled>
- </div>
+ <div class="form-group"><label>Country</label><input type="text" value="${COUNTRY_LIST.find(c=>c.code === data.countryCode)?.name || ''}" disabled></div>
  </div>
  <div class="card">
- <h2>Optional Information (for Max Tier)</h2>
+ <h2>Optional Information (fill all to upgrade to Max)</h2>
  <div class="form-group"><label>Public Phone</label><input type="tel" id="org-dash-phone" value="${data.phone || ''}"></div>
- <div class="form-group"><label>Logo URL</label><input type="url" id="org-dash-logoUrl" value="${data.logoUrl || ''}"></div>
+ <div class="form-group" id="org-logo-upload-group"><label>Logo Image URL</label><input type="url" id="org-dash-logoUrl" value="${data.logoUrl || ''}"></div>
  <div class="form-group"><label>Address</label><input type="text" id="org-dash-address" value="${data.address || ''}"></div>
  <div class="form-group"><label>Industry</label><input type="text" id="org-dash-industry" value="${data.industry || ''}"></div>
  <div class="form-group"><label>About Section</label><textarea id="org-dash-about">${data.about || ''}</textarea></div>
  </div>
  <div class="card">
- <h2>Visuals (for Max Tier)</h2>
+ <h2>Visuals (Max Tier Only)</h2>
  <div class="form-group" id="org-dash-font-field"><label>Display Font</label><select id="org-dash-font"><option value="Inter, sans-serif">Inter</option><option value="Poppins, sans-serif">Poppins</option></select></div>
  <div class="form-group" id="org-dash-color-field"><label>Brand Color</label><input type="color" id="org-dash-brandColor" value="${data.brandColor || '#14b8a6'}"></div>
- <div class="form-group" id="org-dash-banner-field"><label>Banner URL</label><input type="url" id="org-dash-bannerUrl" value="${data.bannerUrl || ''}"></div>
+ <div class="form-group" id="org-dash-banner-field"><label>Banner Image URL</label><input type="url" id="org-dash-bannerUrl" value="${data.bannerUrl || ''}"></div>
  </div>
  <div class="card">
  <h2>Verification</h2>
@@ -1696,16 +1730,46 @@
  <div class="card">
  <button id="save-org-settings-btn" class="btn">Save Changes</button>
  <button id="logout-btn-org" class="btn secondary" style="margin-top: 12px;">Logout</button>
- <button id="delete-account-btn-org" class="btn" style="margin-top: 20px; background-color: #ef4444; color: white;">Delete Organization Permanently</button>
+ <button id="delete-account-btn-org" class="btn" style="margin-top: 20px; background-color: #ef4444; color: white;">Delete Organization</button>
  </div>`;
- renderVerificationSettings(data, 'organization');
- const isMax = data.tier === 'Organization-Max';
+ 
+ const logoGroup = document.getElementById('org-logo-upload-group');
+ logoGroup.classList.toggle('form-field-disabled', !tierConfig.pfp);
+ if (!tierConfig.pfp && !logoGroup.querySelector('.muted')) {
+ logoGroup.insertAdjacentHTML('beforeend', '<p class="muted">Upgrade to Organization Max to add a logo.</p>');
+ }
+ 
  ['org-dash-font-field', 'org-dash-color-field', 'org-dash-banner-field'].forEach(id => {
- document.getElementById(id).classList.toggle('form-field-disabled', !isMax);
+ document.getElementById(id).classList.toggle('form-field-disabled', data.tier !== 'Organization-Max');
  });
+ 
+ renderVerificationSettings(data, 'organization');
  document.getElementById('save-org-settings-btn').addEventListener('click', handleSaveOrgSettings);
  document.getElementById('logout-btn-org').addEventListener('click', handleLogout);
  document.getElementById('delete-account-btn-org').addEventListener('click', handleDeleteAccount);
+ }
+ function renderOrgTiersPage(container) {
+ let allTiersHtml = '<h2>Organization Tiers</h2><div class="tier-plan-grid">';
+ for (const tierKey of ['Organization', 'Organization-Max']) {
+ const config = ORG_TIER_CONFIG[tierKey];
+ allTiersHtml += `
+ <div class="tier-plan-card">
+ <h3><div class="membership-badge tier-${tierKey.replace('-','')}">${config.name}</div></h3>
+ <ul>
+ <li>${config.linkLimit} Custom Links</li>
+ <li>${config.customFont ? 'Custom Profile Font' : 'Standard Font'}</li>
+ <li>${config.customColor ? 'Custom Colors & Branding' : 'Standard Colors'}</li>
+ <li>${config.analytics ? 'Profile Analytics' : 'No Analytics'}</li>
+ <li>${config.verification ? 'Verification Eligible' : 'Not Verification Eligible'}</li>
+ <li>${config.showAd ? 'Shows Ad on Profile' : 'Ad-Free Profile'}</li>
+ </ul>
+ </div>`;
+ }
+ allTiersHtml += '</div>';
+ container.innerHTML = allTiersHtml;
+ }
+ function renderOrgMembersPage(container){
+ container.innerHTML = `<p>Member management coming soon!</p>`;
  }
  async function handleSaveOrgSettings() {
  const orgId = App.currentUser.userId;
