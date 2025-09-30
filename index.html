@@ -203,6 +203,25 @@
  .tier-plan-card h3 { margin-top: 0; display: flex; align-items: center; gap: 8px; }
  .tier-plan-card ul { list-style-type: '✓ '; padding-left: 20px; color: var(--muted); }
  .tier-plan-card ul li { margin-bottom: 8px; }
+ #top-ad-container a, #bottom-ad-container a {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  border-radius: var(--radius);
+  transition: transform 0.2s ease;
+ }
+ #top-ad-container a:hover, #bottom-ad-container a:hover {
+    transform: scale(1.02);
+ }
+ #top-ad-container img {
+  max-width: 100%;
+  border-radius: var(--radius);
+  display: block;
+ }
+ #bottom-ad-container {
+  font-weight: 500;
+  background-color: var(--input-bg);
+ }
  </style>
 </head>
 <body>
@@ -239,6 +258,7 @@
  </div>
  </div>
  <div id="profilePage" class="page">
+ <div id="top-ad-container" class="card hidden" style="padding: 10px; text-align: center;"></div>
  <div class="card profile-header">
  <div id="profile-pfp"></div> 
  <div style="padding: 0 20px 20px 20px;">
@@ -270,6 +290,7 @@
  <button id="generate-qrcode-btn" class="btn secondary" style="margin-top: 15px;">Generate QR Code</button>
  <button id="share-status-btn" class="btn" style="margin-top: 10px;">Copy Profile Link</button>
  </div>
+ <div id="bottom-ad-container" class="card hidden" style="padding: 20px; text-align: center;"></div>
  <div class="card hidden" id="create-hap-promo">
  <h3 style="text-align: center;">Like this status page?</h3>
  <p style="text-align: center;">Create your own real-time availability profile in seconds!</p>
@@ -440,6 +461,40 @@
  <h2>Verification</h2>
  <div id="verification-section"></div>
  </div>
+ <div class="card hidden" id="custom-ads-settings-card">
+    <h2>Promotional Blocks 📢</h2>
+    <p class="muted">As a Max or Owner tier member, you can display your own custom promotional content on your public profile.</p>
+    
+    <div class="form-group">
+        <label for="ads-enabled-toggle">Display Custom Blocks</label>
+        <select id="ads-enabled-toggle">
+        <option value="false">Disabled</option>
+        <option value="true">Enabled</option>
+        </select>
+    </div>
+
+    <div id="ad-customization-fields" class="hidden">
+        <h3 style="margin-top: 30px;">Top Block (Image Banner)</h3>
+        <div class="form-group">
+        <label for="top-ad-image-url">Image URL</label>
+        <input type="url" id="top-ad-image-url" placeholder="https://example.com/banner.png">
+        </div>
+        <div class="form-group">
+        <label for="top-ad-link-url">Target URL (when banner is clicked)</label>
+        <input type="url" id="top-ad-link-url" placeholder="https://your-project.com">
+        </div>
+        
+        <h3 style="margin-top: 30px;">Bottom Block (Text)</h3>
+        <div class="form-group">
+        <label for="bottom-ad-text">Text Content</label>
+        <input type="text" id="bottom-ad-text" placeholder="Check out my new project!">
+        </div>
+        <div class="form-group">
+        <label for="bottom-ad-link-url">Target URL (when text is clicked)</label>
+        <input type="url" id="bottom-ad-link-url" placeholder="https://your-other-project.com">
+        </div>
+    </div>
+ </div>
  <div class="card">
  <button id="save-settings-btn" class="btn">Save All Changes</button>
  <button id="logout-btn" class="btn secondary" style="margin-top: 12px;">Logout</button>
@@ -523,17 +578,88 @@
  };
 
  const USER_TIER_CONFIG = {
- 'Member': { name: 'Member', linkLimit: 1, timetable: false, customFont: false, customColor: false, scheduling: false, analytics: false, verification: false, showAd: true, pfp: false },
- 'Plus': { name: 'Plus', linkLimit: 3, timetable: true, customFont: true, customColor: false, scheduling: true, analytics: false, verification: false, showAd: true, pfp: true },
- 'Pro': { name: 'Pro', linkLimit: 5, timetable: true, customFont: true, customColor: true, scheduling: true, analytics: true, verification: true, showAd: true, pfp: true },
- 'Max': { name: 'Max', linkLimit: 10, timetable: true, customFont: true, customColor: true, scheduling: true, analytics: true, verification: true, showAd: false, pfp: true },
- 'Owner': { name: 'Owner', linkLimit: 10, timetable: true, customFont: true, customColor: true, scheduling: true, analytics: true, verification: true, showAd: false, pfp: true },
+  'Member': { 
+    name: 'Member', 
+    linkLimit: 1, 
+    pfp: false, 
+    customFont: false, 
+    customColor: false, 
+    timetable: false, 
+    scheduling: false, 
+    analytics: false, 
+    verification: false, 
+    showAd: true 
+  },
+  'Plus': { 
+    name: 'Plus', 
+    linkLimit: 3, 
+    pfp: true, 
+    customFont: true, 
+    customColor: true, 
+    timetable: false, 
+    scheduling: false, 
+    analytics: false, 
+    verification: false, 
+    showAd: true 
+  },
+  'Pro': { 
+    name: 'Pro', 
+    linkLimit: 5, 
+    pfp: true, 
+    customFont: true, 
+    customColor: true, 
+    timetable: true, 
+    scheduling: false, 
+    analytics: true, 
+    verification: true, 
+    showAd: true 
+  },
+  'Max': { 
+    name: 'Max', 
+    linkLimit: 10, 
+    pfp: true, 
+    customFont: true, 
+    customColor: true, 
+    timetable: true, 
+    scheduling: true, 
+    analytics: true, 
+    verification: true, 
+    showAd: false 
+  },
+  'Owner': {
+    name: 'Owner', 
+    linkLimit: 10, 
+    pfp: true, 
+    customFont: true, 
+    customColor: true, 
+    timetable: true, 
+    scheduling: true, 
+    analytics: true, 
+    verification: true, 
+    showAd: false 
+  },
  };
  
  const ACHIEVEMENT_CONFIG = {
- toPlus: [ { id: 'socialButterfly', label: 'Add 1 Custom Link', goal: 1 }, { id: 'firstShare', label: 'Share Profile Once', goal: 1 }, { id: 'loyalUser', label: 'Log In on 3 Different Days', goal: 3 } ],
- toPro: [ { id: 'scheduler', label: 'Add 2 Timetable Entries', goal: 2 }, { id: 'socialButterfly', label: 'Add 3 Custom Links', goal: 3 }, { id: 'views', label: 'Get 10 Profile Views', goal: 10 }, { id: 'loyalUser', label: 'Log In on 7 Different Days', goal: 7 } ],
- toMax: [ { id: 'profileComplete', label: 'Fill Out All Optional Info Fields', goal: 1 }, { id: 'socialButterfly', label: 'Add 5 Custom Links', goal: 5 }, { id: 'views', label: 'Get 30 Profile Views', goal: 30 }, { id: 'loyalUser', label: 'Log In on 14 Different Days', goal: 14 } ]
+  toPlus: [ 
+    { id: 'profileComplete', label: 'Fill in Bio, Birthday, and Country', goal: 1 }, 
+    { id: 'views', label: 'Get 10 Profile Views', goal: 10 },
+    { id: 'expressive', label: 'Use 3 Different Statuses', goal: 3 }, 
+    { id: 'socialButterfly', label: 'Add 1 Custom Link', goal: 1 }, 
+    { id: 'loyalUser', label: 'Log In on 3 Different Days', goal: 3 } 
+  ],
+  toPro: [ 
+    { id: 'views', label: 'Get 20 Profile Views', goal: 20 }, 
+    { id: 'expressive', label: 'Use 5 Different Statuses', goal: 5 }, 
+    { id: 'loyalUser', label: 'Log In on 7 Different Days', goal: 7 },
+    { id: 'picturePerfect', label: 'Upload a Profile Picture', goal: 1 }
+  ],
+  toMax: [ 
+    { id: 'views', label: 'Get 30 Profile Views', goal: 30 }, 
+    { id: 'expressive', label: 'Use 10 Different Statuses', goal: 10 }, 
+    { id: 'loyalUser', label: 'Log In on 14 Different Days', goal: 14 },
+    { id: 'picturePerfect', label: 'Have a Profile Picture', goal: 1 }
+  ]
  };
 
  const VERIFICATION_QUESTIONS = [
@@ -685,7 +811,7 @@
  pfpText: defaultPfpText,
  achievements: { 
  profileComplete: 0, scheduler: 0, socialButterfly: 0, firstShare: 0,
- views: 0, loyalUser: 1, expressive: 0, referral: 0,
+ views: 0, loyalUser: 1, expressive: 0, referral: 0, picturePerfect: 0,
  loginHistory: { [today]: true },
  usedEmojis: {}
  }, 
@@ -801,9 +927,10 @@
  }
 
  achievementUpdates['achievements/socialButterfly'] = data.links?.length || 0;
- const isMaxComplete = data.bio && data.birthday && data.countryCode && data.phone && data.schedulingLink && data.pfpUrl;
- achievementUpdates['achievements/profileComplete'] = isMaxComplete ? 1 : 0;
-
+ achievementUpdates['achievements/picturePerfect'] = data.pfpUrl ? 1 : (achievements.picturePerfect || 0);
+ const isBasicProfileComplete = data.bio && data.birthday && data.countryCode;
+ achievementUpdates['achievements/profileComplete'] = isBasicProfileComplete ? 1 : 0;
+ 
  await update(userRef, { ...dataWithTimestamp, ...achievementUpdates });
 
  const historyRef = ref(db, `history/${App.currentUser.userId}`);
@@ -943,27 +1070,47 @@
  }
 
  function renderProfile(data) {
- if (!data) return;
- const profileNameEl = document.getElementById('profile-name');
- const membershipContainer = document.getElementById('membership-tier-display-container');
- const name = data.displayName || 'Unnamed User';
- profileNameEl.innerHTML = name;
+    if (!data) return;
+    
+    const profileNameEl = document.getElementById('profile-name');
+    const membershipContainer = document.getElementById('membership-tier-display-container');
+    const name = data.displayName || 'Unnamed User';
+    profileNameEl.innerHTML = name;
 
- const userVerifiedIcon = `<svg class="inline-verified-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm13.36-1.814a.75.75 0 1 0-1.06-1.06l-3.103 3.103-1.53-1.53a.75.75 0 0 0-1.06 1.06l2.06 2.06a.75.75 0 0 0 1.06 0l3.64-3.64Z" clip-rule="evenodd" /></svg>`;
- if (data.verified) profileNameEl.innerHTML += userVerifiedIcon;
+    const userVerifiedIcon = `<svg class="inline-verified-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm13.36-1.814a.75.75 0 1 0-1.06-1.06l-3.103 3.103-1.53-1.53a.75.75 0 0 0-1.06 1.06l2.06 2.06a.75.75 0 0 0 1.06 0l3.64-3.64Z" clip-rule="evenodd" /></svg>`;
+    if (data.verified) profileNameEl.innerHTML += userVerifiedIcon;
 
- const tier = data.membershipTier || 'Member';
- profileNameEl.classList.toggle('is-owner', tier === 'Owner');
- membershipContainer.innerHTML = `<div class="membership-badge tier-${tier}">${USER_TIER_CONFIG[tier]?.name || tier}</div>`;
- 
- document.getElementById('profile-emoji').textContent = data.status || '❓';
- document.getElementById('profile-message').textContent = data.message || 'No message set.';
- 
- renderPersonalDetails(data);
- const timeData = getLocalTimeData();
- document.getElementById('local-time-info').textContent = `Local Time: ${timeData.time} (${timeData.offset})`;
- renderCustomLinks(data.links, document.getElementById('profile-links'), USER_TIER_CONFIG[tier]);
- renderActionLinks(data);
+    const tier = data.membershipTier || 'Member';
+    profileNameEl.classList.toggle('is-owner', tier === 'Owner');
+    membershipContainer.innerHTML = `<div class="membership-badge tier-${tier}">${USER_TIER_CONFIG[tier]?.name || tier}</div>`;
+    
+    document.getElementById('profile-emoji').textContent = data.status || '❓';
+    document.getElementById('profile-message').textContent = data.message || 'No message set.';
+    
+    renderPersonalDetails(data);
+    const timeData = getLocalTimeData();
+    document.getElementById('local-time-info').textContent = `Local Time: ${timeData.time} (${timeData.offset})`;
+    renderCustomLinks(data.links, document.getElementById('profile-links'), USER_TIER_CONFIG[tier]);
+    renderActionLinks(data);
+
+    const topAdContainer = document.getElementById('top-ad-container');
+    const bottomAdContainer = document.getElementById('bottom-ad-container');
+
+    topAdContainer.innerHTML = '';
+    topAdContainer.classList.add('hidden');
+    bottomAdContainer.innerHTML = '';
+    bottomAdContainer.classList.add('hidden');
+
+    if (data.adsEnabled) {
+        if (data.topAd?.imageUrl && data.topAd?.linkUrl) {
+        topAdContainer.innerHTML = `<a href="${data.topAd.linkUrl}" target="_blank" rel="noopener noreferrer nofollow"><img src="${data.topAd.imageUrl}" alt="Promotional Banner"></a>`;
+        topAdContainer.classList.remove('hidden');
+        }
+        if (data.bottomAd?.text && data.bottomAd?.linkUrl) {
+        bottomAdContainer.innerHTML = `<a href="${data.bottomAd.linkUrl}" target="_blank" rel="noopener noreferrer nofollow">${data.bottomAd.text}</a>`;
+        bottomAdContainer.classList.remove('hidden');
+        }
+    }
  }
 
  function findActiveSchedule(user) {
@@ -1039,55 +1186,76 @@
  }
 
  function populateSettings(data) {
- if (!data || !document.getElementById('display-name')) return;
- const tier = data.membershipTier || 'Member';
- const tierConfig = USER_TIER_CONFIG[tier] || USER_TIER_CONFIG['Member'];
+    if (!data || !document.getElementById('display-name')) return;
+    const tier = data.membershipTier || 'Member';
+    const tierConfig = USER_TIER_CONFIG[tier] || USER_TIER_CONFIG['Member'];
 
- document.getElementById('display-name').value = data.displayName || '';
- document.getElementById('themeSelect').value = data.theme || 'auto';
- document.getElementById('display-font').value = data.displayNameFont || 'Inter, sans-serif';
- document.getElementById('accent-color').value = data.profileAccentColor || '#0ea5e9';
- document.getElementById('link-text-color').value = data.linkTextColor || '#0369a1';
- document.getElementById('scheduling-link').value = data.schedulingLink || '';
- document.getElementById('bio').value = data.bio || '';
- document.getElementById('birthday').value = data.birthday || '';
- document.getElementById('phone-number').value = data.phone || '';
- 
- const countrySearch = document.getElementById('country-search'), countryCodeInput = document.getElementById('country-code');
- if(data.countryCode) {
- const country = COUNTRY_LIST.find(c => c.code === data.countryCode);
- if (country) { countrySearch.value = `${getCountryFlagEmoji(country.code)} ${country.name}`; countryCodeInput.value = country.code; }
- } else { countrySearch.value = ''; countryCodeInput.value = ''; }
+    document.getElementById('display-name').value = data.displayName || '';
+    document.getElementById('themeSelect').value = data.theme || 'auto';
+    document.getElementById('display-font').value = data.displayNameFont || 'Inter, sans-serif';
+    document.getElementById('accent-color').value = data.profileAccentColor || '#0ea5e9';
+    document.getElementById('link-text-color').value = data.linkTextColor || '#0369a1';
+    document.getElementById('scheduling-link').value = data.schedulingLink || '';
+    document.getElementById('bio').value = data.bio || '';
+    document.getElementById('birthday').value = data.birthday || '';
+    document.getElementById('phone-number').value = data.phone || '';
+    
+    const countrySearch = document.getElementById('country-search'), countryCodeInput = document.getElementById('country-code');
+    if(data.countryCode) {
+        const country = COUNTRY_LIST.find(c => c.code === data.countryCode);
+        if (country) { countrySearch.value = `${getCountryFlagEmoji(country.code)} ${country.name}`; countryCodeInput.value = country.code; }
+    } else { countrySearch.value = ''; countryCodeInput.value = ''; }
 
- const pfpGroup = document.getElementById('pfp-upload-group');
- pfpGroup.classList.toggle('form-field-disabled', !tierConfig.pfp);
- if (!tierConfig.pfp && !pfpGroup.querySelector('.muted')) {
- pfpGroup.insertAdjacentHTML('beforeend', '<p class="muted">Upgrade to Plus to add a profile picture.</p>');
- }
+    const pfpGroup = document.getElementById('pfp-upload-group');
+    pfpGroup.classList.toggle('form-field-disabled', !tierConfig.pfp);
+    if (!tierConfig.pfp && !pfpGroup.querySelector('.muted')) {
+        pfpGroup.insertAdjacentHTML('beforeend', '<p class="muted">Upgrade to Plus to add a profile picture.</p>');
+    }
 
- document.getElementById('font-customization-field').classList.toggle('form-field-disabled', !tierConfig.customFont);
- document.getElementById('scheduling-link-field').classList.toggle('form-field-disabled', !tierConfig.scheduling);
- document.getElementById('accent-color-field').classList.toggle('form-field-disabled', !tierConfig.customColor);
- document.getElementById('link-text-color-field').classList.toggle('form-field-disabled', !tierConfig.customColor);
- document.getElementById('automatic-timetable-card').classList.toggle('form-field-disabled', !tierConfig.timetable);
- document.getElementById('analytics-nav-btn')?.classList.toggle('hidden', !tierConfig.analytics && data.membershipTier !== 'Owner');
+    document.getElementById('font-customization-field').classList.toggle('form-field-disabled', !tierConfig.customFont);
+    document.getElementById('scheduling-link-field').classList.toggle('form-field-disabled', !tierConfig.scheduling);
+    document.getElementById('accent-color-field').classList.toggle('form-field-disabled', !tierConfig.customColor);
+    document.getElementById('link-text-color-field').classList.toggle('form-field-disabled', !tierConfig.customColor);
+    document.getElementById('automatic-timetable-card').classList.toggle('form-field-disabled', !tierConfig.timetable);
+    document.getElementById('analytics-nav-btn')?.classList.toggle('hidden', !tierConfig.analytics && data.membershipTier !== 'Owner');
 
- const linksContainer = document.getElementById('custom-links-container');
- linksContainer.innerHTML = '';
- const linkLimit = tierConfig.linkLimit;
- for (let i = 0; i < linkLimit; i++) {
- const link = data.links ? data.links[i] : null;
- linksContainer.innerHTML += `<div class="link-group"><input type="text" id="link-label-${i}" placeholder="Link Label ${i + 1}" value="${link?.label || ''}"><input type="url" id="link-url-${i}" placeholder="URL (https://...)" value="${link?.url || ''}"></div>`;
- }
- if (tier !== 'Max' && tier !== 'Owner') {
- linksContainer.innerHTML += `<p class="muted">Upgrade your tier to add more links!</p>`;
- }
+    const linksContainer = document.getElementById('custom-links-container');
+    linksContainer.innerHTML = '';
+    const linkLimit = tierConfig.linkLimit;
+    for (let i = 0; i < linkLimit; i++) {
+        const link = data.links ? data.links[i] : null;
+        linksContainer.innerHTML += `<div class="link-group"><input type="text" id="link-label-${i}" placeholder="Link Label ${i + 1}" value="${link?.label || ''}"><input type="url" id="link-url-${i}" placeholder="URL (https://...)" value="${link?.url || ''}"></div>`;
+    }
+    if (tier !== 'Max' && tier !== 'Owner') {
+        linksContainer.innerHTML += `<p class="muted">Upgrade your tier to add more links!</p>`;
+    }
 
- document.getElementById('status-emoji').value = data.status || '🟢';
- document.getElementById('status-message').value = data.message || '';
+    document.getElementById('status-emoji').value = data.status || '🟢';
+    document.getElementById('status-message').value = data.message || '';
 
- renderTimetableSettings(data.timetable);
- renderVerificationSettings(data);
+    renderTimetableSettings(data.timetable);
+    renderVerificationSettings(data);
+
+    const isAdEligible = tier === 'Max' || tier === 'Owner';
+    const adSettingsCard = document.getElementById('custom-ads-settings-card');
+    const adToggle = document.getElementById('ads-enabled-toggle');
+    const adFields = document.getElementById('ad-customization-fields');
+
+    adSettingsCard.classList.toggle('hidden', !isAdEligible);
+
+    if (isAdEligible) {
+        adToggle.value = data.adsEnabled ? 'true' : 'false';
+        adFields.classList.toggle('hidden', !data.adsEnabled);
+
+        document.getElementById('top-ad-image-url').value = data.topAd?.imageUrl || '';
+        document.getElementById('top-ad-link-url').value = data.topAd?.linkUrl || '';
+        document.getElementById('bottom-ad-text').value = data.bottomAd?.text || '';
+        document.getElementById('bottom-ad-link-url').value = data.bottomAd?.linkUrl || '';
+
+        adToggle.onchange = () => {
+            adFields.classList.toggle('hidden', adToggle.value !== 'true');
+        };
+    }
  }
 
  function handlePageLoad() {
@@ -1125,60 +1293,73 @@
  }
 
  async function handleSaveSettings() {
- if (!App.currentUser) return;
- const saveBtn = document.getElementById('save-settings-btn');
- saveBtn.textContent = 'Saving...';
- saveBtn.classList.add('btn-loading');
+    if (!App.currentUser) return;
+    const saveBtn = document.getElementById('save-settings-btn');
+    saveBtn.textContent = 'Saving...';
+    saveBtn.classList.add('btn-loading');
 
- const tier = App.currentProfileData.membershipTier || 'Member';
- const tierConfig = USER_TIER_CONFIG[tier];
- const linkLimit = tierConfig.linkLimit || 1;
- const customLinks = [];
- for (let i = 0; i < linkLimit; i++) {
- const label = document.getElementById(`link-label-${i}`)?.value.trim();
- const url = document.getElementById(`link-url-${i}`)?.value.trim();
- if (label && url) {
- customLinks.push({ label, url });
- }
- }
+    const tier = App.currentProfileData.membershipTier || 'Member';
+    const tierConfig = USER_TIER_CONFIG[tier];
+    const linkLimit = tierConfig.linkLimit || 1;
+    const customLinks = [];
+    for (let i = 0; i < linkLimit; i++) {
+        const label = document.getElementById(`link-label-${i}`)?.value.trim();
+        const url = document.getElementById(`link-url-${i}`)?.value.trim();
+        if (label && url) {
+        customLinks.push({ label, url });
+        }
+    }
 
- const dataToSave = {
- displayName: document.getElementById('display-name').value, 
- theme: document.getElementById('themeSelect').value,
- displayNameFont: document.getElementById('display-font').value,
- profileAccentColor: document.getElementById('accent-color').value, 
- linkTextColor: document.getElementById('link-text-color').value,
- schedulingLink: document.getElementById('scheduling-link').value, 
- bio: document.getElementById('bio').value,
- birthday: document.getElementById('birthday').value,
- countryCode: document.getElementById('country-code').value,
- phone: document.getElementById('phone-number').value,
- status: document.getElementById('status-emoji').value,
- message: document.getElementById('status-message').value,
- links: customLinks
- };
+    const dataToSave = {
+        displayName: document.getElementById('display-name').value, 
+        theme: document.getElementById('themeSelect').value,
+        displayNameFont: document.getElementById('display-font').value,
+        profileAccentColor: document.getElementById('accent-color').value, 
+        linkTextColor: document.getElementById('link-text-color').value,
+        schedulingLink: document.getElementById('scheduling-link').value, 
+        bio: document.getElementById('bio').value,
+        birthday: document.getElementById('birthday').value,
+        countryCode: document.getElementById('country-code').value,
+        phone: document.getElementById('phone-number').value,
+        status: document.getElementById('status-emoji').value,
+        message: document.getElementById('status-message').value,
+        links: customLinks
+    };
 
- if (App.currentProfileData.pfpUrl) {
- dataToSave.pfpUrl = App.currentProfileData.pfpUrl;
- }
+    const isAdEligible = tier === 'Max' || tier === 'Owner';
+    if (isAdEligible) {
+        dataToSave.adsEnabled = document.getElementById('ads-enabled-toggle').value === 'true';
+        dataToSave.topAd = {
+            imageUrl: document.getElementById('top-ad-image-url').value.trim(),
+            linkUrl: document.getElementById('top-ad-link-url').value.trim()
+        };
+        dataToSave.bottomAd = {
+            text: document.getElementById('bottom-ad-text').value.trim(),
+            linkUrl: document.getElementById('bottom-ad-link-url').value.trim()
+        };
+    }
 
- try {
- const pfpFile = document.getElementById('pfp-upload').files[0];
- if (pfpFile && tierConfig.pfp) {
- const pfpRef = storageRef(storage, `pfps/${App.currentUser.userId}/${pfpFile.name}`);
- await uploadBytes(pfpRef, pfpFile);
- dataToSave.pfpUrl = await getDownloadURL(pfpRef);
- dataToSave.pfpText = null;
- }
- await saveAndLogStatus(dataToSave); 
- populateSettings(App.currentProfileData); 
- } catch (error) {
- console.error("Save settings error:", error);
- showToast("Failed to save settings.", "error");
- } finally {
- saveBtn.textContent = 'Save All Changes';
- saveBtn.classList.remove('btn-loading');
- }
+    if (App.currentProfileData.pfpUrl) {
+        dataToSave.pfpUrl = App.currentProfileData.pfpUrl;
+    }
+
+    try {
+        const pfpFile = document.getElementById('pfp-upload').files[0];
+        if (pfpFile && tierConfig.pfp) {
+        const pfpRef = storageRef(storage, `pfps/${App.currentUser.userId}/${pfpFile.name}`);
+        await uploadBytes(pfpRef, pfpFile);
+        dataToSave.pfpUrl = await getDownloadURL(pfpRef);
+        dataToSave.pfpText = null;
+        }
+        await saveAndLogStatus(dataToSave); 
+        populateSettings(App.currentProfileData); 
+    } catch (error) {
+        console.error("Save settings error:", error);
+        showToast("Failed to save settings.", "error");
+    } finally {
+        saveBtn.textContent = 'Save All Changes';
+        saveBtn.classList.remove('btn-loading');
+    }
  }
 
  function handleGenerateQrCode() {
@@ -1445,7 +1626,7 @@
  let allTiersHtml = '<div class="tier-plan-grid">';
  for (const tierKey of ['Member', 'Plus', 'Pro', 'Max']) {
  const config = USER_TIER_CONFIG[tierKey];
- allTiersHtml += `<div class="tier-plan-card"><h3><div class="membership-badge tier-${tierKey}">${config.name}</div></h3><ul><li>${config.linkLimit} Custom Link${config.linkLimit > 1 ? 's' : ''}</li><li>${config.customFont ? 'Custom Profile Font' : 'Standard Font'}</li><li>${config.scheduling ? 'Scheduling Link Display' : 'No Scheduling Link'}</li><li>${config.timetable ? 'Automatic Timetable' : 'Manual Status Only'}</li><li>${config.customColor ? 'Custom Profile Colors' : 'Standard Colors'}</li><li>${config.analytics ? 'Profile Analytics' : 'No Analytics'}</li><li>${config.verification ? 'Verification Eligible' : 'Not Verification Eligible'}</li><li>${config.showAd ? 'Shows Ad on Profile' : 'Ad-Free Profile'}</li></ul></div>`;
+ allTiersHtml += `<div class="tier-plan-card"><h3><div class="membership-badge tier-${tierKey}">${config.name}</div></h3><ul><li>${config.linkLimit} Custom Link${config.linkLimit > 1 ? 's' : ''}</li><li>${config.pfp ? 'Custom Profile Picture' : 'Default Profile Picture'}</li><li>${config.customFont ? 'Custom Profile Font' : 'Standard Font'}</li><li>${config.customColor ? 'Custom Profile Colors' : 'Standard Colors'}</li><li>${config.timetable ? 'Automatic Timetable' : 'Manual Status Only'}</li><li>${config.scheduling ? 'Scheduling Link Display' : 'No Scheduling Link'}</li><li>${config.analytics ? 'Profile Analytics' : 'No Analytics'}</li><li>${config.verification ? 'Verification Eligible' : 'Not Verification Eligible'}</li><li>${config.showAd ? 'Shows Platform Ad' : 'Ad-Free Profile'}</li></ul></div>`;
  }
  allTiersHtml += '</div>';
  allTiersContainer.innerHTML = allTiersHtml;
