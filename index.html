@@ -317,7 +317,7 @@
  <h2>Custom Links</h2>
  <div id="profile-links"><p class="muted">No links provided.</p></div>
  </div>
- <div id="share-profile-card" class="card hidden">
+ <div id="share-profile-card" class="card">
  <h2>Share Profile</h2>
  <div style="text-align: center;">
  <div id="qrcode-container" style="display: inline-block; padding: 15px; background: var(--card); border-radius: 8px; border: 1px solid var(--border-color); min-height: 230px;">
@@ -526,7 +526,7 @@
  </div>
  <div class="card hidden" id="platform-ad-settings-card">
     <h2>Platform Ad Settings</h2>
-    <p class="muted">Control the visibility and position of the default 'Join HAP' promotion on your profile.</p>
+    <p class="muted">As a Max tier user, you can control the visibility of the default 'Join HAP' promotion on your profile.</p>
     <div class="form-group">
         <label for="platform-ad-toggle">"Join HAP" Promotion</label>
         <select id="platform-ad-toggle">
@@ -627,27 +627,27 @@
 
  const USER_TIER_CONFIG = {
   'Member': { 
-    name: 'Member', linkLimit: 1, pfp: false, customFont: false, customColor: false, 
+    name: 'Member', linkLimit: 1, pfp: false, qrCode: false, customFont: false, customColor: false, 
     timetable: false, scheduling: false, analytics: false, verification: false, 
     canCustomizeAds: false, canControlPlatformAd: false
   },
   'Plus': { 
-    name: 'Plus', linkLimit: 3, pfp: true, customFont: true, customColor: true, 
+    name: 'Plus', linkLimit: 3, pfp: true, qrCode: true, customFont: true, customColor: true, 
     timetable: false, scheduling: false, analytics: false, verification: false, 
     canCustomizeAds: false, canControlPlatformAd: false
   },
   'Pro': { 
-    name: 'Pro', linkLimit: 5, pfp: true, customFont: true, customColor: true, 
+    name: 'Pro', linkLimit: 5, pfp: true, qrCode: true, customFont: true, customColor: true, 
     timetable: true, scheduling: false, analytics: true, verification: true, 
     canCustomizeAds: true, canControlPlatformAd: false
   },
   'Max': { 
-    name: 'Max', linkLimit: 10, pfp: true, customFont: true, customColor: true, 
+    name: 'Max', linkLimit: 10, pfp: true, qrCode: true, customFont: true, customColor: true, 
     timetable: true, scheduling: true, analytics: true, verification: true, 
     canCustomizeAds: true, canControlPlatformAd: true 
   },
   'Owner': {
-    name: 'Owner', linkLimit: 10, pfp: true, customFont: true, customColor: true, 
+    name: 'Owner', linkLimit: 10, pfp: true, qrCode: true, customFont: true, customColor: true, 
     timetable: true, scheduling: true, analytics: true, verification: true, 
     canCustomizeAds: true, canControlPlatformAd: true
   },
@@ -677,6 +677,7 @@
 
  const FEATURE_FRIENDLY_NAMES = {
     pfp: "Custom Profile Picture",
+    qrCode: "Profile QR Code Sharing",
     customFont: "Custom Profile Font",
     customColor: "Custom Profile Colors",
     timetable: "Automatic Timetable",
@@ -1097,7 +1098,7 @@
     
     const isOwnerViewing = App.currentUser && App.currentUser.userId === data.userId;
 
-    document.getElementById('share-profile-card').classList.toggle('hidden', !isOwnerViewing);
+    document.getElementById('share-profile-card').classList.remove('hidden');
 
     const profileNameEl = document.getElementById('profile-name');
     const membershipContainer = document.getElementById('membership-tier-display-container');
@@ -1116,6 +1117,15 @@
     document.getElementById('local-time-info').textContent = `Local Time: ${timeData.time} (${timeData.offset})`;
     renderCustomLinks(data.links, document.getElementById('profile-links'), tierConfig);
     renderActionLinks(data);
+
+    const qrBtn = document.getElementById('generate-qrcode-btn');
+    if(tierConfig.qrCode) {
+        qrBtn.disabled = false;
+        qrBtn.textContent = "Generate QR Code";
+    } else {
+        qrBtn.disabled = true;
+        qrBtn.textContent = "Upgrade to Plus for QR Code";
+    }
 
     const topAdContainer = document.getElementById('top-ad-container');
     const bottomAdContainer = document.getElementById('bottom-ad-container');
@@ -1147,7 +1157,7 @@
         : `<h3 style="text-align: center;">Like this status page?</h3><p style="text-align: center;">Create your own real-time availability profile in seconds!</p><div style="display: flex; justify-content: center; margin-top: 15px;"><button class="btn" id="promo-action-btn-bottom" style="flex: 0 1 250px;">Get Started Now</button></div>`;
 
     let platformAdPosition = 'off';
-    if (tier === 'Member') {
+    if(tier === 'Member') {
         platformAdPosition = 'both';
     } else if (tier === 'Plus' || tier === 'Pro') {
         platformAdPosition = 'bottom';
@@ -1307,15 +1317,6 @@
     if(tierConfig.canControlPlatformAd) {
         document.getElementById('platform-ad-toggle').value = data.platformAdDisplay || 'off';
     }
-
-    const qrBtn = document.getElementById('generate-qrcode-btn');
-    if(tier === 'Member') {
-        qrBtn.disabled = true;
-        qrBtn.textContent = "Upgrade to Plus for QR Code";
-    } else {
-        qrBtn.disabled = false;
-        qrBtn.textContent = "Generate QR Code";
-    }
  }
 
  function handlePageLoad() {
@@ -1398,7 +1399,7 @@
         };
     }
     
-    if(tier === 'Max' || tier === 'Owner') {
+    if(tierConfig.canControlPlatformAd) {
         dataToSave.platformAdDisplay = document.getElementById('platform-ad-toggle').value;
     }
 
@@ -1414,20 +1415,24 @@
  }
 
  function handleGenerateQrCode() {
- if (!App.currentUser) return;
- const img = document.getElementById('profile-qrcode-img'), placeholder = document.getElementById('qrcode-placeholder');
- const shareUrl = `${window.location.origin}${window.location.pathname}?user=${App.currentUser.userId}`;
- img.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(shareUrl)}`;
- img.onload = () => { img.style.display = 'block'; placeholder.classList.add('hidden'); showToast('QR Code generated! 🖼️'); };
+    if (!App.currentProfileData) return;
+    const profileId = App.currentProfileData.userId;
+    const img = document.getElementById('profile-qrcode-img'), placeholder = document.getElementById('qrcode-placeholder');
+    const shareUrl = `${window.location.origin}${window.location.pathname}?user=${profileId}`;
+    img.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(shareUrl)}`;
+    img.onload = () => { img.style.display = 'block'; placeholder.classList.add('hidden'); showToast('QR Code generated! 🖼️'); };
  }
 
  function handleShareStatus() {
- if (!App.currentUser) return;
- const shareUrl = `${window.location.origin}${window.location.pathname}?user=${App.currentUser.userId}&ref=${App.currentUser.userId}`;
- navigator.clipboard.writeText(shareUrl).then(() => showToast('Profile link copied to clipboard! 🔗'));
- if (!App.currentProfileData.achievements.firstShare) {
- update(ref(db, `users/${App.currentUser.userId}/achievements`), { firstShare: 1 });
- }
+    if (!App.currentProfileData) return;
+    const profileId = App.currentProfileData.userId;
+    const shareUrl = `${window.location.origin}${window.location.pathname}?user=${profileId}&ref=${profileId}`;
+    navigator.clipboard.writeText(shareUrl).then(() => {
+        showToast('Profile link copied to clipboard! 🔗');
+        if (App.currentUser && App.currentUser.userId === profileId && !App.currentProfileData.achievements.firstShare) {
+            update(ref(db, `users/${profileId}/achievements`), { firstShare: 1 });
+        }
+    });
  }
 
  function renderTimetableSettings(timetable = []) {
@@ -1702,7 +1707,7 @@
  let allTiersHtml = '<div class="tier-plan-grid">';
  for (const tierKey of ['Member', 'Plus', 'Pro', 'Max']) {
  const config = USER_TIER_CONFIG[tierKey];
- allTiersHtml += `<div class="tier-plan-card"><h3><div class="membership-badge tier-${tierKey}">${config.name}</div></h3><ul><li>${config.linkLimit} Custom Link${config.linkLimit > 1 ? 's' : ''}</li><li>${config.pfp ? 'Custom Profile Picture' : 'Default Profile Picture'}</li><li>${config.pfp ? 'Profile QR Code Sharing' : 'No QR Code Sharing'}</li><li>${config.customFont ? 'Custom Profile Font' : 'Standard Font'}</li><li>${config.customColor ? 'Custom Profile Colors' : 'Standard Colors'}</li><li>${config.timetable ? 'Automatic Timetable' : 'Manual Status Only'}</li><li>${config.scheduling ? 'Scheduling Link Display' : 'No Scheduling Link'}</li><li>${config.analytics ? 'Profile Analytics' : 'No Analytics'}</li><li>${config.verification ? 'Verification Eligible' : 'Not Verification Eligible'}</li><li>${config.canCustomizeAds ? 'Custom Promo Blocks' : 'No Custom Blocks'}</li><li>${config.canControlPlatformAd ? 'Ad Controls' : 'Platform Ads On'}</li></ul></div>`;
+ allTiersHtml += `<div class="tier-plan-card"><h3><div class="membership-badge tier-${tierKey}">${config.name}</div></h3><ul><li>${config.linkLimit} Custom Link${config.linkLimit > 1 ? 's' : ''}</li><li>${config.pfp ? 'Custom Profile Picture' : 'Default Profile Picture'}</li><li>${config.qrCode ? 'Profile QR Code Sharing' : 'No QR Code Sharing'}</li><li>${config.customFont ? 'Custom Profile Font' : 'Standard Font'}</li><li>${config.customColor ? 'Custom Profile Colors' : 'Standard Colors'}</li><li>${config.timetable ? 'Automatic Timetable' : 'Manual Status Only'}</li><li>${config.scheduling ? 'Scheduling Link Display' : 'No Scheduling Link'}</li><li>${config.analytics ? 'Profile Analytics' : 'No Analytics'}</li><li>${config.verification ? 'Verification Eligible' : 'Not Verification Eligible'}</li><li>${config.canCustomizeAds ? 'Custom Promo Blocks' : 'No Custom Blocks'}</li><li>${config.canControlPlatformAd ? 'Ad Controls' : 'Platform Ads On'}</li></ul></div>`;
  }
  allTiersHtml += '</div>';
  allTiersContainer.innerHTML = allTiersHtml;
