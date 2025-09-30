@@ -867,6 +867,7 @@
 
  if (userSnap.exists()) {
  const data = userSnap.val();
+ data.userId = userId; 
  App.currentProfileData = data;
  App.currentUser.displayName = data.displayName;
 
@@ -1816,4 +1817,5 @@
  </script>
 </body>
 </html>
+
 
