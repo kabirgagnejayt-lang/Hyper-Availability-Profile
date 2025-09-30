@@ -12,7 +12,7 @@
  :root {
  --primary: #0ea5e9; --primary-light: #f0f9ff; --primary-dark: #0369a1;
  --bg: #f8fafc; --card: #ffffff; --text: #0f172a; --muted: #64748b;
- --border-color: #e2e8f0; --input-bg: #f1f59;
+ --border-color: #e2e8f0; --input-bg: #f1f5f9;
  --radius: 12px; --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
  --pfp-bg-day: var(--primary-light);
  --pfp-border-day: var(--primary);
@@ -87,7 +87,6 @@
  textarea { resize: vertical; min-height: 80px; }
  input[type="color"] { width: 100%; height: 44px; padding: 0; border: none; background: transparent; cursor: pointer; }
  input:focus, select:focus, textarea:focus { outline: 2px solid var(--primary); border-color: var(--primary); }
- input[type="file"] { padding: 10px; }
  .btn {
  background: var(--primary); color: white; border: none; padding: 12px 18px;
  border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s ease;
@@ -440,9 +439,9 @@
  </div>
  <div class="card">
  <h2>Visual Customization</h2>
- <div class="form-group" id="pfp-upload-group">
- <label for="pfp-upload">Profile Picture (Upload)</label>
- <input type="file" id="pfp-upload" accept="image/*">
+ <div class="form-group" id="pfp-url-group">
+ <label for="pfp-url">Profile Picture URL</label>
+ <input type="url" id="pfp-url" placeholder="https://example.com/image.png">
  </div>
  <div class="form-group" id="accent-color-field">
  <label for="accent-color">Profile Accent Color</label>
@@ -586,16 +585,8 @@
  push, 
  query, 
  orderByKey, 
- limitToLast,
- orderByChild,
- equalTo
+ limitToLast
  } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-database.js";
- import { 
- getStorage, 
- ref as storageRef, 
- uploadBytes, 
- getDownloadURL 
- } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-storage.js";
 
  const firebaseConfig = {
  apiKey: "AIzaSyChwjwXFgIj9f64zGeIoS-q_odZm2ogFMw",
@@ -610,7 +601,6 @@
  const app = initializeApp(firebaseConfig);
  const auth = getAuth(app);
  const db = getDatabase(app);
- const storage = getStorage(app);
 
  window.onerror = function(message, source, lineno, colno, error) {
  const errorDiv = document.getElementById('global-error-display');
@@ -644,12 +634,12 @@
   'Plus': { 
     name: 'Plus', linkLimit: 3, pfp: true, customFont: true, customColor: true, 
     timetable: false, scheduling: false, analytics: false, verification: false, 
-    canCustomizeAds: false, canControlPlatformAd: true
+    canCustomizeAds: false, canControlPlatformAd: false
   },
   'Pro': { 
     name: 'Pro', linkLimit: 5, pfp: true, customFont: true, customColor: true, 
     timetable: true, scheduling: false, analytics: true, verification: true, 
-    canCustomizeAds: true, canControlPlatformAd: true
+    canCustomizeAds: true, canControlPlatformAd: false
   },
   'Max': { 
     name: 'Max', linkLimit: 10, pfp: true, customFont: true, customColor: true, 
@@ -675,7 +665,7 @@
     { id: 'views', label: 'Get 20 Profile Views', goal: 20 }, 
     { id: 'expressive', label: 'Use 5 Different Statuses', goal: 5 }, 
     { id: 'loyalUser', label: 'Log In on 7 Different Days', goal: 7 },
-    { id: 'picturePerfect', label: 'Upload a Profile Picture', goal: 1 }
+    { id: 'picturePerfect', label: 'Add a Profile Picture', goal: 1 }
   ],
   toMax: [ 
     { id: 'views', label: 'Get 30 Profile Views', goal: 30 }, 
@@ -1157,8 +1147,13 @@
         : `<h3 style="text-align: center;">Like this status page?</h3><p style="text-align: center;">Create your own real-time availability profile in seconds!</p><div style="display: flex; justify-content: center; margin-top: 15px;"><button class="btn" id="promo-action-btn-bottom" style="flex: 0 1 250px;">Get Started Now</button></div>`;
 
     let platformAdPosition = 'off';
-    if(tier === 'Member') platformAdPosition = 'both';
-    else if(tierConfig.canControlPlatformAd) platformAdPosition = data.platformAdDisplay || 'off';
+    if (tier === 'Member') {
+        platformAdPosition = 'both';
+    } else if (tier === 'Plus' || tier === 'Pro') {
+        platformAdPosition = 'bottom';
+    } else if (tierConfig.canControlPlatformAd) {
+        platformAdPosition = data.platformAdDisplay || 'off';
+    }
     
     if (platformAdPosition === 'top' || platformAdPosition === 'both') {
         promoTop.innerHTML = topPromoHTML;
@@ -1255,6 +1250,7 @@
 
     document.getElementById('display-name').value = data.displayName || '';
     document.getElementById('themeSelect').value = data.theme || 'auto';
+    document.getElementById('pfp-url').value = data.pfpUrl || '';
     document.getElementById('display-font').value = data.displayNameFont || 'Inter, sans-serif';
     document.getElementById('accent-color').value = data.profileAccentColor || '#0ea5e9';
     document.getElementById('link-text-color').value = data.linkTextColor || '#0369a1';
@@ -1269,7 +1265,7 @@
         if (country) { countrySearch.value = `${getCountryFlagEmoji(country.code)} ${country.name}`; countryCodeInput.value = country.code; }
     } else { countrySearch.value = ''; countryCodeInput.value = ''; }
 
-    document.getElementById('pfp-upload-group').classList.toggle('hidden', !tierConfig.pfp);
+    document.getElementById('pfp-url-group').classList.toggle('hidden', !tierConfig.pfp);
     document.getElementById('font-customization-field').classList.toggle('hidden', !tierConfig.customFont);
     document.getElementById('scheduling-link-field').classList.toggle('hidden', !tierConfig.scheduling);
     document.getElementById('accent-color-field').classList.toggle('hidden', !tierConfig.customColor);
@@ -1375,6 +1371,7 @@
     const dataToSave = {
         displayName: document.getElementById('display-name').value, 
         theme: document.getElementById('themeSelect').value,
+        pfpUrl: document.getElementById('pfp-url').value,
         displayNameFont: document.getElementById('display-font').value,
         profileAccentColor: document.getElementById('accent-color').value, 
         linkTextColor: document.getElementById('link-text-color').value,
@@ -1387,6 +1384,7 @@
         message: document.getElementById('status-message').value,
         links: customLinks
     };
+    if(!dataToSave.pfpUrl) dataToSave.pfpText = App.currentProfileData.displayName.charAt(0).toUpperCase();
 
     if (tierConfig.canCustomizeAds) {
         dataToSave.adsEnabled = document.getElementById('ads-enabled-toggle').value === 'true';
@@ -1400,22 +1398,11 @@
         };
     }
     
-    if(tierConfig.canControlPlatformAd) {
+    if(tier === 'Max' || tier === 'Owner') {
         dataToSave.platformAdDisplay = document.getElementById('platform-ad-toggle').value;
     }
 
-    if (App.currentProfileData.pfpUrl) {
-        dataToSave.pfpUrl = App.currentProfileData.pfpUrl;
-    }
-
     try {
-        const pfpFile = document.getElementById('pfp-upload').files[0];
-        if (pfpFile && tierConfig.pfp) {
-        const pfpRef = storageRef(storage, `pfps/${App.currentUser.userId}/${pfpFile.name}`);
-        await uploadBytes(pfpRef, pfpFile);
-        dataToSave.pfpUrl = await getDownloadURL(pfpRef);
-        dataToSave.pfpText = null;
-        }
         await saveAndLogStatus(dataToSave); 
     } catch (error) {
         console.error("Save settings error:", error);
@@ -1715,7 +1702,7 @@
  let allTiersHtml = '<div class="tier-plan-grid">';
  for (const tierKey of ['Member', 'Plus', 'Pro', 'Max']) {
  const config = USER_TIER_CONFIG[tierKey];
- allTiersHtml += `<div class="tier-plan-card"><h3><div class="membership-badge tier-${tierKey}">${config.name}</div></h3><ul><li>${config.linkLimit} Custom Link${config.linkLimit > 1 ? 's' : ''}</li><li>${config.pfp ? 'Custom Profile Picture' : 'Default Profile Picture'}</li><li>${config.customFont ? 'Custom Profile Font' : 'Standard Font'}</li><li>${config.customColor ? 'Custom Profile Colors' : 'Standard Colors'}</li><li>${config.timetable ? 'Automatic Timetable' : 'Manual Status Only'}</li><li>${config.scheduling ? 'Scheduling Link Display' : 'No Scheduling Link'}</li><li>${config.analytics ? 'Profile Analytics' : 'No Analytics'}</li><li>${config.verification ? 'Verification Eligible' : 'Not Verification Eligible'}</li><li>${config.canCustomizeAds ? 'Custom Promo Blocks' : 'No Custom Blocks'}</li><li>${config.canControlPlatformAd ? 'Ad Controls' : 'Platform Ads On'}</li></ul></div>`;
+ allTiersHtml += `<div class="tier-plan-card"><h3><div class="membership-badge tier-${tierKey}">${config.name}</div></h3><ul><li>${config.linkLimit} Custom Link${config.linkLimit > 1 ? 's' : ''}</li><li>${config.pfp ? 'Custom Profile Picture' : 'Default Profile Picture'}</li><li>${config.pfp ? 'Profile QR Code Sharing' : 'No QR Code Sharing'}</li><li>${config.customFont ? 'Custom Profile Font' : 'Standard Font'}</li><li>${config.customColor ? 'Custom Profile Colors' : 'Standard Colors'}</li><li>${config.timetable ? 'Automatic Timetable' : 'Manual Status Only'}</li><li>${config.scheduling ? 'Scheduling Link Display' : 'No Scheduling Link'}</li><li>${config.analytics ? 'Profile Analytics' : 'No Analytics'}</li><li>${config.verification ? 'Verification Eligible' : 'Not Verification Eligible'}</li><li>${config.canCustomizeAds ? 'Custom Promo Blocks' : 'No Custom Blocks'}</li><li>${config.canControlPlatformAd ? 'Ad Controls' : 'Platform Ads On'}</li></ul></div>`;
  }
  allTiersHtml += '</div>';
  allTiersContainer.innerHTML = allTiersHtml;
@@ -1824,3 +1811,4 @@
  </script>
 </body>
 </html>
+
