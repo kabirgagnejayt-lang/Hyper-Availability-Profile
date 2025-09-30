@@ -747,32 +747,25 @@
 
  async function handleEmailSignup(e) {
  e.preventDefault();
- const displayName = document.getElementById('signup-name').value.trim();
+ const name = document.getElementById('signup-name').value.trim();
  const email = document.getElementById('signup-email').value.trim();
  const password = document.getElementById('signup-password').value;
- const errorMsg = document.getElementById('error-message');
- errorMsg.textContent = '';
- if (!displayName || !email || password.length < 6) {
- errorMsg.textContent = 'Please fill all fields. Password must be at least 6 characters.';
- return;
- }
+ if (!name || !email || password.length < 6) { return; }
  try {
- const result = await createUserWithEmailAndPassword(auth, email, password);
- await updateProfile(result.user, { displayName });
- await initializeNewUser(result.user, { displayName });
+  const result = await createUserWithEmailAndPassword(auth, email, password);
+  await updateProfile(result.user, { displayName: name });
+  await initializeNewUser(result.user, { displayName: name });
  } catch (error) {
- errorMsg.textContent = getFriendlyAuthError(error.code);
+  document.getElementById('error-message').textContent = getFriendlyAuthError(error.code);
  }
  }
 
  async function handleGoogleLogin() {
  const provider = new GoogleAuthProvider();
  try {
- const result = await signInWithPopup(auth, provider);
- await initializeNewUser(result.user);
+  await signInWithPopup(auth, provider);
  } catch (error) {
- const errorMsg = document.getElementById('error-message');
- errorMsg.textContent = getFriendlyAuthError(error.code);
+  document.getElementById('error-message').textContent = getFriendlyAuthError(error.code);
  }
  }
 
@@ -780,12 +773,10 @@
  e.preventDefault();
  const email = document.getElementById('login-email').value.trim();
  const password = document.getElementById('login-password').value;
- const errorMsg = document.getElementById('error-message');
- errorMsg.textContent = '';
  try {
- await signInWithEmailAndPassword(auth, email, password);
+  await signInWithEmailAndPassword(auth, email, password);
  } catch (error) {
- errorMsg.textContent = getFriendlyAuthError(error.code);
+  document.getElementById('error-message').textContent = getFriendlyAuthError(error.code);
  }
  }
 
@@ -795,26 +786,27 @@
 
  onAuthStateChanged(auth, async (user) => {
  const wasLoggedIn = !!App.currentUser;
- App.currentUser = user ? { email: user.email, displayName: user.displayName, userId: user.uid } : null;
+ if (user) {
+  await setupSession(user.uid);
+  App.currentUser = { email: user.email, displayName: user.displayName, userId: user.uid };
+ } else {
+  App.currentUser = null;
+  App.currentProfileData = null;
+ }
  const isLoggedIn = !!App.currentUser;
 
- if (isLoggedIn) {
- await setupSession(user.uid);
- }
-
  if (!isAuthResolved) {
- isAuthResolved = true;
- hashChangeRouter(); 
+  isAuthResolved = true;
+  hashChangeRouter();
  }
 
  if (isLoggedIn && !wasLoggedIn) {
- const redirectTarget = sessionStorage.getItem('redirectAfterLogin');
- sessionStorage.removeItem('redirectAfterLogin');
- navigateTo(redirectTarget || 'profilePage', true);
+  const redirectTarget = sessionStorage.getItem('redirectAfterLogin');
+  sessionStorage.removeItem('redirectAfterLogin');
+  navigateTo(redirectTarget || 'profilePage');
  } else if (!isLoggedIn && wasLoggedIn) {
- App.currentProfileData = null;
- clearInterval(timetableCheckInterval);
- navigateTo('loginPage', true);
+  clearInterval(timetableCheckInterval);
+  navigateTo('loginPage');
  }
  });
 
@@ -869,7 +861,6 @@
  const data = userSnap.val();
  data.userId = userId; 
  App.currentProfileData = data;
- App.currentUser.displayName = data.displayName;
 
  const today = new Date().toISOString().split('T')[0];
  const loginHistory = data.achievements?.loginHistory || {};
@@ -918,7 +909,6 @@
  userData.status = activeSchedule.status;
  userData.message = activeSchedule.message;
  }
- App.currentProfileData = userData; 
  renderProfile(userData);
  if (!App.currentUser || App.currentUser.userId !== userId) {
  trackProfileView(userId);
@@ -967,11 +957,11 @@
 
     const updatedSnapshot = await get(userRef);
     const oldTier = App.currentProfileData.membershipTier;
-    App.currentProfileData = updatedSnapshot.val() || {};
+    App.currentProfileData = { ...updatedSnapshot.val(), userId: App.currentUser.userId };
     await updateMembershipTier(App.currentUser.userId, App.currentProfileData, oldTier);
 
     const finalSnapshot = await get(userRef);
-    App.currentProfileData = finalSnapshot.val() || {};
+    App.currentProfileData = { ...finalSnapshot.val(), userId: App.currentUser.userId };
 
     applyVisuals(App.currentProfileData);
     renderProfile(App.currentProfileData);
@@ -1170,14 +1160,20 @@
         promoTop.innerHTML = topPromoHTML;
         promoTop.classList.remove('hidden');
         if (!isOwnerViewing) {
-            promoTop.querySelector('#promo-action-btn-top').onclick = () => navigateTo('loginPage', true);
+            promoTop.querySelector('#promo-action-btn-top').onclick = () => {
+                const cleanUrl = window.location.origin + window.location.pathname;
+                window.location.href = cleanUrl;
+            };
         }
     }
     if (platformAdPosition === 'bottom' || platformAdPosition === 'both') {
         promoBottom.innerHTML = bottomPromoHTML;
         promoBottom.classList.remove('hidden');
         if (!isOwnerViewing) {
-            promoBottom.querySelector('#promo-action-btn-bottom').onclick = () => navigateTo('loginPage', true);
+            promoBottom.querySelector('#promo-action-btn-bottom').onclick = () => {
+                const cleanUrl = window.location.origin + window.location.pathname;
+                window.location.href = cleanUrl;
+            };
         }
     }
  }
@@ -1416,8 +1412,9 @@
  }
 
  function handleGenerateQrCode() {
-    if (!App.currentProfileData) return;
-    const profileId = App.currentProfileData.userId;
+    const profileId = isPublicView ? new URLSearchParams(window.location.search).get('user') : App.currentUser.userId;
+    if (!profileId) return;
+
     const img = document.getElementById('profile-qrcode-img'), placeholder = document.getElementById('qrcode-placeholder');
     const shareUrl = `${window.location.origin}${window.location.pathname}?user=${profileId}`;
     img.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(shareUrl)}`;
@@ -1425,8 +1422,9 @@
  }
 
  function handleShareStatus() {
-    if (!App.currentProfileData) return;
-    const profileId = App.currentProfileData.userId;
+    const profileId = isPublicView ? new URLSearchParams(window.location.search).get('user') : App.currentUser.userId;
+    if (!profileId) return;
+    
     const shareUrl = `${window.location.origin}${window.location.pathname}?user=${profileId}&ref=${profileId}`;
     navigator.clipboard.writeText(shareUrl).then(() => {
         showToast('Profile link copied to clipboard! 🔗');
@@ -1817,5 +1815,4 @@
  </script>
 </body>
 </html>
-
 
