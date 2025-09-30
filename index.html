@@ -1110,13 +1110,19 @@
     renderActionLinks(data);
 
     const qrBtn = document.getElementById('generate-qrcode-btn');
-    if(tierConfig.qrCode) {
-        qrBtn.disabled = false;
-        qrBtn.textContent = "Generate QR Code";
+    if (isOwnerViewing) {
+        if(tierConfig.qrCode) {
+            qrBtn.disabled = false;
+            qrBtn.textContent = "Generate QR Code";
+        } else {
+            qrBtn.disabled = true;
+            qrBtn.textContent = "Upgrade to Plus for QR Code";
+        }
     } else {
         qrBtn.disabled = true;
-        qrBtn.textContent = "Upgrade to Plus for QR Code";
+        qrBtn.textContent = tierConfig.qrCode ? "QR Code (Owner Only)" : "QR Code (Unavailable)";
     }
+
 
     const topAdContainer = document.getElementById('top-ad-container');
     const bottomAdContainer = document.getElementById('bottom-ad-container');
@@ -1815,4 +1821,5 @@
  </script>
 </body>
 </html>
+
 
