@@ -258,6 +258,13 @@
  </div>
  </div>
  <div id="profilePage" class="page">
+ <div id="create-hap-promo-top" class="card hidden">
+    <h3 style="text-align: center;">Like this status page?</h3>
+    <p style="text-align: center;">Create your own real-time availability profile in seconds!</p>
+    <div style="display: flex; justify-content: center; margin-top: 15px;">
+    <button class="btn" id="promo-action-btn-top" style="flex: 0 1 250px;"></button>
+    </div>
+ </div>
  <div id="top-ad-container" class="card hidden" style="padding: 10px; text-align: center;"></div>
  <div class="card profile-header">
  <div id="profile-pfp"></div> 
@@ -291,12 +298,12 @@
  <button id="share-status-btn" class="btn" style="margin-top: 10px;">Copy Profile Link</button>
  </div>
  <div id="bottom-ad-container" class="card hidden" style="padding: 20px; text-align: center;"></div>
- <div class="card hidden" id="create-hap-promo">
- <h3 style="text-align: center;">Like this status page?</h3>
- <p style="text-align: center;">Create your own real-time availability profile in seconds!</p>
- <div style="display: flex; justify-content: center; margin-top: 15px;">
- <button class="btn" id="promo-action-btn" style="flex: 0 1 250px;"></button>
- </div>
+ <div id="create-hap-promo-bottom" class="card hidden">
+    <h3 style="text-align: center;">Like this status page?</h3>
+    <p style="text-align: center;">Create your own real-time availability profile in seconds!</p>
+    <div style="display: flex; justify-content: center; margin-top: 15px;">
+    <button class="btn" id="promo-action-btn-bottom" style="flex: 0 1 250px;"></button>
+    </div>
  </div>
  </div>
  <div id="searchPage" class="page">
@@ -463,8 +470,7 @@
  </div>
  <div class="card hidden" id="custom-ads-settings-card">
     <h2>Promotional Blocks 📢</h2>
-    <p class="muted">As a Max or Owner tier member, you can display your own custom promotional content on your public profile.</p>
-    
+    <p class="muted">As a Pro tier member or higher, you can display your own custom content on your public profile.</p>
     <div class="form-group">
         <label for="ads-enabled-toggle">Display Custom Blocks</label>
         <select id="ads-enabled-toggle">
@@ -472,7 +478,6 @@
         <option value="true">Enabled</option>
         </select>
     </div>
-
     <div id="ad-customization-fields" class="hidden">
         <h3 style="margin-top: 30px;">Top Block (Image Banner)</h3>
         <div class="form-group">
@@ -483,7 +488,6 @@
         <label for="top-ad-link-url">Target URL (when banner is clicked)</label>
         <input type="url" id="top-ad-link-url" placeholder="https://your-project.com">
         </div>
-        
         <h3 style="margin-top: 30px;">Bottom Block (Text)</h3>
         <div class="form-group">
         <label for="bottom-ad-text">Text Content</label>
@@ -493,6 +497,18 @@
         <label for="bottom-ad-link-url">Target URL (when text is clicked)</label>
         <input type="url" id="bottom-ad-link-url" placeholder="https://your-other-project.com">
         </div>
+    </div>
+ </div>
+ <div class="card hidden" id="platform-ad-settings-card">
+    <h2>Platform Ad Settings</h2>
+    <p class="muted">As a Max or Owner, your profile is ad-free by default. You can choose to re-enable the platform's 'Join HAP' promotion to support the project.</p>
+    <div class="form-group">
+        <label for="platform-ad-toggle">"Join HAP" Promotion</label>
+        <select id="platform-ad-toggle">
+            <option value="off">Disabled (Default)</option>
+            <option value="top">Show at Top</option>
+            <option value="bottom">Show at Bottom</option>
+        </select>
     </div>
  </div>
  <div class="card">
@@ -579,64 +595,29 @@
 
  const USER_TIER_CONFIG = {
   'Member': { 
-    name: 'Member', 
-    linkLimit: 1, 
-    pfp: false, 
-    customFont: false, 
-    customColor: false, 
-    timetable: false, 
-    scheduling: false, 
-    analytics: false, 
-    verification: false, 
-    showAd: true 
+    name: 'Member', linkLimit: 1, pfp: false, customFont: false, customColor: false, 
+    timetable: false, scheduling: false, analytics: false, verification: false, 
+    showAd: true, canCustomizeAds: false 
   },
   'Plus': { 
-    name: 'Plus', 
-    linkLimit: 3, 
-    pfp: true, 
-    customFont: true, 
-    customColor: true, 
-    timetable: false, 
-    scheduling: false, 
-    analytics: false, 
-    verification: false, 
-    showAd: true 
+    name: 'Plus', linkLimit: 3, pfp: true, customFont: true, customColor: true, 
+    timetable: false, scheduling: false, analytics: false, verification: false, 
+    showAd: true, canCustomizeAds: false
   },
   'Pro': { 
-    name: 'Pro', 
-    linkLimit: 5, 
-    pfp: true, 
-    customFont: true, 
-    customColor: true, 
-    timetable: true, 
-    scheduling: false, 
-    analytics: true, 
-    verification: true, 
-    showAd: true 
+    name: 'Pro', linkLimit: 5, pfp: true, customFont: true, customColor: true, 
+    timetable: true, scheduling: false, analytics: true, verification: true, 
+    showAd: true, canCustomizeAds: true
   },
   'Max': { 
-    name: 'Max', 
-    linkLimit: 10, 
-    pfp: true, 
-    customFont: true, 
-    customColor: true, 
-    timetable: true, 
-    scheduling: true, 
-    analytics: true, 
-    verification: true, 
-    showAd: false 
+    name: 'Max', linkLimit: 10, pfp: true, customFont: true, customColor: true, 
+    timetable: true, scheduling: true, analytics: true, verification: true, 
+    showAd: false, canCustomizeAds: true 
   },
   'Owner': {
-    name: 'Owner', 
-    linkLimit: 10, 
-    pfp: true, 
-    customFont: true, 
-    customColor: true, 
-    timetable: true, 
-    scheduling: true, 
-    analytics: true, 
-    verification: true, 
-    showAd: false 
+    name: 'Owner', linkLimit: 10, pfp: true, customFont: true, customColor: true, 
+    timetable: true, scheduling: true, analytics: true, verification: true, 
+    showAd: false, canCustomizeAds: true
   },
  };
  
@@ -809,6 +790,8 @@
  membershipTier: 'Member',
  verified: false,
  pfpText: defaultPfpText,
+ adsEnabled: false,
+ platformAdDisplay: 'off',
  achievements: { 
  profileComplete: 0, scheduler: 0, socialButterfly: 0, firstShare: 0,
  views: 0, loyalUser: 1, expressive: 0, referral: 0, picturePerfect: 0,
@@ -980,30 +963,12 @@
 
  App.elements.profilePage?.classList.add('active');
  await displayPublicProfile(userIdFromUrl);
- const tierConfig = USER_TIER_CONFIG[App.currentProfileData?.membershipTier || 'Member'] || {};
  publicViewInterval = setInterval(() => displayPublicProfile(userIdFromUrl), 30000);
-
- const promoCard = document.getElementById('create-hap-promo');
- if(promoCard) {
- promoCard.classList.toggle('hidden', !tierConfig.showAd);
- const promoBtn = document.getElementById('promo-action-btn');
- if (App.currentUser) {
- if (App.currentUser.userId === userIdFromUrl) {
- promoCard.classList.add('hidden');
- } else {
- promoBtn.textContent = 'Go to My Dashboard';
- promoBtn.onclick = () => navigateTo('profilePage', true);
- }
- } else {
- promoBtn.textContent = 'Get Started Now';
- promoBtn.onclick = () => navigateTo('loginPage', true);
- }
- }
+ 
  return;
  }
 
  isPublicView = false;
- document.getElementById('create-hap-promo')?.classList.add('hidden');
  document.body.style.paddingBottom = "100px";
 
  const hash = window.location.hash.substring(1);
@@ -1072,43 +1037,71 @@
  function renderProfile(data) {
     if (!data) return;
     
+    // -- Render Core Profile Info --
     const profileNameEl = document.getElementById('profile-name');
     const membershipContainer = document.getElementById('membership-tier-display-container');
     const name = data.displayName || 'Unnamed User';
     profileNameEl.innerHTML = name;
-
     const userVerifiedIcon = `<svg class="inline-verified-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm13.36-1.814a.75.75 0 1 0-1.06-1.06l-3.103 3.103-1.53-1.53a.75.75 0 0 0-1.06 1.06l2.06 2.06a.75.75 0 0 0 1.06 0l3.64-3.64Z" clip-rule="evenodd" /></svg>`;
     if (data.verified) profileNameEl.innerHTML += userVerifiedIcon;
-
     const tier = data.membershipTier || 'Member';
+    const tierConfig = USER_TIER_CONFIG[tier];
     profileNameEl.classList.toggle('is-owner', tier === 'Owner');
-    membershipContainer.innerHTML = `<div class="membership-badge tier-${tier}">${USER_TIER_CONFIG[tier]?.name || tier}</div>`;
-    
+    membershipContainer.innerHTML = `<div class="membership-badge tier-${tier}">${tierConfig.name || tier}</div>`;
     document.getElementById('profile-emoji').textContent = data.status || '❓';
     document.getElementById('profile-message').textContent = data.message || 'No message set.';
-    
     renderPersonalDetails(data);
     const timeData = getLocalTimeData();
     document.getElementById('local-time-info').textContent = `Local Time: ${timeData.time} (${timeData.offset})`;
-    renderCustomLinks(data.links, document.getElementById('profile-links'), USER_TIER_CONFIG[tier]);
+    renderCustomLinks(data.links, document.getElementById('profile-links'), tierConfig);
     renderActionLinks(data);
 
+    // -- Render Custom User Ads (Pro+) --
     const topAdContainer = document.getElementById('top-ad-container');
     const bottomAdContainer = document.getElementById('bottom-ad-container');
-
     topAdContainer.innerHTML = '';
     topAdContainer.classList.add('hidden');
     bottomAdContainer.innerHTML = '';
     bottomAdContainer.classList.add('hidden');
 
-    if (data.adsEnabled) {
+    if (tierConfig.canCustomizeAds && data.adsEnabled) {
         if (data.topAd?.imageUrl && data.topAd?.linkUrl) {
-        topAdContainer.innerHTML = `<a href="${data.topAd.linkUrl}" target="_blank" rel="noopener noreferrer nofollow"><img src="${data.topAd.imageUrl}" alt="Promotional Banner"></a>`;
-        topAdContainer.classList.remove('hidden');
+            topAdContainer.innerHTML = `<a href="${data.topAd.linkUrl}" target="_blank" rel="noopener noreferrer nofollow"><img src="${data.topAd.imageUrl}" alt="Promotional Banner"></a>`;
+            topAdContainer.classList.remove('hidden');
         }
         if (data.bottomAd?.text && data.bottomAd?.linkUrl) {
-        bottomAdContainer.innerHTML = `<a href="${data.bottomAd.linkUrl}" target="_blank" rel="noopener noreferrer nofollow">${data.bottomAd.text}</a>`;
-        bottomAdContainer.classList.remove('hidden');
+            bottomAdContainer.innerHTML = `<a href="${data.bottomAd.linkUrl}" target="_blank" rel="noopener noreferrer nofollow">${data.bottomAd.text}</a>`;
+            bottomAdContainer.classList.remove('hidden');
+        }
+    }
+    
+    // -- Render Platform "Join HAP" Ad --
+    const promoTop = document.getElementById('create-hap-promo-top');
+    const promoBottom = document.getElementById('create-hap-promo-bottom');
+    promoTop.classList.add('hidden');
+    promoBottom.classList.add('hidden');
+
+    const configurePromoButton = (btnId) => {
+        const promoBtn = document.getElementById(btnId);
+        if (App.currentUser && App.currentUser.userId === data.userId) {
+            promoBtn.textContent = 'Go to My Dashboard';
+            promoBtn.onclick = () => navigateTo('profilePage', true);
+        } else {
+            promoBtn.textContent = 'Get Started Now';
+            promoBtn.onclick = () => navigateTo('loginPage', true);
+        }
+    };
+    
+    if (tierConfig.showAd) {
+        promoBottom.classList.remove('hidden');
+        configurePromoButton('promo-action-btn-bottom');
+    } else if (tier === 'Max' || tier === 'Owner') {
+        if (data.platformAdDisplay === 'top') {
+            promoTop.classList.remove('hidden');
+            configurePromoButton('promo-action-btn-top');
+        } else if (data.platformAdDisplay === 'bottom') {
+            promoBottom.classList.remove('hidden');
+            configurePromoButton('promo-action-btn-bottom');
         }
     }
  }
@@ -1206,12 +1199,7 @@
         if (country) { countrySearch.value = `${getCountryFlagEmoji(country.code)} ${country.name}`; countryCodeInput.value = country.code; }
     } else { countrySearch.value = ''; countryCodeInput.value = ''; }
 
-    const pfpGroup = document.getElementById('pfp-upload-group');
-    pfpGroup.classList.toggle('form-field-disabled', !tierConfig.pfp);
-    if (!tierConfig.pfp && !pfpGroup.querySelector('.muted')) {
-        pfpGroup.insertAdjacentHTML('beforeend', '<p class="muted">Upgrade to Plus to add a profile picture.</p>');
-    }
-
+    document.getElementById('pfp-upload-group').classList.toggle('form-field-disabled', !tierConfig.pfp);
     document.getElementById('font-customization-field').classList.toggle('form-field-disabled', !tierConfig.customFont);
     document.getElementById('scheduling-link-field').classList.toggle('form-field-disabled', !tierConfig.scheduling);
     document.getElementById('accent-color-field').classList.toggle('form-field-disabled', !tierConfig.customColor);
@@ -1232,29 +1220,30 @@
 
     document.getElementById('status-emoji').value = data.status || '🟢';
     document.getElementById('status-message').value = data.message || '';
-
     renderTimetableSettings(data.timetable);
     renderVerificationSettings(data);
 
-    const isAdEligible = tier === 'Max' || tier === 'Owner';
-    const adSettingsCard = document.getElementById('custom-ads-settings-card');
-    const adToggle = document.getElementById('ads-enabled-toggle');
-    const adFields = document.getElementById('ad-customization-fields');
-
-    adSettingsCard.classList.toggle('hidden', !isAdEligible);
-
-    if (isAdEligible) {
+    // -- Custom Ad Settings (Pro+) --
+    const customAdCard = document.getElementById('custom-ads-settings-card');
+    customAdCard.classList.toggle('hidden', !tierConfig.canCustomizeAds);
+    if (tierConfig.canCustomizeAds) {
+        const adToggle = document.getElementById('ads-enabled-toggle');
+        const adFields = document.getElementById('ad-customization-fields');
         adToggle.value = data.adsEnabled ? 'true' : 'false';
         adFields.classList.toggle('hidden', !data.adsEnabled);
-
         document.getElementById('top-ad-image-url').value = data.topAd?.imageUrl || '';
         document.getElementById('top-ad-link-url').value = data.topAd?.linkUrl || '';
         document.getElementById('bottom-ad-text').value = data.bottomAd?.text || '';
         document.getElementById('bottom-ad-link-url').value = data.bottomAd?.linkUrl || '';
+        adToggle.onchange = () => adFields.classList.toggle('hidden', adToggle.value !== 'true');
+    }
 
-        adToggle.onchange = () => {
-            adFields.classList.toggle('hidden', adToggle.value !== 'true');
-        };
+    // -- Platform Ad Settings (Max/Owner) --
+    const isPlatformAdEligible = tier === 'Max' || tier === 'Owner';
+    const platformAdCard = document.getElementById('platform-ad-settings-card');
+    platformAdCard.classList.toggle('hidden', !isPlatformAdEligible);
+    if(isPlatformAdEligible) {
+        document.getElementById('platform-ad-toggle').value = data.platformAdDisplay || 'off';
     }
  }
 
@@ -1305,9 +1294,7 @@
     for (let i = 0; i < linkLimit; i++) {
         const label = document.getElementById(`link-label-${i}`)?.value.trim();
         const url = document.getElementById(`link-url-${i}`)?.value.trim();
-        if (label && url) {
-        customLinks.push({ label, url });
-        }
+        if (label && url) { customLinks.push({ label, url }); }
     }
 
     const dataToSave = {
@@ -1326,8 +1313,7 @@
         links: customLinks
     };
 
-    const isAdEligible = tier === 'Max' || tier === 'Owner';
-    if (isAdEligible) {
+    if (tierConfig.canCustomizeAds) {
         dataToSave.adsEnabled = document.getElementById('ads-enabled-toggle').value === 'true';
         dataToSave.topAd = {
             imageUrl: document.getElementById('top-ad-image-url').value.trim(),
@@ -1337,6 +1323,11 @@
             text: document.getElementById('bottom-ad-text').value.trim(),
             linkUrl: document.getElementById('bottom-ad-link-url').value.trim()
         };
+    }
+    
+    const isPlatformAdEligible = tier === 'Max' || tier === 'Owner';
+    if(isPlatformAdEligible) {
+        dataToSave.platformAdDisplay = document.getElementById('platform-ad-toggle').value;
     }
 
     if (App.currentProfileData.pfpUrl) {
@@ -1626,7 +1617,7 @@
  let allTiersHtml = '<div class="tier-plan-grid">';
  for (const tierKey of ['Member', 'Plus', 'Pro', 'Max']) {
  const config = USER_TIER_CONFIG[tierKey];
- allTiersHtml += `<div class="tier-plan-card"><h3><div class="membership-badge tier-${tierKey}">${config.name}</div></h3><ul><li>${config.linkLimit} Custom Link${config.linkLimit > 1 ? 's' : ''}</li><li>${config.pfp ? 'Custom Profile Picture' : 'Default Profile Picture'}</li><li>${config.customFont ? 'Custom Profile Font' : 'Standard Font'}</li><li>${config.customColor ? 'Custom Profile Colors' : 'Standard Colors'}</li><li>${config.timetable ? 'Automatic Timetable' : 'Manual Status Only'}</li><li>${config.scheduling ? 'Scheduling Link Display' : 'No Scheduling Link'}</li><li>${config.analytics ? 'Profile Analytics' : 'No Analytics'}</li><li>${config.verification ? 'Verification Eligible' : 'Not Verification Eligible'}</li><li>${config.showAd ? 'Shows Platform Ad' : 'Ad-Free Profile'}</li></ul></div>`;
+ allTiersHtml += `<div class="tier-plan-card"><h3><div class="membership-badge tier-${tierKey}">${config.name}</div></h3><ul><li>${config.linkLimit} Custom Link${config.linkLimit > 1 ? 's' : ''}</li><li>${config.pfp ? 'Custom Profile Picture' : 'Default Profile Picture'}</li><li>${config.customFont ? 'Custom Profile Font' : 'Standard Font'}</li><li>${config.customColor ? 'Custom Profile Colors' : 'Standard Colors'}</li><li>${config.timetable ? 'Automatic Timetable' : 'Manual Status Only'}</li><li>${config.scheduling ? 'Scheduling Link Display' : 'No Scheduling Link'}</li><li>${config.analytics ? 'Profile Analytics' : 'No Analytics'}</li><li>${config.verification ? 'Verification Eligible' : 'Not Verification Eligible'}</li><li>${config.canCustomizeAds ? 'Custom Promo Blocks' : 'No Custom Blocks'}</li><li>${config.showAd ? 'Shows Platform Ad' : 'Ad-Free Profile'}</li></ul></div>`;
  }
  allTiersHtml += '</div>';
  allTiersContainer.innerHTML = allTiersHtml;
