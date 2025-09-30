@@ -204,23 +204,34 @@
  .tier-plan-card ul { list-style-type: '✓ '; padding-left: 20px; color: var(--muted); }
  .tier-plan-card ul li { margin-bottom: 8px; }
  #top-ad-container a, #bottom-ad-container a {
-  display: block;
-  text-decoration: none;
-  color: inherit;
-  border-radius: var(--radius);
-  transition: transform 0.2s ease;
+  display: block; text-decoration: none; color: inherit;
+  border-radius: var(--radius); transition: transform 0.2s ease;
  }
- #top-ad-container a:hover, #bottom-ad-container a:hover {
-    transform: scale(1.02);
+ #top-ad-container a:hover, #bottom-ad-container a:hover { transform: scale(1.02); }
+ #top-ad-container img { max-width: 100%; border-radius: var(--radius); display: block; }
+ #bottom-ad-container { font-weight: 500; background-color: var(--input-bg); }
+ #create-hap-promo-top {
+    padding: 10px 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
  }
- #top-ad-container img {
-  max-width: 100%;
-  border-radius: var(--radius);
-  display: block;
+ #create-hap-promo-top h3, #create-hap-promo-top p {
+    margin: 0;
+    text-align: left;
  }
- #bottom-ad-container {
-  font-weight: 500;
-  background-color: var(--input-bg);
+ #create-hap-promo-top h3 { font-size: 1rem; }
+ #create-hap-promo-top p { font-size: 0.9rem; }
+ #create-hap-promo-top .btn {
+    flex-shrink: 0;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    width: auto;
+ }
+ @media (max-width: 500px) {
+    #create-hap-promo-top { flex-direction: column; text-align: center; }
+    #create-hap-promo-top h3, #create-hap-promo-top p { text-align: center; }
  }
  </style>
 </head>
@@ -259,11 +270,11 @@
  </div>
  <div id="profilePage" class="page">
  <div id="create-hap-promo-top" class="card hidden">
-    <h3 style="text-align: center;">Like this status page?</h3>
-    <p style="text-align: center;">Create your own real-time availability profile in seconds!</p>
-    <div style="display: flex; justify-content: center; margin-top: 15px;">
-    <button class="btn" id="promo-action-btn-top" style="flex: 0 1 250px;"></button>
+    <div>
+        <h3>Like this status page?</h3>
+        <p>Create your own in seconds!</p>
     </div>
+    <button class="btn" id="promo-action-btn-top">Get Started</button>
  </div>
  <div id="top-ad-container" class="card hidden" style="padding: 10px; text-align: center;"></div>
  <div class="card profile-header">
@@ -501,13 +512,14 @@
  </div>
  <div class="card hidden" id="platform-ad-settings-card">
     <h2>Platform Ad Settings</h2>
-    <p class="muted">As a Max or Owner, your profile is ad-free by default. You can choose to re-enable the platform's 'Join HAP' promotion to support the project.</p>
+    <p class="muted">Control the visibility and position of the default 'Join HAP' promotion on your profile.</p>
     <div class="form-group">
         <label for="platform-ad-toggle">"Join HAP" Promotion</label>
         <select id="platform-ad-toggle">
-            <option value="off">Disabled (Default)</option>
+            <option value="off">Disabled</option>
             <option value="top">Show at Top</option>
             <option value="bottom">Show at Bottom</option>
+            <option value="both">Show at Top & Bottom</option>
         </select>
     </div>
  </div>
@@ -597,27 +609,27 @@
   'Member': { 
     name: 'Member', linkLimit: 1, pfp: false, customFont: false, customColor: false, 
     timetable: false, scheduling: false, analytics: false, verification: false, 
-    showAd: true, canCustomizeAds: false 
+    canCustomizeAds: false, canControlPlatformAd: false
   },
   'Plus': { 
     name: 'Plus', linkLimit: 3, pfp: true, customFont: true, customColor: true, 
     timetable: false, scheduling: false, analytics: false, verification: false, 
-    showAd: true, canCustomizeAds: false
+    canCustomizeAds: false, canControlPlatformAd: true
   },
   'Pro': { 
     name: 'Pro', linkLimit: 5, pfp: true, customFont: true, customColor: true, 
     timetable: true, scheduling: false, analytics: true, verification: true, 
-    showAd: true, canCustomizeAds: true
+    canCustomizeAds: true, canControlPlatformAd: true
   },
   'Max': { 
     name: 'Max', linkLimit: 10, pfp: true, customFont: true, customColor: true, 
     timetable: true, scheduling: true, analytics: true, verification: true, 
-    showAd: false, canCustomizeAds: true 
+    canCustomizeAds: true, canControlPlatformAd: true 
   },
   'Owner': {
     name: 'Owner', linkLimit: 10, pfp: true, customFont: true, customColor: true, 
     timetable: true, scheduling: true, analytics: true, verification: true, 
-    showAd: false, canCustomizeAds: true
+    canCustomizeAds: true, canControlPlatformAd: true
   },
  };
  
@@ -791,7 +803,7 @@
  verified: false,
  pfpText: defaultPfpText,
  adsEnabled: false,
- platformAdDisplay: 'off',
+ platformAdDisplay: 'both', // Default for new Member users
  achievements: { 
  profileComplete: 0, scheduler: 0, socialButterfly: 0, firstShare: 0,
  views: 0, loyalUser: 1, expressive: 0, referral: 0, picturePerfect: 0,
@@ -921,10 +933,14 @@
 
  const updatedSnapshot = await get(userRef);
  App.currentProfileData = updatedSnapshot.val() || {};
+ await updateMembershipTier(App.currentUser.userId, App.currentProfileData);
+
+ const finalSnapshot = await get(userRef);
+ App.currentProfileData = finalSnapshot.val() || {};
+
  applyVisuals(App.currentProfileData);
  renderProfile(App.currentProfileData);
-
- await updateMembershipTier(App.currentUser.userId);
+ populateSettings(App.currentProfileData);
 
  showToast('Settings Saved & Status Updated! 💾');
  navigateTo('profilePage');
@@ -943,67 +959,76 @@
  }
 
  async function hashChangeRouter() {
- clearInterval(countdownInterval);
- if(publicViewInterval) clearInterval(publicViewInterval);
- if (!isAuthResolved) return;
+    clearInterval(countdownInterval);
+    if(publicViewInterval) clearInterval(publicViewInterval);
+    if (!isAuthResolved) return;
 
- const params = new URLSearchParams(window.location.search);
- const userIdFromUrl = params.get('user');
- const refIdFromUrl = params.get('ref');
+    const params = new URLSearchParams(window.location.search);
+    const userIdFromUrl = params.get('user');
+    const refIdFromUrl = params.get('ref');
 
- if(refIdFromUrl && !App.currentUser) {
- sessionStorage.setItem('referrerId', refIdFromUrl);
- }
+    if(refIdFromUrl && !App.currentUser) {
+        sessionStorage.setItem('referrerId', refIdFromUrl);
+    }
 
- if (userIdFromUrl) {
- isPublicView = true;
- App.pages.forEach(pId => App.elements[pId]?.classList.remove('active'));
- document.body.style.paddingBottom = "20px";
- App.elements.mainHeader?.classList.add('hidden');
+    if (userIdFromUrl) {
+        isPublicView = true;
+        App.pages.forEach(pId => App.elements[pId]?.classList.remove('active'));
+        document.body.style.paddingBottom = "20px";
+        App.elements.mainHeader?.classList.add('hidden');
+        App.elements.profilePage?.classList.add('active');
+        await displayPublicProfile(userIdFromUrl);
+        publicViewInterval = setInterval(() => displayPublicProfile(userIdFromUrl), 30000);
+        return;
+    }
 
- App.elements.profilePage?.classList.add('active');
- await displayPublicProfile(userIdFromUrl);
- publicViewInterval = setInterval(() => displayPublicProfile(userIdFromUrl), 30000);
- 
- return;
- }
+    isPublicView = false;
+    document.body.style.paddingBottom = "100px";
 
- isPublicView = false;
- document.body.style.paddingBottom = "100px";
+    const hash = window.location.hash.substring(1);
+    let targetPageId = 'loginPage'; 
+    
+    if (App.currentUser) {
+        const userTier = App.currentProfileData.membershipTier || 'Member';
+        const tierConfig = USER_TIER_CONFIG[userTier];
+        const requestedPage = App.pages.includes(hash) ? hash : 'profilePage';
 
- const hash = window.location.hash.substring(1);
- let targetPageId = 'loginPage'; 
- 
- if (App.currentUser) {
- targetPageId = App.pages.includes(hash) ? hash : 'profilePage';
- }
+        // Page Access Control
+        if (requestedPage === 'analyticsPage' && !tierConfig.analytics) {
+            targetPageId = 'profilePage';
+            showToast("Upgrade to Pro to view analytics.", "error");
+        } else if (requestedPage === 'adminPage' && userTier !== 'Owner') {
+            targetPageId = 'profilePage';
+        } else {
+            targetPageId = requestedPage;
+        }
+    } else if (hash === 'searchPage') {
+        targetPageId = 'searchPage';
+    } else if (hash) {
+        sessionStorage.setItem('redirectAfterLogin', hash);
+        targetPageId = 'loginPage';
+    }
 
- if (!App.currentUser && targetPageId !== 'loginPage' && targetPageId !== 'searchPage') {
- sessionStorage.setItem('redirectAfterLogin', targetPageId);
- targetPageId = 'loginPage';
- }
-
- if (App.currentUser) {
- if (targetPageId === 'adminPage' && App.currentProfileData.membershipTier !== 'Owner') {
- targetPageId = 'profilePage';
- }
- if(targetPageId === 'profilePage' && App.currentProfileData) {
- renderProfile(App.currentProfileData);
- } else if (targetPageId === 'analyticsPage') {
- await fetchAndRenderAnalytics();
- } else if (targetPageId === 'tiersPage') {
- renderTiersPage();
- } else if (targetPageId === 'adminPage') {
- renderAdminPanel();
- }
- } else if (targetPageId === 'searchPage') {
- document.getElementById('search-results-list').innerHTML = '<p class="muted">Search for users by name or click \'Search\' to view all public profiles.</p>';
- }
- 
- App.pages.forEach(pId => App.elements[pId]?.classList.toggle('active', pId === targetPageId));
- document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.page === targetPageId));
- App.elements.mainHeader?.classList.toggle('hidden', !App.currentUser || targetPageId === 'loginPage');
- window.scrollTo(0, 0);
+    if (App.currentUser) {
+        if(targetPageId === 'profilePage') {
+            renderProfile(App.currentProfileData);
+        } else if (targetPageId === 'analyticsPage') {
+            await fetchAndRenderAnalytics();
+        } else if (targetPageId === 'tiersPage') {
+            renderTiersPage();
+        } else if (targetPageId === 'adminPage') {
+            renderAdminPanel();
+        }
+    }
+    
+    if (targetPageId === 'searchPage') {
+        document.getElementById('search-results-list').innerHTML = '<p class="muted">Search for users by name or click \'Search\' to view all public profiles.</p>';
+    }
+    
+    App.pages.forEach(pId => App.elements[pId]?.classList.toggle('active', pId === targetPageId));
+    document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.page === targetPageId));
+    App.elements.mainHeader?.classList.toggle('hidden', !App.currentUser || targetPageId === 'loginPage');
+    window.scrollTo(0, 0);
  }
 
  function applyVisuals(userData) {
@@ -1037,7 +1062,6 @@
  function renderProfile(data) {
     if (!data) return;
     
-    // -- Render Core Profile Info --
     const profileNameEl = document.getElementById('profile-name');
     const membershipContainer = document.getElementById('membership-tier-display-container');
     const name = data.displayName || 'Unnamed User';
@@ -1056,13 +1080,10 @@
     renderCustomLinks(data.links, document.getElementById('profile-links'), tierConfig);
     renderActionLinks(data);
 
-    // -- Render Custom User Ads (Pro+) --
     const topAdContainer = document.getElementById('top-ad-container');
     const bottomAdContainer = document.getElementById('bottom-ad-container');
-    topAdContainer.innerHTML = '';
-    topAdContainer.classList.add('hidden');
-    bottomAdContainer.innerHTML = '';
-    bottomAdContainer.classList.add('hidden');
+    topAdContainer.innerHTML = ''; topAdContainer.classList.add('hidden');
+    bottomAdContainer.innerHTML = ''; bottomAdContainer.classList.add('hidden');
 
     if (tierConfig.canCustomizeAds && data.adsEnabled) {
         if (data.topAd?.imageUrl && data.topAd?.linkUrl) {
@@ -1075,34 +1096,34 @@
         }
     }
     
-    // -- Render Platform "Join HAP" Ad --
     const promoTop = document.getElementById('create-hap-promo-top');
     const promoBottom = document.getElementById('create-hap-promo-bottom');
     promoTop.classList.add('hidden');
     promoBottom.classList.add('hidden');
 
-    const configurePromoButton = (btnId) => {
-        const promoBtn = document.getElementById(btnId);
+    const configurePromoButton = (btnIdSuffix) => {
+        const promoBtn = document.getElementById(`promo-action-btn-${btnIdSuffix}`);
+        if(!promoBtn) return;
         if (App.currentUser && App.currentUser.userId === data.userId) {
-            promoBtn.textContent = 'Go to My Dashboard';
-            promoBtn.onclick = () => navigateTo('profilePage', true);
+             promoBtn.textContent = 'Go to My Dashboard';
+             promoBtn.onclick = () => navigateTo('profilePage', true);
         } else {
             promoBtn.textContent = 'Get Started Now';
             promoBtn.onclick = () => navigateTo('loginPage', true);
         }
     };
     
-    if (tierConfig.showAd) {
+    let platformAdPosition = 'off';
+    if(tier === 'Member') platformAdPosition = 'both';
+    else if(tierConfig.canControlPlatformAd) platformAdPosition = data.platformAdDisplay || 'off';
+    
+    if (platformAdPosition === 'top' || platformAdPosition === 'both') {
+        promoTop.classList.remove('hidden');
+        configurePromoButton('top');
+    }
+    if (platformAdPosition === 'bottom' || platformAdPosition === 'both') {
         promoBottom.classList.remove('hidden');
-        configurePromoButton('promo-action-btn-bottom');
-    } else if (tier === 'Max' || tier === 'Owner') {
-        if (data.platformAdDisplay === 'top') {
-            promoTop.classList.remove('hidden');
-            configurePromoButton('promo-action-btn-top');
-        } else if (data.platformAdDisplay === 'bottom') {
-            promoBottom.classList.remove('hidden');
-            configurePromoButton('promo-action-btn-bottom');
-        }
+        configurePromoButton('bottom');
     }
  }
 
@@ -1223,7 +1244,6 @@
     renderTimetableSettings(data.timetable);
     renderVerificationSettings(data);
 
-    // -- Custom Ad Settings (Pro+) --
     const customAdCard = document.getElementById('custom-ads-settings-card');
     customAdCard.classList.toggle('hidden', !tierConfig.canCustomizeAds);
     if (tierConfig.canCustomizeAds) {
@@ -1238,11 +1258,9 @@
         adToggle.onchange = () => adFields.classList.toggle('hidden', adToggle.value !== 'true');
     }
 
-    // -- Platform Ad Settings (Max/Owner) --
-    const isPlatformAdEligible = tier === 'Max' || tier === 'Owner';
     const platformAdCard = document.getElementById('platform-ad-settings-card');
-    platformAdCard.classList.toggle('hidden', !isPlatformAdEligible);
-    if(isPlatformAdEligible) {
+    platformAdCard.classList.toggle('hidden', !tierConfig.canControlPlatformAd);
+    if(tierConfig.canControlPlatformAd) {
         document.getElementById('platform-ad-toggle').value = data.platformAdDisplay || 'off';
     }
  }
@@ -1325,8 +1343,7 @@
         };
     }
     
-    const isPlatformAdEligible = tier === 'Max' || tier === 'Owner';
-    if(isPlatformAdEligible) {
+    if(tierConfig.canControlPlatformAd) {
         dataToSave.platformAdDisplay = document.getElementById('platform-ad-toggle').value;
     }
 
@@ -1343,7 +1360,6 @@
         dataToSave.pfpText = null;
         }
         await saveAndLogStatus(dataToSave); 
-        populateSettings(App.currentProfileData); 
     } catch (error) {
         console.error("Save settings error:", error);
         showToast("Failed to save settings.", "error");
@@ -1513,31 +1529,31 @@
  });
  }
 
- async function updateMembershipTier(userId) {
- const userRef = ref(db, `users/${userId}`);
- const snap = await get(userRef);
- if (!snap.exists()) return;
- 
- const data = snap.val();
- if (data.membershipTier === 'Owner') return;
+ async function updateMembershipTier(userId, userData) {
+    const currentTier = userData.membershipTier;
+    if (currentTier === 'Owner') return;
 
- const achievements = data.achievements || {};
- let newTier = 'Member';
- const check = (reqs) => reqs.every(req => (achievements[req.id] || 0) >= req.goal);
+    const achievements = userData.achievements || {};
+    const check = (reqs) => reqs.every(req => (achievements[req.id] || 0) >= req.goal);
+    
+    let newTier = currentTier;
 
- if (check(ACHIEVEMENT_CONFIG.toPlus)) newTier = 'Plus';
- if (newTier === 'Plus' && check(ACHIEVEMENT_CONFIG.toPro)) newTier = 'Pro';
- if (newTier === 'Pro' && check(ACHIEVEMENT_CONFIG.toMax)) newTier = 'Max';
+    if (currentTier === 'Member' && check(ACHIEVEMENT_CONFIG.toPlus)) {
+        newTier = 'Plus';
+    }
+    if (currentTier === 'Plus' && check(ACHIEVEMENT_CONFIG.toPro)) {
+        newTier = 'Pro';
+    }
+    if (currentTier === 'Pro' && check(ACHIEVEMENT_CONFIG.toMax)) {
+        newTier = 'Max';
+    }
 
- if (data.membershipTier !== newTier) {
- await update(userRef, { membershipTier: newTier });
- if(userId === App.currentUser?.userId) {
- showToast(`Congratulations! You've been promoted to ${USER_TIER_CONFIG[newTier].name}! 🎉`);
- App.currentProfileData.membershipTier = newTier;
- populateSettings(App.currentProfileData);
- renderTiersPage();
- }
- }
+    if (userData.membershipTier !== newTier) {
+        await update(ref(db, `users/${userId}`), { membershipTier: newTier });
+        if(userId === App.currentUser?.userId) {
+            showToast(`Congratulations! You've been promoted to ${USER_TIER_CONFIG[newTier].name}! 🎉`);
+        }
+    }
  }
 
  function renderVerificationSettings(data) {
@@ -1611,13 +1627,18 @@
  progressHtml += `<button id="level-up-btn" class="btn" style="margin-top: 20px;">Claim Your Promotion to ${USER_TIER_CONFIG[nextTierKey].name}!</button>`;
  }
  progressContainer.innerHTML = progressHtml;
- document.getElementById('level-up-btn')?.addEventListener('click', async () => await updateMembershipTier(App.currentUser.userId));
+ document.getElementById('level-up-btn')?.addEventListener('click', async () => {
+    await updateMembershipTier(App.currentUser.userId, App.currentProfileData);
+    const finalSnapshot = await get(ref(db, `users/${App.currentUser.userId}`));
+    App.currentProfileData = finalSnapshot.val() || {};
+    renderTiersPage();
+ });
  }
 
  let allTiersHtml = '<div class="tier-plan-grid">';
  for (const tierKey of ['Member', 'Plus', 'Pro', 'Max']) {
  const config = USER_TIER_CONFIG[tierKey];
- allTiersHtml += `<div class="tier-plan-card"><h3><div class="membership-badge tier-${tierKey}">${config.name}</div></h3><ul><li>${config.linkLimit} Custom Link${config.linkLimit > 1 ? 's' : ''}</li><li>${config.pfp ? 'Custom Profile Picture' : 'Default Profile Picture'}</li><li>${config.customFont ? 'Custom Profile Font' : 'Standard Font'}</li><li>${config.customColor ? 'Custom Profile Colors' : 'Standard Colors'}</li><li>${config.timetable ? 'Automatic Timetable' : 'Manual Status Only'}</li><li>${config.scheduling ? 'Scheduling Link Display' : 'No Scheduling Link'}</li><li>${config.analytics ? 'Profile Analytics' : 'No Analytics'}</li><li>${config.verification ? 'Verification Eligible' : 'Not Verification Eligible'}</li><li>${config.canCustomizeAds ? 'Custom Promo Blocks' : 'No Custom Blocks'}</li><li>${config.showAd ? 'Shows Platform Ad' : 'Ad-Free Profile'}</li></ul></div>`;
+ allTiersHtml += `<div class="tier-plan-card"><h3><div class="membership-badge tier-${tierKey}">${config.name}</div></h3><ul><li>${config.linkLimit} Custom Link${config.linkLimit > 1 ? 's' : ''}</li><li>${config.pfp ? 'Custom Profile Picture' : 'Default Profile Picture'}</li><li>${config.customFont ? 'Custom Profile Font' : 'Standard Font'}</li><li>${config.customColor ? 'Custom Profile Colors' : 'Standard Colors'}</li><li>${config.timetable ? 'Automatic Timetable' : 'Manual Status Only'}</li><li>${config.scheduling ? 'Scheduling Link Display' : 'No Scheduling Link'}</li><li>${config.analytics ? 'Profile Analytics' : 'No Analytics'}</li><li>${config.verification ? 'Verification Eligible' : 'Not Verification Eligible'}</li><li>${config.canCustomizeAds ? 'Custom Promo Blocks' : 'No Custom Blocks'}</li><li>${config.canControlPlatformAd ? 'Ad Controls' : 'Platform Ads On'}</li></ul></div>`;
  }
  allTiersHtml += '</div>';
  allTiersContainer.innerHTML = allTiersHtml;
