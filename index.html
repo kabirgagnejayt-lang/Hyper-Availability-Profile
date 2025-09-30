@@ -121,8 +121,6 @@
  .tier-Pro { background: linear-gradient(45deg, #f59e0b, #fbbf24); }
  .tier-Max { background: linear-gradient(45deg, #4f46e5, #7c3aed); }
  .tier-Owner { background-color: #ef4444; }
- .tier-Organization { background-color: #14b8a6; }
- .tier-Organization-Max { background: linear-gradient(45deg, #14b8a6, #22d3ee); }
  .inline-verified-icon {
  color: #0ea5e9; margin-left: 8px;
  width: 24px; height: 24px; flex-shrink: 0;
@@ -205,11 +203,6 @@
  .tier-plan-card h3 { margin-top: 0; display: flex; align-items: center; gap: 8px; }
  .tier-plan-card ul { list-style-type: '✓ '; padding-left: 20px; color: var(--muted); }
  .tier-plan-card ul li { margin-bottom: 8px; }
- #org-banner { width: 100%; height: 150px; background-size: cover; background-position: center; border-radius: var(--radius) var(--radius) 0 0; background-color: var(--input-bg); }
- #org-logo { width: 80px; height: 80px; border-radius: 50%; margin: -40px auto 10px auto; border: 4px solid var(--card); background-color: var(--card); display: block; background-size: cover; background-position: center; }
- .org-member-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border-color); }
- .org-member-pfp { width: 40px; height: 40px; border-radius: 50%; background-color: var(--input-bg); background-size: cover; background-position: center; }
- #orgDashboardPage .auth-tabs { max-width: 500px; margin-left: auto; margin-right: auto; }
  </style>
 </head>
 <body>
@@ -235,13 +228,6 @@
  Login with Google
  </button>
  </div>
- <div id="signup-choice-container" class="hidden" style="text-align: center;">
- <h2>How would you like to sign up?</h2>
- <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">
- <button id="show-personal-signup" class="btn">Personal Account</button>
- <button id="show-org-signup" class="btn secondary">Organization Account</button>
- </div>
- </div>
  <form id="signup-form" class="hidden">
  <h3>Create Personal Account</h3>
  <div class="form-group"><input type="text" id="signup-name" placeholder="Display Name" required></div>
@@ -249,27 +235,11 @@
  <div class="form-group"><input type="password" id="signup-password" placeholder="Password (min. 6 chars)" required></div>
  <button type="submit" class="btn">Create Personal Account</button>
  </form>
- <form id="org-signup-form" class="hidden">
- <h3>Create Organization Account</h3>
- <div class="form-group"><input type="text" id="org-signup-name" placeholder="Organization Name" required></div>
- <div class="form-group"><input type="email" id="org-signup-email" placeholder="Organization Login Email" required></div>
- <div class="form-group"><input type="password" id="org-signup-password" placeholder="Password (min. 6 chars)" required></div>
- <div class="form-group">
- <label for="org-signup-country-search">Country / Region</label>
- <div class="country-select-wrapper">
- <input type="text" id="org-signup-country-search" placeholder="Search for a country..." required>
- <div id="org-signup-country-dropdown" class="country-dropdown hidden"></div>
- <input type="hidden" id="org-signup-country-code">
- </div>
- </div>
- <button type="submit" class="btn">Create Organization Account</button>
- </form>
  <p id="error-message"></p>
  </div>
  </div>
  <div id="profilePage" class="page">
- <div class="card profile-header" style="padding: 0; overflow: hidden;">
- <div id="org-banner"></div>
+ <div class="card profile-header">
  <div id="profile-pfp"></div> 
  <div style="padding: 0 20px 20px 20px;">
  <h1 class="profile-name" id="profile-name">Loading...</h1>
@@ -312,7 +282,7 @@
  <div class="card">
  <h2>HAP Directory 🌐</h2>
  <div class="form-group" style="margin-bottom: 0;">
- <input type="text" id="user-search-input" placeholder="Search users or organizations...">
+ <input type="text" id="user-search-input" placeholder="Search users by name...">
  </div>
  <button id="run-search-btn" class="btn secondary" style="margin-top: 10px;">Search / Load Directory</button>
  <div id="search-results-list" style="margin-top: 20px;">
@@ -348,12 +318,10 @@
  <div id="all-tiers-info"><p class="muted">Loading all tiers...</p></div>
  </div>
  </div>
- <div id="organizationsPage" class="page"></div>
- <div id="orgDashboardPage" class="page"></div>
  <div id="adminPage" class="page">
  <div class="card">
  <h2>👑 Admin Panel</h2>
- <p class="muted">Manage users, organizations, and verification requests.</p>
+ <p class="muted">Manage users and verification requests.</p>
  </div>
  <div class="card">
  <h2>Verification Requests</h2>
@@ -362,10 +330,6 @@
  <div class="card">
  <h2>All Users</h2>
  <div id="admin-all-users" style="max-height: 400px; overflow-y: auto;"><p class="muted">Loading users...</p></div>
- </div>
- <div class="card">
- <h2>All Organizations</h2>
- <div id="admin-all-orgs" style="max-height: 400px; overflow-y: auto;"><p class="muted">Loading organizations...</p></div>
  </div>
  </div>
  <div id="settingsPage" class="page">
@@ -519,6 +483,7 @@
  uploadBytes, 
  getDownloadURL 
  } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-storage.js";
+
  const firebaseConfig = {
  apiKey: "AIzaSyChwjwXFgIj9f64zGeIoS-q_odZm2ogFMw",
  authDomain: "happp-96438.firebaseapp.com",
@@ -528,10 +493,12 @@
  messagingSenderId: "703348367691",
  appId: "1:703348367691:web:376cd50d08d94bccf588ce"
  };
+
  const app = initializeApp(firebaseConfig);
  const auth = getAuth(app);
  const db = getDatabase(app);
  const storage = getStorage(app);
+
  window.onerror = function(message, source, lineno, colno, error) {
  const errorDiv = document.getElementById('global-error-display');
  if (errorDiv) {
@@ -541,18 +508,20 @@
  console.error("Global Error Caught:", message, source, lineno, colno, error);
  return false;
  };
+
  let countdownInterval;
  let timetableCheckInterval;
  let isPublicView = false;
  let publicViewInterval = null;
  let isAuthResolved = false;
+
  const App = {
- pages: ['loginPage', 'profilePage', 'searchPage', 'analyticsPage', 'settingsPage', 'tiersPage', 'adminPage', 'organizationsPage', 'orgDashboardPage'],
+ pages: ['loginPage', 'profilePage', 'searchPage', 'analyticsPage', 'settingsPage', 'tiersPage', 'adminPage'],
  elements: {},
  currentUser: null,
  currentProfileData: null,
- loggedInAccountType: null, 
  };
+
  const USER_TIER_CONFIG = {
  'Member': { name: 'Member', linkLimit: 1, timetable: false, customFont: false, customColor: false, scheduling: false, analytics: false, verification: false, showAd: true, pfp: false },
  'Plus': { name: 'Plus', linkLimit: 3, timetable: true, customFont: true, customColor: false, scheduling: true, analytics: false, verification: false, showAd: true, pfp: true },
@@ -560,24 +529,24 @@
  'Max': { name: 'Max', linkLimit: 10, timetable: true, customFont: true, customColor: true, scheduling: true, analytics: true, verification: true, showAd: false, pfp: true },
  'Owner': { name: 'Owner', linkLimit: 10, timetable: true, customFont: true, customColor: true, scheduling: true, analytics: true, verification: true, showAd: false, pfp: true },
  };
- const ORG_TIER_CONFIG = {
- 'Organization': { name: 'Organization', linkLimit: 3, customFont: false, customColor: false, analytics: true, verification: true, showAd: true, pfp: false },
- 'Organization-Max': { name: 'Organization Max', linkLimit: 10, customFont: true, customColor: true, analytics: true, verification: true, showAd: false, pfp: true },
- };
+ 
  const ACHIEVEMENT_CONFIG = {
  toPlus: [ { id: 'socialButterfly', label: 'Add 1 Custom Link', goal: 1 }, { id: 'firstShare', label: 'Share Profile Once', goal: 1 }, { id: 'loyalUser', label: 'Log In on 3 Different Days', goal: 3 } ],
  toPro: [ { id: 'scheduler', label: 'Add 2 Timetable Entries', goal: 2 }, { id: 'socialButterfly', label: 'Add 3 Custom Links', goal: 3 }, { id: 'views', label: 'Get 10 Profile Views', goal: 10 }, { id: 'loyalUser', label: 'Log In on 7 Different Days', goal: 7 } ],
  toMax: [ { id: 'profileComplete', label: 'Fill Out All Optional Info Fields', goal: 1 }, { id: 'socialButterfly', label: 'Add 5 Custom Links', goal: 5 }, { id: 'views', label: 'Get 30 Profile Views', goal: 30 }, { id: 'loyalUser', label: 'Log In on 14 Different Days', goal: 14 } ]
  };
+
  const VERIFICATION_QUESTIONS = [
  "What is the primary purpose of your HAP profile? (e.g., professional networking, personal status, team coordination)",
  "Please provide a link to an existing public profile that can help verify your identity (e.g., LinkedIn, Twitter, personal website, or official company page).",
- "For organizations: What is your official registered name and business registration number? For individuals: What is your full legal name?",
- "Briefly describe why you or your organization should be granted a verified status on this platform.",
+ "What is your full legal name?",
+ "Briefly describe why you should be granted a verified status on this platform.",
  "Please provide a contact email or phone number that we can use to follow up on this verification request (this will be kept private)."
  ];
+
  const DAYS_OF_WEEK = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
  const COUNTRY_LIST = [ {name: "Afghanistan", code: "AF"}, {name: "Åland Islands", code: "AX"}, {name: "Albania", code: "AL"}, {name: "Algeria", code: "DZ"}, {name: "American Samoa", code: "AS"}, {name: "Andorra", code: "AD"}, {name: "Angola", code: "AO"}, {name: "Anguilla", code: "AI"}, {name: "Antarctica", code: "AQ"}, {name: "Antigua and Barbuda", code: "AG"}, {name: "Argentina", code: "AR"}, {name: "Armenia", code: "AM"}, {name: "Aruba", code: "AW"}, {name: "Australia", code: "AU"}, {name: "Austria", code: "AT"}, {name: "Azerbaijan", code: "AZ"}, {name: "Bahamas", code: "BS"}, {name: "Bahrain", code: "BH"}, {name: "Bangladesh", code: "BD"}, {name: "Barbados", code: "BB"}, {name: "Belarus", code: "BY"}, {name: "Belgium", code: "BE"}, {name: "Belize", code: "BZ"}, {name: "Benin", code: "BJ"}, {name: "Bermuda", code: "BM"}, {name: "Bhutan", code: "BT"}, {name: "Bolivia", code: "BO"}, {name: "Bosnia and Herzegovina", code: "BA"}, {name: "Botswana", code: "BW"}, {name: "Bouvet Island", code: "BV"}, {name: "Brazil", code: "BR"}, {name: "British Indian Ocean Territory", code: "IO"}, {name: "Brunei Darussalam", code: "BN"}, {name: "Bulgaria", code: "BG"}, {name: "Burkina Faso", code: "BF"}, {name: "Burundi", code: "BI"}, {name: "Cambodia", code: "KH"}, {name: "Cameroon", code: "CM"}, {name: "Canada", code: "CA"}, {name: "Cape Verde", code: "CV"}, {name: "Cayman Islands", code: "KY"}, {name: "Central African Republic", code: "CF"}, {name: "Chad", code: "TD"}, {name: "Chile", code: "CL"}, {name: "China", code: "CN"}, {name: "Christmas Island", code: "CX"}, {name: "Cocos (Keeling) Islands", code: "CC"}, {name: "Colombia", code: "CO"}, {name: "Comoros", code: "KM"}, {name: "Congo", code: "CG"}, {name: "Congo, The Democratic Republic of the", code: "CD"}, {name: "Cook Islands", code: "CK"}, {name: "Costa Rica", code: "CR"}, {name: "Cote D'Ivoire", code: "CI"}, {name: "Croatia", code: "HR"}, {name: "Cuba", code: "CU"}, {name: "Cyprus", code: "CY"}, {name: "Czech Republic", code: "CZ"}, {name: "Denmark", code: "DK"}, {name: "Djibouti", code: "DJ"}, {name: "Dominica", code: "DM"}, {name: "Dominican Republic", code: "DO"}, {name: "Ecuador", code: "EC"}, {name: "Egypt", code: "EG"}, {name: "El Salvador", code: "SV"}, {name: "Equatorial Guinea", code: "GQ"}, {name: "Eritrea", code: "ER"}, {name: "Estonia", code: "EE"}, {name: "Ethiopia", code: "ET"}, {name: "Falkland Islands (Malvinas)", code: "FK"}, {name: "Faroe Islands", code: "FO"}, {name: "Fiji", code: "FJ"}, {name: "Finland", code: "FI"}, {name: "France", code: "FR"}, {name: "French Guiana", code: "GF"}, {name: "French Polynesia", code: "PF"}, {name: "French Southern Territories", code: "TF"}, {name: "Gabon", code: "GA"}, {name: "Gambia", code: "GM"}, {name: "Georgia", code: "GE"}, {name: "Germany", code: "DE"}, {name: "Ghana", code: "GH"}, {name: "Gibraltar", code: "GI"}, {name: "Greece", code: "GR"}, {name: "Greenland", code: "GL"}, {name: "Grenada", code: "GD"}, {name: "Guadeloupe", code: "GP"}, {name: "Guam", code: "GU"}, {name: "Guatemala", code: "GT"}, {name: "Guernsey", code: "GG"}, {name: "Guinea", code: "GN"}, {name: "Guinea-Bissau", code: "GW"}, {name: "Guyana", code: "GY"}, {name: "Haiti", code: "HT"}, {name: "Heard Island and Mcdonald Islands", code: "HM"}, {name: "Holy See (Vatican City State)", code: "VA"}, {name: "Honduras", code: "HN"}, {name: "Hong Kong", code: "HK"}, {name: "Hungary", code: "HU"}, {name: "Iceland", code: "IS"}, {name: "India", code: "IN"}, {name: "Indonesia", code: "ID"}, {name: "Iran, Islamic Republic Of", code: "IR"}, {name: "Iraq", code: "IQ"}, {name: "Ireland", code: "IE"}, {name: "Isle of Man", code: "IM"}, {name: "Israel", code: "IL"}, {name: "Italy", code: "IT"}, {name: "Jamaica", code: "JM"}, {name: "Japan", code: "JP"}, {name: "Jersey", code: "JE"}, {name: "Jordan", code: "JO"}, {name: "Kazakhstan", code: "KZ"}, {name: "Kenya", code: "KE"}, {name: "Kiribati", code: "KI"}, {name: "Korea, Democratic People'S Republic of", code: "KP"}, {name: "Korea, Republic of", code: "KR"}, {name: "Kuwait", code: "KW"}, {name: "Kyrgyzstan", code: "KG"}, {name: "Lao People'S Democratic Republic", code: "LA"}, {name: "Latvia", code: "LV"}, {name: "Lebanon", code: "LB"}, {name: "Lesotho", code: "LS"}, {name: "Liberia", code: "LR"}, {name: "Libyan Arab Jamahiriya", code: "LY"}, {name: "Liechtenstein", code: "LI"}, {name: "Lithuania", code: "LT"}, {name: "Luxembourg", code: "LU"}, {name: "Macao", code: "MO"}, {name: "Macedonia, The Former Yugoslav Republic of", code: "MK"}, {name: "Madagascar", code: "MG"}, {name: "Malawi", code: "MW"}, {name: "Malaysia", code: "MY"}, {name: "Maldives", code: "MV"}, {name: "Mali", code: "ML"}, {name: "Malta", code: "MT"}, {name: "Marshall Islands", code: "MH"}, {name: "Mauritania", code: "MR"}, {name: "Mauritius", code: "MU"}, {name: "Mayotte", code: "YT"}, {name: "Mexico", code: "MX"}, {name: "Micronesia, Federated States of", code: "FM"}, {name: "Moldova, Republic of", code: "MD"}, {name: "Monaco", code: "MC"}, {name: "Mongolia", code: "MN"}, {name: "Montserrat", code: "MS"}, {name: "Morocco", code: "MA"}, {name: "Mozambique", code: "MZ"}, {name: "Myanmar", code: "MM"}, {name: "Namibia", code: "NA"}, {name: "Nauru", code: "NR"}, {name: "Nepal", code: "NP"}, {name: "Netherlands", code: "NL"}, {name: "Netherlands Antilles", code: "AN"}, {name: "New Caledonia", code: "NC"}, {name: "New Zealand", code: "NZ"}, {name: "Nicaragua", code: "NI"}, {name: "Niger", code: "NE"}, {name: "Nigeria", code: "NG"}, {name: "Niue", code: "NU"}, {name: "Norfolk Island", code: "NF"}, {name: "Northern Mariana Islands", code: "MP"}, {name: "Norway", code: "NO"}, {name: "Oman", code: "OM"}, {name: "Pakistan", code: "PK"}, {name: "Palau", code: "PW"}, {name: "Palestinian Territory, Occupied", code: "PS"}, {name: "Panama", code: "PA"}, {name: "Papua New Guinea", code: "PG"}, {name: "Paraguay", code: "PY"}, {name: "Peru", code: "PE"}, {name: "Philippines", code: "PH"}, {name: "Pitcairn", code: "PN"}, {name: "Poland", code: "PL"}, {name: "Portugal", code: "PT"}, {name: "Puerto Rico", code: "PR"}, {name: "Qatar", code: "QA"}, {name: "Reunion", code: "RE"}, {name: "Romania", code: "RO"}, {name: "Russian Federation", code: "RU"}, {name: "RWANDA", code: "RW"}, {name: "Saint Helena", code: "SH"}, {name: "Saint Kitts and Nevis", code: "KN"}, {name: "Saint Lucia", code: "LC"}, {name: "Saint Pierre and Miquelon", code: "PM"}, {name: "Saint Vincent and the Grenadines", code: "VC"}, {name: "Samoa", code: "WS"}, {name: "San Marino", code: "SM"}, {name: "Sao Tome and Principe", code: "ST"}, {name: "Saudi Arabia", code: "SA"}, {name: "Senegal", code: "SN"}, {name: "Serbia and Montenegro", code: "CS"}, {name: "Seychelles", code: "SC"}, {name: "Sierra Leone", code: "SL"}, {name: "Singapore", code: "SG"}, {name: "Slovakia", code: "SK"}, {name: "Slovenia", code: "SI"}, {name: "Solomon Islands", code: "SB"}, {name: "Somalia", code: "SO"}, {name: "South Africa", code: "ZA"}, {name: "South Georgia and the South Sandwich Islands", code: "GS"}, {name: "Spain", code: "ES"}, {name: "Sri Lanka", code: "LK"}, {name: "Sudan", code: "SD"}, {name: "Suriname", code: "SR"}, {name: "Svalbard and Jan Mayen", code: "SJ"}, {name: "Swaziland", code: "SZ"}, {name: "Sweden", code: "SE"}, {name: "Switzerland", code: "CH"}, {name: "Syrian Arab Republic", code: "SY"}, {name: "Taiwan", code: "TW"}, {name: "Tajikistan", code: "TJ"}, {name: "Tanzania, United Republic of", code: "TZ"}, {name: "Thailand", code: "TH"}, {name: "Timor-Leste", code: "TL"}, {name: "Togo", code: "TG"}, {name: "Tokelau", code: "TK"}, {name: "Tonga", code: "TO"}, {name: "Trinidad and Tobago", code: "TT"}, {name: "Tunisia", code: "TN"}, {name: "Turkey", code: "TR"}, {name: "Turkmenistan", code: "TM"}, {name: "Turks and Caicos Islands", code: "TC"}, {name: "Tuvalu", code: "TV"}, {name: "Uganda", code: "UG"}, {name: "Ukraine", code: "UA"}, {name: "United Arab Emirates", code: "AE"}, {name: "United Kingdom", code: "GB"}, {name: "United States", code: "US"}, {name: "United States Minor Outlying Islands", code: "UM"}, {name: "Uruguay", code: "UY"}, {name: "Uzbekistan", code: "UZ"}, {name: "Vanuatu", code: "VU"}, {name: "Venezuela", code: "VE"}, {name: "Viet Nam", code: "VN"}, {name: "Virgin Islands, British", code: "VG"}, {name: "Virgin Islands, U.S.", code: "VI"}, {name: "Wallis and Futuna", code: "WF"}, {name: "Western Sahara", code: "EH"}, {name: "Yemen", code: "YE"}, {name: "Zambia", code: "ZM"}, {name: "Zimbabwe", code: "ZW"} ];
+
  function showToast(message, type = 'info') {
  const toast = App.elements.toast;
  if (!toast) return;
@@ -586,16 +555,19 @@
  toast.classList.add('show');
  setTimeout(() => toast.classList.remove('show'), 3000);
  }
+
  function timeToMinutes(timeStr) {
  if (!timeStr || !timeStr.includes(':')) return 0;
  const [hours, minutes] = timeStr.split(':').map(Number);
  return hours * 60 + minutes;
  }
+
  function getCountryFlagEmoji(countryCode) {
  if (!countryCode || countryCode.length !== 2) return '';
  const codePoints = countryCode.toUpperCase().split('').map(char => 127397 + char.charCodeAt());
  return String.fromCodePoint(...codePoints);
  }
+
  function getLocalTimeData() {
  const now = new Date();
  const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
@@ -606,6 +578,7 @@
  const minutes = String(absOffset % 60).padStart(2, '0');
  return { time: timeStr, offset: `UTC${sign}${hours}:${minutes}`, hour: now.getHours() };
  }
+
  function getFriendlyAuthError(errorCode) {
  switch (errorCode) {
  case 'auth/invalid-credential':
@@ -619,6 +592,7 @@
  return 'An unexpected error occurred. Please try again.';
  }
  }
+
  async function handleEmailSignup(e) {
  e.preventDefault();
  const displayName = document.getElementById('signup-name').value.trim();
@@ -638,27 +612,7 @@
  errorMsg.textContent = getFriendlyAuthError(error.code);
  }
  }
- async function handleOrgSignup(e) {
- e.preventDefault();
- const name = document.getElementById('org-signup-name').value.trim();
- const email = document.getElementById('org-signup-email').value.trim();
- const password = document.getElementById('org-signup-password').value;
- const countryCode = document.getElementById('org-signup-country-code').value;
- const errorMsg = document.getElementById('error-message');
- errorMsg.textContent = '';
- if (!name || !email || password.length < 6 || !countryCode) {
- errorMsg.textContent = 'Please fill all mandatory fields.';
- return;
- }
- try {
- const userCredential = await createUserWithEmailAndPassword(auth, email, password);
- const org = userCredential.user;
- await updateProfile(org, { displayName: name });
- await initializeNewOrganization(org, { name, email, countryCode });
- } catch (error) {
- errorMsg.textContent = getFriendlyAuthError(error.code);
- }
- }
+
  async function handleGoogleLogin() {
  const provider = new GoogleAuthProvider();
  try {
@@ -669,6 +623,7 @@
  errorMsg.textContent = getFriendlyAuthError(error.code);
  }
  }
+
  async function handleEmailLogin(e) {
  e.preventDefault();
  const email = document.getElementById('login-email').value.trim();
@@ -681,33 +636,36 @@
  errorMsg.textContent = getFriendlyAuthError(error.code);
  }
  }
+
  function handleLogout() {
  signOut(auth);
  }
- onAuthStateChanged(auth, async (account) => {
+
+ onAuthStateChanged(auth, async (user) => {
  const wasLoggedIn = !!App.currentUser;
- App.currentUser = account ? { email: account.email, displayName: account.displayName, userId: account.uid } : null;
+ App.currentUser = user ? { email: user.email, displayName: user.displayName, userId: user.uid } : null;
  const isLoggedIn = !!App.currentUser;
- let accountType;
+
  if (isLoggedIn) {
- accountType = await setupSession(account.uid);
+ await setupSession(user.uid);
  }
+
  if (!isAuthResolved) {
  isAuthResolved = true;
  hashChangeRouter(); 
  }
+
  if (isLoggedIn && !wasLoggedIn) {
  const redirectTarget = sessionStorage.getItem('redirectAfterLogin');
  sessionStorage.removeItem('redirectAfterLogin');
- let destination = accountType === 'user' ? 'profilePage' : 'orgDashboardPage';
- navigateTo(redirectTarget || destination, true);
+ navigateTo(redirectTarget || 'profilePage', true);
  } else if (!isLoggedIn && wasLoggedIn) {
  App.currentProfileData = null;
- App.loggedInAccountType = null;
  clearInterval(timetableCheckInterval);
  navigateTo('loginPage', true);
  }
  });
+
  async function initializeNewUser(user, additionalData = {}) {
  const userRef = ref(db, `users/${user.uid}`);
  const snapshot = await get(userRef);
@@ -735,6 +693,7 @@
  ...additionalData
  };
  await set(userRef, initialProfile);
+
  const referrerId = sessionStorage.getItem('referrerId');
  if (referrerId && referrerId !== user.uid) {
  const referrerRef = ref(db, `users/${referrerId}/achievements/referral`);
@@ -744,33 +703,19 @@
  }
  }
  }
- async function initializeNewOrganization(org, data) {
- const orgRef = ref(db, `organizations/${org.uid}`);
- const snapshot = await get(orgRef);
- if (!snapshot.exists()) {
- const initialData = {
- name: data.name,
- email: data.email,
- countryCode: data.countryCode,
- tier: 'Organization',
- createdAt: new Date().toISOString(),
- verified: false
- };
- await set(orgRef, initialData);
- }
- }
- async function setupSession(accountId) {
- if (!accountId) return null;
+ 
+ async function setupSession(userId) {
+ if (!userId) return;
  if (timetableCheckInterval) clearInterval(timetableCheckInterval);
- const userRef = ref(db, `users/${accountId}`);
- const orgRef = ref(db, `organizations/${accountId}`);
+ 
+ const userRef = ref(db, `users/${userId}`);
  const userSnap = await get(userRef);
- const orgSnap = await get(orgRef);
+
  if (userSnap.exists()) {
- App.loggedInAccountType = 'user';
  const data = userSnap.val();
  App.currentProfileData = data;
  App.currentUser.displayName = data.displayName;
+
  const today = new Date().toISOString().split('T')[0];
  const loginHistory = data.achievements?.loginHistory || {};
  if (!loginHistory[today]) {
@@ -781,13 +726,14 @@
  App.currentProfileData.achievements.loyalUser = updates['achievements/loyalUser'];
  App.currentProfileData.achievements.loginHistory = {...loginHistory, [today]: true};
  }
+
  applyVisuals(data);
  populateSettings(data);
+
  document.querySelector('#mainHeader').innerHTML = `
  <nav>
  <button class="nav-btn" data-page="profilePage"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5a5.5 5.5 0 0 1 3.096 10.047 9.005 9.005 0 0 1 5.9 8.181.75.75 0 0 1-1.498.07 7.502 7.502 0 0 0-15 0 .75.75 0 0 1-1.498-.07A9.005 9.005 0 0 1 9 12.55a5.5 5.5 0 0 1 3-10.05ZM12 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z"></path></svg><span>Profile</span></button>
  <button class="nav-btn" data-page="tiersPage"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M11.47 1.72a.75.75 0 0 1 1.06 0l3 3a.75.75 0 0 1-1.06 1.06l-1.72-1.72V7.5h-1.5V4.06L9.53 5.78a.75.75 0 0 1-1.06-1.06l3-3ZM11.25 7.5V15a.75.75 0 0 0 1.5 0V7.5h3.75a3 3 0 0 1 3 3v9a3 3 0 0 1-3 3h-9a3 3 0 0 1-3-3v-9a3 3 0 0 1 3-3h3.75Z"></path></svg><span>Tiers</span></button>
- <button class="nav-btn" data-page="organizationsPage"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M4.5 6.375a.75.75 0 0 1 .75-.75h13.5a.75.75 0 0 1 .75.75v9a.75.75 0 0 1-.75.75H5.25a.75.75 0 0 1-.75-.75v-9Z"></path><path fill-rule="evenodd" d="M22.5 12c0-5.422-4.235-9.844-9.513-10.451a.75.75 0 0 0-.674.807 9.002 9.002 0 0 1-1.623 8.195.75.75 0 0 0 .341 1.018 10.46 10.46 0 0 1 5.341 5.341.75.75 0 0 0 1.018.341 9.002 9.002 0 0 1 8.195-1.623.75.75 0 0 0 .807-.674A10.5 10.5 0 0 0 22.5 12Z" clip-rule="evenodd"></path><path fill-rule="evenodd" d="M1.5 12c0 5.422 4.235 9.844 9.513 10.451a.75.75 0 0 0 .674-.807 9.002 9.002 0 0 1 1.623-8.195.75.75 0 0 0-.341-1.018 10.46 10.46 0 0 1-5.341-5.341.75.75 0 0 0-1.018-.341A9.002 9.002 0 0 1 1.549 4.97a.75.75 0 0 0-.807.674A10.5 10.5 0 0 0 1.5 12Z" clip-rule="evenodd"></path></svg><span>Organizations</span></button>
  <button class="nav-btn" data-page="searchPage"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M10.5 3.75a6.75 6.75 0 1 0 0 13.5 6.75 6.75 0 0 0 0-13.5ZM2.25 10.5a8.25 8.25 0 1 1 14.59 5.28l4.69 4.69a.75.75 0 1 1-1.06 1.06l-4.69-4.69A8.25 8.25 0 0 1 2.25 10.5Z" clip-rule="evenodd"></path></svg><span>Search</span></button>
  <button id="analytics-nav-btn" class="nav-btn" data-page="analyticsPage"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M10.5 4.5a.75.75 0 0 0-1.5 0V7.5a.75.75 0 0 0 1.5 0V4.5ZM17.25 5.25a.75.75 0 0 0-1.5 0V9a.75.75 0 0 0 1.5 0V5.25ZM14.25 7.5a.75.75 0 0 0-1.5 0v10.5a.75.75 0 0 0 1.5 0V7.5ZM21 9a.75.75 0 0 0-1.5 0v7.5a.75.75 0 0 0 1.5 0V9ZM3.75 12a.75.75 0 0 0-1.5 0v4.5a.75.75 0 0 0 1.5 0V12Z"></path><path fill-rule="evenodd" d="M3 3a1.5 1.5 0 0 0-1.5 1.5V19.5A1.5 1.5 0 0 0 3 21h18a1.5 1.5 0 0 0 1.5-1.5V4.5A1.5 1.5 0 0 0 21 3H3ZM5.25 19.5h13.5V4.5H5.25v15Z" clip-rule="evenodd"></path></svg><span>Analytics</span></button>
  <button class="nav-btn" data-page="settingsPage"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M11.64 3.023a.75.75 0 0 1 .72 0l1.517.65a.75.75 0 0 0 .841-.252l1.11-1.48A.75.75 0 0 1 17 2.25a.75.75 0 0 1 .633.368l1.11 1.48a.75.75 0 0 0 .84.253l1.518-.65a.75.75 0 0 1 .72 0l1.016.436a.75.75 0 0 1 .45 1.033l-.74 1.385a.75.75 0 0 0 .14.925l1.28.96a.75.75 0 0 1 0 1.302l-1.28.96a.75.75 0 0 0-.14.925l.74 1.385a.75.75 0 0 1-.45 1.033l-1.017.436a.75.75 0 0 1-.72 0l-1.517-.65a.75.75 0 0 0-.84.252l-1.11 1.48A.75.75 0 0 1 17 21.75a.75.75 0 0 1-.633-.368l-1.11-1.48a.75.75 0 0 0-.84-.253l-1.518.65a.75.75 0 0 1-.72 0l-1.016-.436a.75.75 0 0 1-.45-1.033l.74-1.385a.75.75 0 0 0-.14-.925l-1.28-.96a.75.75 0 0 1 0-1.302l1.28.96a.75.75 0 0 0 .14-.925l-.74-1.385a.75.75 0 0 1 .45-1.033l1.017-.436ZM12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"></path></svg><span>Settings</span></button>
@@ -797,27 +743,13 @@
  document.querySelector('#admin-nav-btn').classList.toggle('hidden', data.membershipTier !== 'Owner');
  await checkTimetableAndApplyStatus();
  timetableCheckInterval = setInterval(checkTimetableAndApplyStatus, 60000);
- return 'user';
- } else if (orgSnap.exists()) {
- App.loggedInAccountType = 'organization';
- App.currentProfileData = orgSnap.val();
- App.currentUser.displayName = orgSnap.val().name;
- applyVisuals(null, orgSnap.val());
- document.querySelector('#mainHeader').innerHTML = `
- <nav>
- <button class="nav-btn" data-page="orgDashboardPage"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M11.64 3.023a.75.75 0 0 1 .72 0l1.517.65a.75.75 0 0 0 .841-.252l1.11-1.48A.75.75 0 0 1 17 2.25a.75.75 0 0 1 .633.368l1.11 1.48a.75.75 0 0 0 .84.253l1.518-.65a.75.75 0 0 1 .72 0l1.016.436a.75.75 0 0 1 .45 1.033l-.74 1.385a.75.75 0 0 0 .14.925l1.28.96a.75.75 0 0 1 0 1.302l-1.28.96a.75.75 0 0 0-.14.925l.74 1.385a.75.75 0 0 1-.45 1.033l-1.017.436a.75.75 0 0 1-.72 0l-1.517-.65a.75.75 0 0 0-.84.252l-1.11 1.48A.75.75 0 0 1 17 21.75a.75.75 0 0 1-.633-.368l-1.11-1.48a.75.75 0 0 0-.84-.253l-1.518.65a.75.75 0 0 1-.72 0l-1.016-.436a.75.75 0 0 1-.45-1.033l.74-1.385a.75.75 0 0 0-.14-.925l-1.28-.96a.75.75 0 0 1 0-1.302l1.28.96a.75.75 0 0 0 .14-.925l-.74-1.385a.75.75 0 0 1 .45-1.033l1.017-.436ZM12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"></path></svg><span>Dashboard</span></button>
- <button id="view-public-org-page-btn" class="nav-btn"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M4.5 6.375a.75.75 0 0 1 .75-.75h13.5a.75.75 0 0 1 .75.75v9a.75.75 0 0 1-.75.75H5.25a.75.75 0 0 1-.75-.75v-9Z"></path><path fill-rule="evenodd" d="M22.5 12c0-5.422-4.235-9.844-9.513-10.451a.75.75 0 0 0-.674.807 9.002 9.002 0 0 1-1.623 8.195.75.75 0 0 0 .341 1.018 10.46 10.46 0 0 1 5.341 5.341.75.75 0 0 0 1.018.341 9.002 9.002 0 0 1 8.195-1.623.75.75 0 0 0 .807-.674A10.5 10.5 0 0 0 22.5 12Z" clip-rule="evenodd"></path><path fill-rule="evenodd" d="M1.5 12c0 5.422 4.235 9.844 9.513 10.451a.75.75 0 0 0 .674-.807 9.002 9.002 0 0 1 1.623-8.195.75.75 0 0 0-.341-1.018 10.46 10.46 0 0 1-5.341-5.341.75.75 0 0 0-1.018-.341A9.002 9.002 0 0 1 1.549 4.97a.75.75 0 0 0-.807.674A10.5 10.5 0 0 0 1.5 12Z" clip-rule="evenodd"></path></svg><span>Public Page</span></button>
- <button class="nav-btn" data-page="searchPage"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M10.5 3.75a6.75 6.75 0 1 0 0 13.5 6.75 6.75 0 0 0 0-13.5ZM2.25 10.5a8.25 8.25 0 1 1 14.59 5.28l4.69 4.69a.75.75 0 1 1-1.06 1.06l-4.69-4.69A8.25 8.25 0 0 1 2.25 10.5Z" clip-rule="evenodd"></path></svg><span>Search</span></button>
- </nav>
- `;
- document.getElementById('view-public-org-page-btn').onclick = () => window.open(`?org=${accountId}`, '_blank');
- return 'organization';
+
  } else {
- console.error("Account exists but no profile in users/ or organizations/");
+ console.error("User account exists but no profile in users/");
  handleLogout();
- return null;
  }
  }
+
  async function displayPublicProfile(userId) {
  try {
  const userRef = ref(db, `users/${userId}`);
@@ -825,19 +757,14 @@
  let userData = snapshot.val();
  if (userData) {
  userData.userId = userId;
- let orgData = null;
- if(userData.organizationId) {
- const orgSnap = await get(ref(db, `organizations/${userData.organizationId}`));
- orgData = orgSnap.val();
- }
- applyVisuals(userData, orgData); 
+ applyVisuals(userData); 
  const activeSchedule = findActiveSchedule(userData);
  if (activeSchedule) {
  userData.status = activeSchedule.status;
  userData.message = activeSchedule.message;
  }
  App.currentProfileData = userData; 
- renderProfile(userData, orgData);
+ renderProfile(userData);
  if (!App.currentUser || App.currentUser.userId !== userId) {
  trackProfileView(userId);
  }
@@ -852,6 +779,7 @@
  console.error("Error loading public profile:", error);
  }
  }
+
  async function saveAndLogStatus(data) {
  const dataWithTimestamp = { ...data, updatedAt: new Date().toISOString() };
  const userRef = ref(db, `users/${App.currentUser.userId}`);
@@ -860,8 +788,10 @@
  App.currentUser.displayName = data.displayName;
  if (!data.pfpUrl) dataWithTimestamp.pfpText = data.displayName.charAt(0).toUpperCase();
  }
+
  const achievements = App.currentProfileData.achievements || {};
  const achievementUpdates = {};
+
  const newEmoji = data.status;
  const newUsedEmojis = achievements.usedEmojis || {};
  if (!newUsedEmojis[newEmoji]) {
@@ -869,57 +799,63 @@
  achievementUpdates['achievements/usedEmojis'] = newUsedEmojis;
  achievementUpdates['achievements/expressive'] = Object.keys(newUsedEmojis).length;
  }
+
  achievementUpdates['achievements/socialButterfly'] = data.links?.length || 0;
  const isMaxComplete = data.bio && data.birthday && data.countryCode && data.phone && data.schedulingLink && data.pfpUrl;
  achievementUpdates['achievements/profileComplete'] = isMaxComplete ? 1 : 0;
+
  await update(userRef, { ...dataWithTimestamp, ...achievementUpdates });
+
  const historyRef = ref(db, `history/${App.currentUser.userId}`);
  await push(historyRef, { status: data.status, message: data.message, timestamp: dataWithTimestamp.updatedAt });
+
  const updatedSnapshot = await get(userRef);
  App.currentProfileData = updatedSnapshot.val() || {};
  applyVisuals(App.currentProfileData);
  renderProfile(App.currentProfileData);
+
  await updateMembershipTier(App.currentUser.userId);
+
  showToast('Settings Saved & Status Updated! 💾');
  navigateTo('profilePage');
  }
+
  function navigateTo(pageId, isInternal = false) {
  const currentHash = window.location.hash.substring(1);
  if (pageId === currentHash && !isInternal) return;
+ 
  if (isInternal) {
  const cleanUrl = window.location.origin + window.location.pathname;
  window.history.pushState({}, '', cleanUrl);
  }
+ 
  window.location.hash = pageId;
  }
+
  async function hashChangeRouter() {
  clearInterval(countdownInterval);
  if(publicViewInterval) clearInterval(publicViewInterval);
  if (!isAuthResolved) return;
+
  const params = new URLSearchParams(window.location.search);
  const userIdFromUrl = params.get('user');
- const orgIdFromUrl = params.get('org');
  const refIdFromUrl = params.get('ref');
+
  if(refIdFromUrl && !App.currentUser) {
  sessionStorage.setItem('referrerId', refIdFromUrl);
  }
- if (userIdFromUrl || orgIdFromUrl) {
+
+ if (userIdFromUrl) {
  isPublicView = true;
  App.pages.forEach(pId => App.elements[pId]?.classList.remove('active'));
  document.body.style.paddingBottom = "20px";
  App.elements.mainHeader?.classList.add('hidden');
- let tierConfig = {};
- if (userIdFromUrl) {
+
  App.elements.profilePage?.classList.add('active');
  await displayPublicProfile(userIdFromUrl);
- tierConfig = USER_TIER_CONFIG[App.currentProfileData?.membershipTier || 'Member'] || {};
+ const tierConfig = USER_TIER_CONFIG[App.currentProfileData?.membershipTier || 'Member'] || {};
  publicViewInterval = setInterval(() => displayPublicProfile(userIdFromUrl), 30000);
- }
- if(orgIdFromUrl) {
- App.elements.organizationsPage?.classList.add('active');
- await renderOrganizationsPage(orgIdFromUrl);
- tierConfig = ORG_TIER_CONFIG[App.currentProfileData?.tier || 'Organization'] || {};
- }
+
  const promoCard = document.getElementById('create-hap-promo');
  if(promoCard) {
  promoCard.classList.toggle('hidden', !tierConfig.showAd);
@@ -929,7 +865,7 @@
  promoCard.classList.add('hidden');
  } else {
  promoBtn.textContent = 'Go to My Dashboard';
- promoBtn.onclick = () => navigateTo(App.loggedInAccountType === 'user' ? 'profilePage' : 'orgDashboardPage', true);
+ promoBtn.onclick = () => navigateTo('profilePage', true);
  }
  } else {
  promoBtn.textContent = 'Get Started Now';
@@ -938,57 +874,59 @@
  }
  return;
  }
+
  isPublicView = false;
  document.getElementById('create-hap-promo')?.classList.add('hidden');
  document.body.style.paddingBottom = "100px";
+
  const hash = window.location.hash.substring(1);
  let targetPageId = 'loginPage'; 
+ 
  if (App.currentUser) {
- let defaultPage = App.loggedInAccountType === 'user' ? 'profilePage' : 'orgDashboardPage';
- targetPageId = App.pages.includes(hash) ? hash : defaultPage;
+ targetPageId = App.pages.includes(hash) ? hash : 'profilePage';
  }
+
  if (!App.currentUser && targetPageId !== 'loginPage' && targetPageId !== 'searchPage') {
  sessionStorage.setItem('redirectAfterLogin', targetPageId);
  targetPageId = 'loginPage';
  }
+
  if (App.currentUser) {
  if (targetPageId === 'adminPage' && App.currentProfileData.membershipTier !== 'Owner') {
  targetPageId = 'profilePage';
  }
- if(targetPageId === 'profilePage' && App.currentProfileData && App.loggedInAccountType === 'user') {
- const orgSnap = App.currentProfileData.organizationId ? await get(ref(db, `organizations/${App.currentProfileData.organizationId}`)) : null;
- renderProfile(App.currentProfileData, orgSnap?.val());
- } else if (targetPageId === 'analyticsPage' && App.loggedInAccountType === 'user') {
+ if(targetPageId === 'profilePage' && App.currentProfileData) {
+ renderProfile(App.currentProfileData);
+ } else if (targetPageId === 'analyticsPage') {
  await fetchAndRenderAnalytics();
- } else if (targetPageId === 'tiersPage' && App.loggedInAccountType === 'user') {
+ } else if (targetPageId === 'tiersPage') {
  renderTiersPage();
  } else if (targetPageId === 'adminPage') {
  renderAdminPanel();
- } else if (targetPageId === 'organizationsPage' && App.loggedInAccountType === 'user') {
- await renderOrganizationsPage();
- } else if(targetPageId === 'orgDashboardPage' && App.loggedInAccountType === 'organization') {
- renderOrgDashboard();
  }
  } else if (targetPageId === 'searchPage') {
  document.getElementById('search-results-list').innerHTML = '<p class="muted">Search for users by name or click \'Search\' to view all public profiles.</p>';
  }
+ 
  App.pages.forEach(pId => App.elements[pId]?.classList.toggle('active', pId === targetPageId));
  document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.page === targetPageId));
  App.elements.mainHeader?.classList.toggle('hidden', !App.currentUser || targetPageId === 'loginPage');
  window.scrollTo(0, 0);
  }
- function applyVisuals(userData, orgData = null) {
- const data = userData || orgData;
- if (!data) return;
- const theme = data.theme || 'auto';
+
+ function applyVisuals(userData) {
+ if (!userData) return;
+ const theme = userData.theme || 'auto';
  const timeData = getLocalTimeData();
  const isNight = timeData.hour >= 20 || timeData.hour < 6;
  document.body.className = (theme === 'dark' || (theme === 'auto' && isNight)) ? 'dark' : '';
- const accent = orgData?.brandColor || userData?.profileAccentColor || '#0ea5e9';
+
+ const accent = userData?.profileAccentColor || '#0ea5e9';
  document.documentElement.style.setProperty('--primary', accent);
  document.documentElement.style.setProperty('--primary-dark', document.body.classList.contains('dark') ? '#7dd3fc' : '#0369a1'); 
  document.documentElement.style.setProperty('--link-text-color', userData?.linkTextColor || '#0369a1');
  document.documentElement.style.setProperty('--display-font', userData?.displayNameFont || 'Inter, sans-serif');
+
  const pfpElement = document.getElementById('profile-pfp');
  if(pfpElement && userData) {
  const tierConfig = USER_TIER_CONFIG[userData.membershipTier || 'Member'];
@@ -1003,29 +941,31 @@
  pfpElement.style.borderColor = accent;
  }
  }
- function renderProfile(data, orgData = null) {
+
+ function renderProfile(data) {
  if (!data) return;
  const profileNameEl = document.getElementById('profile-name');
  const membershipContainer = document.getElementById('membership-tier-display-container');
  const name = data.displayName || 'Unnamed User';
  profileNameEl.innerHTML = name;
- const orgVerifiedIcon = `<svg class="inline-verified-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12.97 4.27a2.25 2.25 0 0 0-1.94 0l-7.5 4.22a2.25 2.25 0 0 0-1.16 1.95v7.22c0 .98.623 1.822 1.524 2.148l6.75 2.455a2.25 2.25 0 0 0 2.252 0l6.75-2.455A2.25 2.25 0 0 0 21.75 17.7v-7.22a2.25 2.25 0 0 0-1.16-1.95l-7.5-4.22ZM12 8.25a.75.75 0 0 1 .75.75v3.75a.75.75 0 0 1-1.5 0V9a.75.75 0 0 1 .75-.75ZM12 16.5a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z"></path></svg>`;
+
  const userVerifiedIcon = `<svg class="inline-verified-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm13.36-1.814a.75.75 0 1 0-1.06-1.06l-3.103 3.103-1.53-1.53a.75.75 0 0 0-1.06 1.06l2.06 2.06a.75.75 0 0 0 1.06 0l3.64-3.64Z" clip-rule="evenodd" /></svg>`;
  if (data.verified) profileNameEl.innerHTML += userVerifiedIcon;
+
  const tier = data.membershipTier || 'Member';
  profileNameEl.classList.toggle('is-owner', tier === 'Owner');
  membershipContainer.innerHTML = `<div class="membership-badge tier-${tier}">${USER_TIER_CONFIG[tier]?.name || tier}</div>`;
- if (orgData) {
- membershipContainer.innerHTML += `<p style="margin: 8px 0 0 0;">Part of <a href="?org=${data.organizationId}">${orgData.name} ${orgData.verified ? orgVerifiedIcon : ''}</a></p>`;
- }
+ 
  document.getElementById('profile-emoji').textContent = data.status || '❓';
  document.getElementById('profile-message').textContent = data.message || 'No message set.';
- renderPersonalDetails(data, orgData);
+ 
+ renderPersonalDetails(data);
  const timeData = getLocalTimeData();
  document.getElementById('local-time-info').textContent = `Local Time: ${timeData.time} (${timeData.offset})`;
  renderCustomLinks(data.links, document.getElementById('profile-links'), USER_TIER_CONFIG[tier]);
  renderActionLinks(data);
  }
+
  function findActiveSchedule(user) {
  if (!user || !user.timetable || user.timetable.length === 0) return null;
  const now = new Date();
@@ -1033,13 +973,15 @@
  const currentTimeInMinutes = now.getHours() * 60 + now.getMinutes();
  return user.timetable.find(entry => entry.day === currentDay && currentTimeInMinutes >= timeToMinutes(entry.start) && currentTimeInMinutes < timeToMinutes(entry.end));
  }
- function renderPersonalDetails(data, orgData = null) {
+
+ function renderPersonalDetails(data) {
  const container = document.getElementById('personal-details-list');
  if (!container) return;
  let detailsHtml = '';
  const addDetail = (label, value) => {
  if (value) detailsHtml += `<div class="personal-detail-item"><strong>${label}:</strong> ${value}</div>`;
  };
+
  if (data.countryCode) {
  const country = COUNTRY_LIST.find(c => c.code === data.countryCode);
  if (country) {
@@ -1047,6 +989,7 @@
  }
  }
  addDetail('Bio', data.bio);
+
  const isOwnerViewing = App.currentUser && App.currentUser.userId === data.userId;
  if (!isPublicView || isOwnerViewing) {
  addDetail('Phone', data.phone ? `<a href="tel:${data.phone}">${data.phone}</a>` : null);
@@ -1054,8 +997,9 @@
  }
  container.innerHTML = detailsHtml || '<p class="muted">No public details shared.</p>';
  }
+
  async function checkTimetableAndApplyStatus() {
- if (!App.currentUser || !App.currentProfileData || App.loggedInAccountType !== 'user') return;
+ if (!App.currentUser || !App.currentProfileData) return;
  const data = App.currentProfileData;
  const activeSchedule = findActiveSchedule(data);
  if (activeSchedule) {
@@ -1069,6 +1013,7 @@
  }
  }
  }
+
  function renderCustomLinks(links, container, tierConfig) {
  if (!container || !tierConfig) return;
  container.innerHTML = '';
@@ -1083,6 +1028,7 @@
  });
  container.innerHTML = html;
  }
+
  function renderActionLinks(data) {
  const container = document.getElementById('profile-action-links');
  if (!container) return;
@@ -1091,10 +1037,12 @@
  if (data.schedulingLink) html += `<a href="${data.schedulingLink}" target="_blank" rel="noopener noreferrer" class="btn secondary" style="max-width: 250px;">Book a Meeting</a>`;
  container.innerHTML = html;
  }
+
  function populateSettings(data) {
  if (!data || !document.getElementById('display-name')) return;
  const tier = data.membershipTier || 'Member';
  const tierConfig = USER_TIER_CONFIG[tier] || USER_TIER_CONFIG['Member'];
+
  document.getElementById('display-name').value = data.displayName || '';
  document.getElementById('themeSelect').value = data.theme || 'auto';
  document.getElementById('display-font').value = data.displayNameFont || 'Inter, sans-serif';
@@ -1104,22 +1052,26 @@
  document.getElementById('bio').value = data.bio || '';
  document.getElementById('birthday').value = data.birthday || '';
  document.getElementById('phone-number').value = data.phone || '';
+ 
  const countrySearch = document.getElementById('country-search'), countryCodeInput = document.getElementById('country-code');
  if(data.countryCode) {
  const country = COUNTRY_LIST.find(c => c.code === data.countryCode);
  if (country) { countrySearch.value = `${getCountryFlagEmoji(country.code)} ${country.name}`; countryCodeInput.value = country.code; }
  } else { countrySearch.value = ''; countryCodeInput.value = ''; }
+
  const pfpGroup = document.getElementById('pfp-upload-group');
  pfpGroup.classList.toggle('form-field-disabled', !tierConfig.pfp);
  if (!tierConfig.pfp && !pfpGroup.querySelector('.muted')) {
  pfpGroup.insertAdjacentHTML('beforeend', '<p class="muted">Upgrade to Plus to add a profile picture.</p>');
  }
+
  document.getElementById('font-customization-field').classList.toggle('form-field-disabled', !tierConfig.customFont);
  document.getElementById('scheduling-link-field').classList.toggle('form-field-disabled', !tierConfig.scheduling);
  document.getElementById('accent-color-field').classList.toggle('form-field-disabled', !tierConfig.customColor);
  document.getElementById('link-text-color-field').classList.toggle('form-field-disabled', !tierConfig.customColor);
  document.getElementById('automatic-timetable-card').classList.toggle('form-field-disabled', !tierConfig.timetable);
  document.getElementById('analytics-nav-btn')?.classList.toggle('hidden', !tierConfig.analytics && data.membershipTier !== 'Owner');
+
  const linksContainer = document.getElementById('custom-links-container');
  linksContainer.innerHTML = '';
  const linkLimit = tierConfig.linkLimit;
@@ -1130,11 +1082,14 @@
  if (tier !== 'Max' && tier !== 'Owner') {
  linksContainer.innerHTML += `<p class="muted">Upgrade your tier to add more links!</p>`;
  }
+
  document.getElementById('status-emoji').value = data.status || '🟢';
  document.getElementById('status-message').value = data.message || '';
+
  renderTimetableSettings(data.timetable);
- renderVerificationSettings(data, 'user');
+ renderVerificationSettings(data);
  }
+
  function handlePageLoad() {
  App.pages.forEach(pId => App.elements[pId] = document.getElementById(pId));
  App.elements.mainHeader = document.getElementById('mainHeader');
@@ -1142,24 +1097,20 @@
  window.addEventListener('hashchange', hashChangeRouter);
  addEventListeners();
  }
+
  async function handleDeleteAccount() {
  if (!App.currentUser) return;
  const confirmation = confirm("Are you sure you want to permanently delete your account and all associated data? This action cannot be undone.");
  if (!confirmation) return showToast("Account deletion cancelled.");
+
  const accountId = App.currentUser.userId;
  const account = auth.currentUser;
  if (!account) return showToast("Error: No authenticated user found.", "error");
+
  try {
- if (App.loggedInAccountType === 'user') {
  await set(ref(db, `users/${accountId}`), null);
  await set(ref(db, `history/${accountId}`), null);
  await set(ref(db, `analytics/${accountId}`), null);
- if(App.currentProfileData.organizationId) {
- await set(ref(db, `organizations/${App.currentProfileData.organizationId}/members/${accountId}`), null);
- }
- } else if (App.loggedInAccountType === 'organization') {
- await set(ref(db, `organizations/${accountId}`), null);
- }
  await deleteUser(account);
  showToast("Account successfully deleted. 👋");
  } catch (error) {
@@ -1172,11 +1123,13 @@
  }
  }
  }
+
  async function handleSaveSettings() {
- if (!App.currentUser || App.loggedInAccountType !== 'user') return;
+ if (!App.currentUser) return;
  const saveBtn = document.getElementById('save-settings-btn');
  saveBtn.textContent = 'Saving...';
  saveBtn.classList.add('btn-loading');
+
  const tier = App.currentProfileData.membershipTier || 'Member';
  const tierConfig = USER_TIER_CONFIG[tier];
  const linkLimit = tierConfig.linkLimit || 1;
@@ -1188,6 +1141,7 @@
  customLinks.push({ label, url });
  }
  }
+
  const dataToSave = {
  displayName: document.getElementById('display-name').value, 
  theme: document.getElementById('themeSelect').value,
@@ -1203,9 +1157,11 @@
  message: document.getElementById('status-message').value,
  links: customLinks
  };
+
  if (App.currentProfileData.pfpUrl) {
  dataToSave.pfpUrl = App.currentProfileData.pfpUrl;
  }
+
  try {
  const pfpFile = document.getElementById('pfp-upload').files[0];
  if (pfpFile && tierConfig.pfp) {
@@ -1224,6 +1180,7 @@
  saveBtn.classList.remove('btn-loading');
  }
  }
+
  function handleGenerateQrCode() {
  if (!App.currentUser) return;
  const shareUrl = `${window.location.origin}${window.location.pathname}?user=${App.currentUser.userId}`;
@@ -1231,31 +1188,37 @@
  img.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(shareUrl)}`;
  img.onload = () => { img.style.display = 'block'; placeholder.classList.add('hidden'); showToast('QR Code generated! 🖼️'); };
  }
+
  function handleShareStatus() {
- if (!App.currentUser || App.loggedInAccountType !== 'user') return;
+ if (!App.currentUser) return;
  const shareUrl = `${window.location.origin}${window.location.pathname}?user=${App.currentUser.userId}&ref=${App.currentUser.userId}`;
  navigator.clipboard.writeText(shareUrl).then(() => showToast('Profile link copied to clipboard! 🔗'));
  if (!App.currentProfileData.achievements.firstShare) {
  update(ref(db, `users/${App.currentUser.userId}/achievements`), { firstShare: 1 });
  }
  }
+
  function renderTimetableSettings(timetable = []) {
  const container = document.getElementById('timetable-entries-container');
  container.innerHTML = (!timetable || timetable.length === 0) ? '<p class="muted" id="no-timetable-message">No scheduled entries yet.</p>' : '';
  if (timetable && timetable.length > 0) document.getElementById('no-timetable-message')?.remove();
+ 
  timetable.forEach((entry, index) => {
  const entryDiv = document.createElement('div');
  entryDiv.className = 'timetable-entry-card';
  entryDiv.innerHTML = `<div style="display: flex; justify-content: space-between; align-items: center;"><strong>${entry.status} ${entry.message || ''}</strong><button data-index="${index}" class="remove-timetable-btn btn secondary" style="padding: 5px 10px; width: auto; font-size: 0.8rem;">Remove</button></div><p style="color: var(--primary);">${DAYS_OF_WEEK[entry.day]} ${entry.start} - ${entry.end}</p>`;
  container.appendChild(entryDiv);
  });
+ 
  document.querySelectorAll('.remove-timetable-btn').forEach(btn => btn.addEventListener('click', handleRemoveTimetableEntry));
  }
+
  async function handleAddTimetableEntry() {
  const day = parseInt(prompt("Enter Day (0=Sun, 1=Mon...):"), 10);
  if (isNaN(day) || day < 0 || day > 6) return showToast("Invalid day.");
  const start = prompt("Start Time (HH:MM 24hr):"), end = prompt("End Time (HH:MM 24hr):"), status = prompt("Status Emoji:");
  if (!start || !end || !status) return showToast("All fields required.");
+ 
  const newEntry = { day, start, end, status, message: prompt("Message:") || '' };
  const newTimetable = [...(App.currentProfileData.timetable || []), newEntry];
  const userRef = ref(db, `users/${App.currentUser.userId}`);
@@ -1265,6 +1228,7 @@
  const newSchedulerCount = newTimetable.length;
  update(ref(db, `users/${App.currentUser.userId}/achievements`), { scheduler: newSchedulerCount });
  }
+
  async function handleRemoveTimetableEntry(e) {
  const index = parseInt(e.currentTarget.dataset.index, 10);
  const newTimetable = App.currentProfileData.timetable.filter((_, i) => i !== index);
@@ -1275,8 +1239,9 @@
  const newSchedulerCount = newTimetable.length;
  update(ref(db, `users/${App.currentUser.userId}/achievements`), { scheduler: newSchedulerCount });
  }
+
  async function fetchAndRenderAnalytics() {
- if (!App.currentUser || App.loggedInAccountType !== 'user') return;
+ if (!App.currentUser) return;
  const userId = App.currentUser.userId;
  const historyLog = document.getElementById('history-log');
  try {
@@ -1292,12 +1257,14 @@
  });
  } else { historyLog.innerHTML = '<p class="muted">No status history found.</p>'; }
  } catch (error) { historyLog.innerHTML = '<p class="muted">Error loading history.</p>'; }
+
  const totalViews = App.currentProfileData.achievements?.views || 0;
  document.getElementById('views-total').textContent = totalViews;
- document.getElementById('views-today').textContent = 'N/A';
- document.getElementById('views-week').textContent = 'N/A';
- document.getElementById('views-month').textContent = 'N/A';
+ document.getElementById('views-today').textContent = 'N/A'; // Simplified for now
+ document.getElementById('views-week').textContent = 'N/A'; // Simplified for now
+ document.getElementById('views-month').textContent = 'N/A'; // Simplified for now
  }
+
  async function handleSearchUsers() {
  const queryText = document.getElementById('user-search-input').value.toLowerCase().trim();
  const resultsList = document.getElementById('search-results-list');
@@ -1305,42 +1272,29 @@
  try {
  const usersSnap = await get(ref(db, 'users'));
  const allUsers = usersSnap.val() || {};
- const orgsSnap = await get(ref(db, 'organizations'));
- const allOrgs = orgsSnap.val() || {};
  let results = [];
  for (const userId in allUsers) {
  const user = allUsers[userId];
  if (user.displayName && (!queryText || user.displayName.toLowerCase().includes(queryText))) {
- results.push({ type: 'user', id: userId, ...user });
+ results.push({ id: userId, ...user });
  }
  }
- for (const orgId in allOrgs) {
- const org = allOrgs[orgId];
- if (org.name && (!queryText || org.name.toLowerCase().includes(queryText))) {
- results.push({ type: 'org', id: orgId, ...org });
- }
- }
+ 
  const rank = { 'Owner': 0, 'Max': 1, 'Pro': 2, 'Plus': 3, 'Member': 4 };
  results.sort((a, b) => {
- const prioA = a.type === 'org' && a.verified ? -2 : (a.type === 'user' && a.membershipTier === 'Owner' ? -1 : rank[a.membershipTier]);
- const prioB = b.type === 'org' && b.verified ? -2 : (b.type === 'user' && b.membershipTier === 'Owner' ? -1 : rank[b.membershipTier]);
+ const prioA = (a.membershipTier === 'Owner' ? -1 : rank[a.membershipTier]);
+ const prioB = (b.membershipTier === 'Owner' ? -1 : rank[b.membershipTier]);
  if (prioA !== prioB) return prioA - prioB;
- return (a.displayName || a.name).localeCompare(b.displayName || b.name);
+ return a.displayName.localeCompare(b.displayName);
  });
+
  if (results.length > 0) {
  resultsList.innerHTML = results.map(item => {
- if (item.type === 'user') {
  const userVerifiedIcon = `<svg class="inline-verified-icon" style="width:20px; height:20px;" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm13.36-1.814a.75.75 0 1 0-1.06-1.06l-3.103 3.103-1.53-1.53a.75.75 0 0 0-1.06 1.06l2.06 2.06a.75.75 0 0 0 1.06 0l3.64-3.64Z" clip-rule="evenodd" /></svg>`;
  const tierName = item.membershipTier || 'Member';
  const tierClass = tierName;
  const verifiedTick = item.verified ? userVerifiedIcon : '';
  return `<div class="search-result-item"><div><div style="display: flex; align-items: center;"><strong style="font-size: 1.1rem;">${item.displayName}</strong>${verifiedTick}</div><div style="display:flex; gap: 8px; margin-top: 4px;"><div class="membership-badge tier-${tierClass}" style="font-size: 0.7rem; padding: 2px 8px;">${USER_TIER_CONFIG[tierName]?.name || tierName}</div><span style="font-size: 0.9rem; color: var(--muted);">${item.status} ${item.message || ''}</span></div></div><a href="?user=${item.id}" class="btn secondary" style="padding: 8px 12px; width: auto; font-size: 0.9rem;">View</a></div>`;
- }
- if (item.type === 'org') {
- const orgVerifiedIcon = `<svg class="inline-verified-icon" style="width:20px; height:20px;" viewBox="0 0 24 24" fill="currentColor"><path d="M12.97 4.27a2.25 2.25 0 0 0-1.94 0l-7.5 4.22a2.25 2.25 0 0 0-1.16 1.95v7.22c0 .98.623 1.822 1.524 2.148l6.75 2.455a2.25 2.25 0 0 0 2.252 0l6.75-2.455A2.25 2.25 0 0 0 21.75 17.7v-7.22a2.25 2.25 0 0 0-1.16-1.95l-7.5-4.22Z"></path></svg>`;
- const verifiedTick = item.verified ? orgVerifiedIcon : '';
- return `<div class="search-result-item"><div><div style="display: flex; align-items: center;"><strong style="font-size: 1.1rem;">${item.name}</strong>${verifiedTick}</div><p class="muted" style="margin: 4px 0 0 0;">${item.tagline || 'Organization'}</p></div><a href="?org=${item.id}" class="btn secondary" style="padding: 8px 12px; width: auto; font-size: 0.9rem;">View Page</a></div>`;
- }
  }).join('');
  } else { resultsList.innerHTML = '<p class="muted">No results found.</p>'; }
  } catch(e) { 
@@ -1348,6 +1302,7 @@
  console.error(e);
  }
  }
+
  async function trackProfileView(profileId) {
  try {
  let visitorId = localStorage.getItem('hapVisitorId');
@@ -1355,9 +1310,11 @@
  visitorId = 'visitor_' + Date.now() + Math.random().toString(36).substring(2, 15);
  localStorage.setItem('hapVisitorId', visitorId);
  }
+
  const today = new Date().toISOString().split('T')[0];
  const viewRef = ref(db, `analytics/${profileId}/viewsByDay/${today}/${visitorId}`);
  const snapshot = await get(viewRef);
+
  if (!snapshot.exists()) {
  await set(viewRef, true);
  const totalViewsRef = ref(db, `users/${profileId}/achievements/views`);
@@ -1366,6 +1323,7 @@
  }
  } catch (error) { console.error("Failed to track profile view:", error); }
  }
+
  function filterCountries(inputId, dropdownId) {
  const searchTerm = document.getElementById(inputId).value.toLowerCase();
  const dropdown = document.getElementById(dropdownId);
@@ -1382,18 +1340,23 @@
  dropdown.appendChild(option);
  });
  }
+
  async function updateMembershipTier(userId) {
  const userRef = ref(db, `users/${userId}`);
  const snap = await get(userRef);
  if (!snap.exists()) return;
+ 
  const data = snap.val();
  if (data.membershipTier === 'Owner') return;
+
  const achievements = data.achievements || {};
  let newTier = 'Member';
  const check = (reqs) => reqs.every(req => (achievements[req.id] || 0) >= req.goal);
+
  if (check(ACHIEVEMENT_CONFIG.toPlus)) newTier = 'Plus';
  if (newTier === 'Plus' && check(ACHIEVEMENT_CONFIG.toPro)) newTier = 'Pro';
  if (newTier === 'Pro' && check(ACHIEVEMENT_CONFIG.toMax)) newTier = 'Max';
+
  if (data.membershipTier !== newTier) {
  await update(userRef, { membershipTier: newTier });
  if(userId === App.currentUser?.userId) {
@@ -1404,12 +1367,13 @@
  }
  }
  }
- function renderVerificationSettings(data, type) {
- const container = type === 'user' ? document.getElementById('verification-section') : document.getElementById('org-verification-section');
+
+ function renderVerificationSettings(data) {
+ const container = document.getElementById('verification-section');
  if (!container) return;
  let html = `<h3>Verification ✔️</h3>`;
- const tier = data.membershipTier || data.tier;
- const tierConfig = type === 'user' ? USER_TIER_CONFIG[tier] : ORG_TIER_CONFIG[tier];
+ const tierConfig = USER_TIER_CONFIG[data.membershipTier];
+
  if (data.verified) {
  html += `<p style="color: green; font-weight: bold;">This account is officially verified.</p>`;
  } else if (data.verificationRequested) {
@@ -1417,12 +1381,13 @@
  } else if (tierConfig?.verification) {
  html += `<p>You are eligible to apply for verification.</p><button id="request-verification-btn" class="btn secondary">Apply for Verification</button>`;
  } else {
- html += `<p>Reach the <b>Pro</b> membership tier (for individuals) to become eligible for verification.</p>`;
+ html += `<p>Reach the <b>Pro</b> membership tier to become eligible for verification.</p>`;
  }
  container.innerHTML = html;
- container.querySelector('#request-verification-btn')?.addEventListener('click', () => handleRequestVerification(type));
+ container.querySelector('#request-verification-btn')?.addEventListener('click', handleRequestVerification);
  }
- async function handleRequestVerification(type) {
+
+ async function handleRequestVerification() {
  const answers = {};
  for (let i = 0; i < VERIFICATION_QUESTIONS.length; i++) {
  const answer = prompt(`${VERIFICATION_QUESTIONS[i]} (${i+1}/${VERIFICATION_QUESTIONS.length})`);
@@ -1432,72 +1397,26 @@
  }
  answers[`q${i+1}`] = answer;
  }
+
  if (confirm("You are about to submit your profile and answers for manual review. Continue?")) {
  const updates = { verificationRequested: true, verificationAnswers: answers };
- const path = type === 'user' ? `users/${App.currentUser.userId}` : `organizations/${App.currentUser.userId}`;
- await update(ref(db, path), updates);
+ await update(ref(db, `users/${App.currentUser.userId}`), updates);
  showToast("Verification request submitted!");
  const currentData = { ...App.currentProfileData, ...updates };
- if(type === 'user') renderVerificationSettings(currentData, 'user');
- else renderOrgDashboard();
+ renderVerificationSettings(currentData);
  }
  }
- async function renderOrganizationsPage(publicOrgId = null) {
- const pageContainer = document.getElementById('organizationsPage');
- pageContainer.innerHTML = '<div class="card"><p>Loading...</p></div>';
- const orgId = publicOrgId || (App.loggedInAccountType === 'user' ? App.currentProfileData?.organizationId : null);
- if (orgId) {
- const orgSnap = await get(ref(db, `organizations/${orgId}`));
- if (!orgSnap.exists()) {
- pageContainer.innerHTML = '<div class="card"><h2>Organization Not Found</h2></div>';
- if (!publicOrgId && App.currentProfileData?.organizationId) {
- await update(ref(db, `users/${App.currentUser.userId}`), { organizationId: null });
- }
- return;
- }
- const orgData = orgSnap.val();
- if (publicOrgId) {
- App.currentProfileData = { type: 'org', ...orgData }; 
- }
- const memberIds = Object.keys(orgData.members || {});
- const memberPromises = memberIds.map(id => get(ref(db, `users/${id}`)));
- const memberSnaps = await Promise.all(memberPromises);
- const membersHtml = memberSnaps.map(snap => {
- if (!snap.exists()) return '';
- const memberData = snap.val();
- const pfpUrl = memberData.pfpUrl || ''; 
- return `<div class="org-member-item"><div class="org-member-pfp" style="background-image: url(${pfpUrl})"></div><div><strong><a href="?user=${snap.key}">${memberData.displayName}</a></strong><p style="margin:0; color: var(--muted);">${memberData.status} ${memberData.message || ''}</p></div></div>`;
- }).join('');
- pageContainer.innerHTML = `<div class="card" style="text-align:center; padding-bottom: 50px;"><div id="org-banner-public" style="width: 100%; height: 150px; background-size: cover; background-position: center; border-radius: 12px 12px 0 0; background-image: url(${orgData.verified ? orgData.bannerUrl || '' : ''}); background-color: ${orgData.verified ? orgData.brandColor || 'var(--input-bg)' : 'var(--input-bg)'};"></div><img id="org-logo-public" src="${orgData.logoUrl || ''}" alt="Logo" style="width: 80px; height: 80px; border-radius: 50%; margin: -40px auto 10px auto; border: 4px solid var(--card); background-color: var(--card); display: block; background-size: cover; background-position: center;"><h2 style="margin-top: 0;">${orgData.name} ${orgData.verified ? '<svg class="inline-verified-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12.97 4.27a2.25 2.25 0 0 0-1.94 0l-7.5 4.22a2.25 2.25 0 0 0-1.16 1.95v7.22c0 .98.623 1.822 1.524 2.148l6.75 2.455a2.25 2.25 0 0 0 2.252 0l6.75-2.455A2.25 2.25 0 0 0 21.75 17.7v-7.22a2.25 2.25 0 0 0-1.16-1.95l-7.5-4.22Z"></path></svg>' : ''}</h2><p>${orgData.tagline || ''}</p>${orgData.verified && orgData.about ? `<p>${orgData.about}</p>`: ''}</div><div class="card"><h3>Members (${memberIds.length})</h3><div style="max-height: 400px; overflow-y: auto;">${membersHtml || '<p class="muted">No members yet.</p>'}</div></div>`;
- } else {
- pageContainer.innerHTML = `<div class="card"><h2>Join an Organization</h2><p>Link your personal profile to an organization to appear in their member directory.</p><div style="display: flex; flex-direction: column; gap: 10px;"><button id="join-org-btn" class="btn secondary">Join Existing Organization</button></div></div>`;
- document.getElementById('join-org-btn').addEventListener('click', handleJoinOrganization);
- }
- }
- async function handleJoinOrganization() {
- const orgId = prompt("Enter Organization ID (Ask your Admin):");
- if (!orgId) return;
- const orgRef = ref(db, `organizations/${orgId}`);
- const orgSnap = await get(orgRef);
- if (!orgSnap.exists()) return showToast("Invalid Organization ID.", "error");
- const orgData = orgSnap.val();
- const userId = App.currentUser.userId;
- if (orgData.members && orgData.members[userId]) return showToast("You are already a member of this organization.", "error");
- if(Object.keys(orgData.members || {}).length >= 50) return showToast("Organization member limit reached.", "error");
- await update(ref(db, `users/${userId}`), { organizationId: orgId });
- await update(ref(db, `organizations/${orgId}/members`), { [userId]: true });
- App.currentProfileData.organizationId = orgId;
- showToast(`Joined ${orgData.name} successfully!`);
- renderOrganizationsPage();
- }
+
  function renderTiersPage() {
  const detailsContainer = document.getElementById('my-plan-details');
  const progressContainer = document.getElementById('my-plan-progress');
  const allTiersContainer = document.getElementById('all-tiers-info');
  if (!App.currentProfileData) return;
+
  const tier = App.currentProfileData.membershipTier || 'Member';
  const achievements = App.currentProfileData.achievements || {};
  detailsContainer.innerHTML = `<h3>Current Tier: <span style="color: var(--primary);">${USER_TIER_CONFIG[tier].name}</span></h3><p>You unlock new perks by completing achievements and engaging with the platform.</p>`;
+
  let nextTierKey, requirements;
  if (tier === 'Member') { nextTierKey = 'Plus'; requirements = ACHIEVEMENT_CONFIG.toPlus; }
  else if (tier === 'Plus') { nextTierKey = 'Pro'; requirements = ACHIEVEMENT_CONFIG.toPro; }
@@ -1505,6 +1424,7 @@
  else {
  progressContainer.innerHTML = '<h2>You have reached the highest public tier! 🚀</h2><p>Thank you for being a power user!</p>';
  }
+
  if (nextTierKey && requirements) {
  let progressHtml = `<h2>Progress to ${USER_TIER_CONFIG[nextTierKey].name}</h2>`;
  let allGoalsMet = true;
@@ -1514,12 +1434,14 @@
  const progress = Math.min((currentValue / req.goal) * 100, 100);
  progressHtml += `<div class="achievement-item"><strong>${req.label} (${currentValue} / ${req.goal})</strong><div class="achievement-progress"><div class="progress-bar" style="width: ${progress}%; background-color: ${progress >= 100 ? '#22c55e' : 'var(--primary)'};"></div></div></div>`;
  });
+ 
  if (allGoalsMet) {
  progressHtml += `<button id="level-up-btn" class="btn" style="margin-top: 20px;">Claim Your Promotion to ${USER_TIER_CONFIG[nextTierKey].name}!</button>`;
  }
  progressContainer.innerHTML = progressHtml;
  document.getElementById('level-up-btn')?.addEventListener('click', async () => await updateMembershipTier(App.currentUser.userId));
  }
+
  let allTiersHtml = '<div class="tier-plan-grid">';
  for (const tierKey of ['Member', 'Plus', 'Pro', 'Max']) {
  const config = USER_TIER_CONFIG[tierKey];
@@ -1528,71 +1450,50 @@
  allTiersHtml += '</div>';
  allTiersContainer.innerHTML = allTiersHtml;
  }
+
  async function renderAdminPanel() {
  const requestsContainer = document.getElementById('admin-verification-requests');
  const usersContainer = document.getElementById('admin-all-users');
- const orgsContainer = document.getElementById('admin-all-orgs');
- requestsContainer.innerHTML = usersContainer.innerHTML = orgsContainer.innerHTML = '<p class="muted">Loading...</p>';
- const [usersSnap, orgsSnap] = await Promise.all([get(ref(db, 'users')), get(ref(db, 'organizations'))]);
+ requestsContainer.innerHTML = usersContainer.innerHTML = '<p class="muted">Loading...</p>';
+ 
+ const usersSnap = await get(ref(db, 'users'));
  const allUsers = usersSnap.val() || {};
- const allOrgs = orgsSnap.val() || {};
+ 
  const userRequests = Object.entries(allUsers).filter(([uid, user]) => user.verificationRequested && !user.verified).map(([uid, user]) => ({type: 'User', id: uid, data: user}));
- const orgRequests = Object.entries(allOrgs).filter(([id, org]) => org.verificationRequested && !org.verified).map(([id, org]) => ({type: 'Organization', id, data: org}));
- const allRequests = [...userRequests, ...orgRequests];
- if (allRequests.length > 0) {
- requestsContainer.innerHTML = allRequests.map(req => {
+
+ if (userRequests.length > 0) {
+ requestsContainer.innerHTML = userRequests.map(req => {
  let answersHtml = '';
  if (req.data?.verificationAnswers) {
  answersHtml = Object.entries(req.data.verificationAnswers).map(([key, value], index) => `<p><strong>Q${index+1}:</strong> ${value || 'Not answered'}</p>`).join('');
  }
- return `<div class="verification-request-card"><p><strong>Type:</strong> ${req.type}</p><p><strong>Name:</strong> ${req.data.displayName || req.data.name}</p><p><strong>ID:</strong> ${req.id}</p>${answersHtml ? `<div><h4>Answers:</h4>${answersHtml}</div>` : ''}<div class="verification-actions"><button class="btn approve-verify-btn" data-id="${req.id}" data-type="${req.type.toLowerCase()}">Approve</button><button class="btn secondary deny-verify-btn" data-id="${req.id}" data-type="${req.type.toLowerCase()}">Deny</button></div></div>`}).join('');
+ return `<div class="verification-request-card"><p><strong>Type:</strong> ${req.type}</p><p><strong>Name:</strong> ${req.data.displayName}</p><p><strong>ID:</strong> ${req.id}</p>${answersHtml ? `<div><h4>Answers:</h4>${answersHtml}</div>` : ''}<div class="verification-actions"><button class="btn approve-verify-btn" data-id="${req.id}">Approve</button><button class="btn secondary deny-verify-btn" data-id="${req.id}">Deny</button></div></div>`}).join('');
  } else {
  requestsContainer.innerHTML = '<p>No active verification requests.</p>';
  }
+
  usersContainer.innerHTML = `<table class="admin-table"><thead><tr><th>Name</th><th>Email</th><th>Tier</th></tr></thead><tbody>${Object.entries(allUsers).map(([uid, user]) => `<tr><td><a href="?user=${uid}" target="_blank">${user.displayName}</a></td><td>${user.email}</td><td><select class="admin-edit-field" data-uid="${uid}" data-field="membershipTier">${Object.keys(USER_TIER_CONFIG).map(t => `<option value="${t}" ${user.membershipTier === t ? 'selected' : ''}>${t}</option>`).join('')}</select></td></tr>`).join('')}</tbody></table>`;
- orgsContainer.innerHTML = `<table class="admin-table"><thead><tr><th>Name</th><th>Admin Email</th><th>Members</th><th>Tier</th><th>Actions</th></tr></thead><tbody>${Object.entries(allOrgs).map(([id, org]) => `<tr><td><a href="?org=${id}" target="_blank">${org.name}</a></td><td>${org.email}</td><td>${Object.keys(org.members || {}).length}</td><td><select class="admin-edit-field-org" data-id="${id}" data-field="tier">${Object.keys(ORG_TIER_CONFIG).map(t => `<option value="${t}" ${org.tier === t ? 'selected' : ''}>${t}</option>`).join('')}</select></td><td><button class="btn secondary delete-org-btn" data-id="${id}" data-name="${org.name}">Delete</button></td></tr>`).join('')}</tbody></table>`;
+ 
  document.querySelectorAll('.approve-verify-btn, .deny-verify-btn').forEach(btn => btn.addEventListener('click', handleVerificationAction));
  document.querySelectorAll('.admin-edit-field').forEach(sel => sel.addEventListener('change', handleAdminEdit));
- document.querySelectorAll('.admin-edit-field-org').forEach(sel => sel.addEventListener('change', handleAdminEditOrg));
- document.querySelectorAll('.delete-org-btn').forEach(btn => btn.addEventListener('click', handleAdminDeleteOrg));
  }
+
  async function handleVerificationAction(e) {
- const { id, type } = e.target.dataset;
+ const { id } = e.target.dataset;
  const isApprove = e.target.classList.contains('approve-verify-btn');
- const path = type === 'user' ? `users/${id}` : `organizations/${id}`;
  const updates = { verified: isApprove, verificationRequested: false };
- await update(ref(db, path), updates);
- showToast(`${type} request ${isApprove ? 'approved' : 'denied'}.`);
- if(isApprove && type === 'organization') await checkAndUpgradeOrgTier(id);
+ await update(ref(db, `users/${id}`), updates);
+ showToast(`User request ${isApprove ? 'approved' : 'denied'}.`);
  renderAdminPanel();
  }
+
  async function handleAdminEdit(e) {
  const { uid, field } = e.target.dataset;
  const value = e.target.value;
  await update(ref(db, `users/${uid}`), { [field]: value });
  showToast(`User ${field} updated.`);
  }
- async function handleAdminEditOrg(e) {
- const { id, field } = e.target.dataset;
- const value = e.target.value;
- await update(ref(db, `organizations/${id}`), { [field]: value });
- showToast(`Organization ${field} updated.`);
- }
- async function handleAdminDeleteOrg(e) {
- const { id, name } = e.target.dataset;
- if(confirm(`Really delete organization "${name}"? This will unlink all members.`)) {
- const orgSnap = await get(ref(db, `organizations/${id}`));
- const orgData = orgSnap.val();
- if(orgData.members) {
- const memberUpdates = {};
- Object.keys(orgData.members).forEach(uid => { memberUpdates[`/users/${uid}/organizationId`] = null; });
- await update(ref(db), memberUpdates);
- }
- await set(ref(db, `organizations/${id}`), null);
- showToast('Organization deleted.');
- renderAdminPanel();
- }
- }
+
  function addEventListeners() {
  document.querySelector('.auth-tabs')?.addEventListener('click', e => {
  if (e.target.classList.contains('tab')) {
@@ -1600,21 +1501,11 @@
  e.target.classList.add('active');
  const isLogin = e.target.dataset.tab === 'login';
  document.getElementById('login-form-container').classList.toggle('hidden', !isLogin);
- document.getElementById('signup-choice-container').classList.toggle('hidden', isLogin);
- document.getElementById('signup-form').classList.add('hidden');
- document.getElementById('org-signup-form').classList.add('hidden');
+ document.getElementById('signup-form').classList.toggle('hidden', isLogin);
  }
  });
- document.getElementById('show-personal-signup')?.addEventListener('click', () => {
- document.getElementById('signup-choice-container').classList.add('hidden');
- document.getElementById('signup-form').classList.remove('hidden');
- });
- document.getElementById('show-org-signup')?.addEventListener('click', () => {
- document.getElementById('signup-choice-container').classList.add('hidden');
- document.getElementById('org-signup-form').classList.remove('hidden');
- });
+
  document.getElementById('signup-form')?.addEventListener('submit', handleEmailSignup);
- document.getElementById('org-signup-form')?.addEventListener('submit', handleOrgSignup);
  document.getElementById('login-form')?.addEventListener('submit', handleEmailLogin);
  document.getElementById('google-login-btn')?.addEventListener('click', handleGoogleLogin);
  document.getElementById('logout-btn')?.addEventListener('click', handleLogout);
@@ -1624,10 +1515,12 @@
  document.getElementById('add-timetable-entry-btn')?.addEventListener('click', handleAddTimetableEntry);
  document.getElementById('run-search-btn')?.addEventListener('click', handleSearchUsers);
  document.getElementById('generate-qrcode-btn')?.addEventListener('click', handleGenerateQrCode);
+
  App.elements.mainHeader?.addEventListener('click', e => {
  const navBtn = e.target.closest('.nav-btn');
  if (navBtn) navigateTo(navBtn.dataset.page);
  });
+
  const countrySearch = document.getElementById('country-search');
  const countryDropdown = document.getElementById('country-dropdown');
  countrySearch?.addEventListener('focus', () => { countryDropdown.classList.remove('hidden'); filterCountries('country-search', 'country-dropdown'); });
@@ -1635,161 +1528,9 @@
  document.addEventListener('click', (e) => {
  if (!e.target.closest('.country-select-wrapper')) countryDropdown?.classList.add('hidden');
  });
- const orgCountrySearch = document.getElementById('org-signup-country-search');
- const orgCountryDropdown = document.getElementById('org-signup-country-dropdown');
- orgCountrySearch?.addEventListener('focus', () => { orgCountryDropdown.classList.remove('hidden'); filterCountries('org-signup-country-search', 'org-signup-country-dropdown'); });
- orgCountrySearch?.addEventListener('keyup', () => filterCountries('org-signup-country-search', 'org-signup-country-dropdown'));
- document.addEventListener('click', (e) => {
- if (!e.target.closest('.country-select-wrapper')) orgCountryDropdown?.classList.add('hidden');
- });
  }
+
  document.addEventListener('DOMContentLoaded', handlePageLoad);
- async function checkAndUpgradeOrgTier(orgId) {
- const orgRef = ref(db, `organizations/${orgId}`);
- const orgSnap = await get(orgRef);
- if (!orgSnap.exists()) return;
- const orgData = orgSnap.val();
- if (!orgData.verified) return;
- const optionalFields = ['phone', 'logoUrl', 'address', 'industry', 'about'];
- const allFieldsFilled = optionalFields.every(field => orgData[field] && orgData[field].trim() !== '');
- if (allFieldsFilled && orgData.tier !== 'Organization-Max') {
- await update(orgRef, { tier: 'Organization-Max' });
- showToast(`${orgData.name} has been upgraded to Organization Max!`, 'info');
- if (App.currentUser.userId === orgId) {
- App.currentProfileData.tier = 'Organization-Max';
- renderOrgDashboard();
- }
- }
- }
- function renderOrgDashboard() {
- const page = document.getElementById('orgDashboardPage');
- page.innerHTML = `
- <div class="card">
- <h2>🏢 ${App.currentProfileData.name}</h2>
- <div class="auth-tabs">
- <div class="tab active" data-view="preview">Dashboard Preview</div>
- <div class="tab" data-view="settings">Settings</div>
- <div class="tab" data-view="tiers">Tiers</div>
- <div class="tab" data-view="members">Members</div>
- </div>
- <div id="org-dashboard-content"></div>
- </div>
- `;
- const contentContainer = document.getElementById('org-dashboard-content');
- 
- const switchView = (view) => {
- contentContainer.innerHTML = '';
- if (view === 'preview') renderOrgDashboardPreview(contentContainer);
- else if (view === 'settings') renderOrgSettingsPage(contentContainer);
- else if (view === 'tiers') renderOrgTiersPage(contentContainer);
- else if (view === 'members') renderOrgMembersPage(contentContainer);
- }
- 
- page.querySelector('.auth-tabs').addEventListener('click', (e) => {
- if(e.target.classList.contains('tab')) {
- page.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
- e.target.classList.add('active');
- switchView(e.target.dataset.view);
- }
- });
- 
- switchView('preview'); // Default view
- }
- async function renderOrgDashboardPreview(container) {
- container.innerHTML = '<p class="muted">Loading preview...</p>';
- await renderOrganizationsPage(App.currentUser.userId, container);
- }
- function renderOrgSettingsPage(container) {
- const data = App.currentProfileData;
- const tierConfig = ORG_TIER_CONFIG[data.tier];
- container.innerHTML = `
- <div class="card">
- <h2>Mandatory Information</h2>
- <div class="form-group"><label>Organization Name</label><input type="text" id="org-dash-name" value="${data.name || ''}"></div>
- <div class="form-group"><label>Login Email</label><input type="email" id="org-dash-email" value="${data.email || ''}" disabled></div>
- <div class="form-group"><label>Country</label><input type="text" value="${COUNTRY_LIST.find(c=>c.code === data.countryCode)?.name || ''}" disabled></div>
- </div>
- <div class="card">
- <h2>Optional Information (fill all to upgrade to Max)</h2>
- <div class="form-group"><label>Public Phone</label><input type="tel" id="org-dash-phone" value="${data.phone || ''}"></div>
- <div class="form-group" id="org-logo-upload-group"><label>Logo Image URL</label><input type="url" id="org-dash-logoUrl" value="${data.logoUrl || ''}"></div>
- <div class="form-group"><label>Address</label><input type="text" id="org-dash-address" value="${data.address || ''}"></div>
- <div class="form-group"><label>Industry</label><input type="text" id="org-dash-industry" value="${data.industry || ''}"></div>
- <div class="form-group"><label>About Section</label><textarea id="org-dash-about">${data.about || ''}</textarea></div>
- </div>
- <div class="card">
- <h2>Visuals (Max Tier Only)</h2>
- <div class="form-group" id="org-dash-font-field"><label>Display Font</label><select id="org-dash-font"><option value="Inter, sans-serif">Inter</option><option value="Poppins, sans-serif">Poppins</option></select></div>
- <div class="form-group" id="org-dash-color-field"><label>Brand Color</label><input type="color" id="org-dash-brandColor" value="${data.brandColor || '#14b8a6'}"></div>
- <div class="form-group" id="org-dash-banner-field"><label>Banner Image URL</label><input type="url" id="org-dash-bannerUrl" value="${data.bannerUrl || ''}"></div>
- </div>
- <div class="card">
- <h2>Verification</h2>
- <div id="org-verification-section"></div>
- </div>
- <div class="card">
- <button id="save-org-settings-btn" class="btn">Save Changes</button>
- <button id="logout-btn-org" class="btn secondary" style="margin-top: 12px;">Logout</button>
- <button id="delete-account-btn-org" class="btn" style="margin-top: 20px; background-color: #ef4444; color: white;">Delete Organization</button>
- </div>`;
- 
- const logoGroup = document.getElementById('org-logo-upload-group');
- logoGroup.classList.toggle('form-field-disabled', !tierConfig.pfp);
- if (!tierConfig.pfp && !logoGroup.querySelector('.muted')) {
- logoGroup.insertAdjacentHTML('beforeend', '<p class="muted">Upgrade to Organization Max to add a logo.</p>');
- }
- 
- ['org-dash-font-field', 'org-dash-color-field', 'org-dash-banner-field'].forEach(id => {
- document.getElementById(id).classList.toggle('form-field-disabled', data.tier !== 'Organization-Max');
- });
- 
- renderVerificationSettings(data, 'organization');
- document.getElementById('save-org-settings-btn').addEventListener('click', handleSaveOrgSettings);
- document.getElementById('logout-btn-org').addEventListener('click', handleLogout);
- document.getElementById('delete-account-btn-org').addEventListener('click', handleDeleteAccount);
- }
- function renderOrgTiersPage(container) {
- let allTiersHtml = '<h2>Organization Tiers</h2><div class="tier-plan-grid">';
- for (const tierKey of ['Organization', 'Organization-Max']) {
- const config = ORG_TIER_CONFIG[tierKey];
- allTiersHtml += `
- <div class="tier-plan-card">
- <h3><div class="membership-badge tier-${tierKey.replace('-','')}">${config.name}</div></h3>
- <ul>
- <li>${config.linkLimit} Custom Links</li>
- <li>${config.customFont ? 'Custom Profile Font' : 'Standard Font'}</li>
- <li>${config.customColor ? 'Custom Colors & Branding' : 'Standard Colors'}</li>
- <li>${config.analytics ? 'Profile Analytics' : 'No Analytics'}</li>
- <li>${config.verification ? 'Verification Eligible' : 'Not Verification Eligible'}</li>
- <li>${config.showAd ? 'Shows Ad on Profile' : 'Ad-Free Profile'}</li>
- </ul>
- </div>`;
- }
- allTiersHtml += '</div>';
- container.innerHTML = allTiersHtml;
- }
- function renderOrgMembersPage(container){
- container.innerHTML = `<p>Member management coming soon!</p>`;
- }
- async function handleSaveOrgSettings() {
- const orgId = App.currentUser.userId;
- const updates = {
- name: document.getElementById('org-dash-name').value,
- phone: document.getElementById('org-dash-phone').value,
- logoUrl: document.getElementById('org-dash-logoUrl').value,
- address: document.getElementById('org-dash-address').value,
- industry: document.getElementById('org-dash-industry').value,
- about: document.getElementById('org-dash-about').value,
- displayNameFont: document.getElementById('org-dash-font')?.value,
- brandColor: document.getElementById('org-dash-brandColor')?.value,
- bannerUrl: document.getElementById('org-dash-bannerUrl')?.value,
- };
- await update(ref(db, `organizations/${orgId}`), updates);
- App.currentProfileData = { ...App.currentProfileData, ...updates };
- showToast('Organization settings saved!');
- await checkAndUpgradeOrgTier(orgId);
- renderOrgDashboard();
- }
  </script>
 </body>
 </html>
