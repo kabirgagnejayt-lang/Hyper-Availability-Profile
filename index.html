@@ -18,7 +18,6 @@
  --pfp-border-day: var(--primary);
  --link-text-color: #0369a1;
  --display-font: 'Inter', sans-serif;
- --profile-header-bg-style: var(--card);
  }
  body.dark {
  --primary: #38bdf8; --primary-light: #1e293b; --primary-dark: #7dd3fc;
@@ -104,7 +103,24 @@
  .tab.active { background-color: var(--primary); color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
  .social-login-btn { margin-top: 10px; background: #4285F4; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 10px; }
  .social-login-btn:hover { background: #3c7ceb; }
- .profile-header { text-align: center; margin-bottom: 30px; background: var(--profile-header-bg-style); transition: background 0.5s ease; padding: 20px; }
+ .profile-header {
+    text-align: center;
+    margin-bottom: 30px;
+    background: #ffffff;
+    transition: background 0.5s ease;
+    padding: 20px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+ }
+ body.dark .profile-header .profile-name,
+ body.dark .profile-header .profile-message,
+ body.dark .profile-header .local-time-display,
+ body.dark .profile-header .role-badge-container p {
+    color: #0f172a;
+ }
+ body.dark .profile-header .profile-name.is-owner {
+    color: #ef4444;
+ }
  #profile-pfp {
  width: 96px; height: 96px; border-radius: 50%; margin: 0 auto 16px auto;
  background-color: var(--pfp-bg-day); background-size: cover; background-position: center;
@@ -1821,5 +1837,6 @@
  </script>
 </body>
 </html>
+
 
 
