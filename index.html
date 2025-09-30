@@ -103,24 +103,7 @@
  .tab.active { background-color: var(--primary); color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
  .social-login-btn { margin-top: 10px; background: #4285F4; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 10px; }
  .social-login-btn:hover { background: #3c7ceb; }
- .profile-header {
-    text-align: center;
-    margin-bottom: 30px;
-    background: #ffffff;
-    transition: background 0.5s ease;
-    padding: 20px;
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
- }
- body.dark .profile-header .profile-name,
- body.dark .profile-header .profile-message,
- body.dark .profile-header .local-time-display,
- body.dark .profile-header .role-badge-container p {
-    color: #0f172a;
- }
- body.dark .profile-header .profile-name.is-owner {
-    color: #ef4444;
- }
+ .profile-header { text-align: center; margin-bottom: 30px; padding: 20px 0; }
  #profile-pfp {
  width: 96px; height: 96px; border-radius: 50%; margin: 0 auto 16px auto;
  background-color: var(--pfp-bg-day); background-size: cover; background-position: center;
@@ -313,7 +296,7 @@
  <div id="profilePage" class="page">
  <div id="create-hap-promo-top" class="card hidden"></div>
  <div id="top-ad-container" class="card hidden" style="padding: 10px; text-align: center;"></div>
- <div class="card profile-header">
+ <div class="profile-header">
  <div id="profile-pfp"></div> 
  <div style="padding: 0 20px 20px 20px;">
  <h1 class="profile-name" id="profile-name">Loading...</h1>
@@ -779,7 +762,8 @@
  async function handleGoogleLogin() {
  const provider = new GoogleAuthProvider();
  try {
-  await signInWithPopup(auth, provider);
+    const result = await signInWithPopup(auth, provider);
+    await initializeNewUser(result.user);
  } catch (error) {
   document.getElementById('error-message').textContent = getFriendlyAuthError(error.code);
  }
@@ -801,29 +785,23 @@
  }
 
  onAuthStateChanged(auth, async (user) => {
- const wasLoggedIn = !!App.currentUser;
- if (user) {
-  await setupSession(user.uid);
-  App.currentUser = { email: user.email, displayName: user.displayName, userId: user.uid };
- } else {
-  App.currentUser = null;
-  App.currentProfileData = null;
- }
- const isLoggedIn = !!App.currentUser;
+    const wasLoggedIn = !!App.currentUser;
 
- if (!isAuthResolved) {
-  isAuthResolved = true;
-  hashChangeRouter();
- }
+    if (user) {
+        await setupSession(user.uid);
+        App.currentUser = { email: user.email, displayName: user.displayName, userId: user.uid };
+    } else {
+        App.currentUser = null;
+        App.currentProfileData = null;
+        clearInterval(timetableCheckInterval);
+    }
 
- if (isLoggedIn && !wasLoggedIn) {
-  const redirectTarget = sessionStorage.getItem('redirectAfterLogin');
-  sessionStorage.removeItem('redirectAfterLogin');
-  navigateTo(redirectTarget || 'profilePage');
- } else if (!isLoggedIn && wasLoggedIn) {
-  clearInterval(timetableCheckInterval);
-  navigateTo('loginPage');
- }
+    if (!isAuthResolved) {
+        isAuthResolved = true;
+        hashChangeRouter();
+    } else if (!!App.currentUser !== wasLoggedIn) {
+        hashChangeRouter();
+    }
  });
 
  async function initializeNewUser(user, additionalData = {}) {
@@ -946,7 +924,6 @@
     const userRef = ref(db, `users/${App.currentUser.userId}`);
     if(data.displayName !== auth.currentUser.displayName) {
         await updateProfile(auth.currentUser, { displayName: data.displayName });
-        App.currentUser.displayName = data.displayName;
         if (!data.pfpUrl) dataWithTimestamp.pfpText = data.displayName.charAt(0).toUpperCase();
     }
 
@@ -988,30 +965,20 @@
     }
  }
 
- function navigateTo(pageId, isInternal = false) {
- const currentHash = window.location.hash.substring(1);
- if (pageId === currentHash && !isInternal) return;
- 
- if (isInternal) {
- const cleanUrl = window.location.origin + window.location.pathname;
- window.history.pushState({}, '', cleanUrl);
+ function navigateTo(pageId, isInternal = true) {
+ if(isInternal) {
+    const cleanUrl = window.location.origin + window.location.pathname;
+    history.pushState({}, '', cleanUrl);
  }
- 
  window.location.hash = pageId;
  }
 
  async function hashChangeRouter() {
     clearInterval(countdownInterval);
     if(publicViewInterval) clearInterval(publicViewInterval);
-    if (!isAuthResolved) return;
 
     const params = new URLSearchParams(window.location.search);
     const userIdFromUrl = params.get('user');
-    const refIdFromUrl = params.get('ref');
-
-    if(refIdFromUrl && !App.currentUser) {
-        sessionStorage.setItem('referrerId', refIdFromUrl);
-    }
 
     if (userIdFromUrl) {
         isPublicView = true;
@@ -1030,7 +997,7 @@
     const hash = window.location.hash.substring(1);
     let targetPageId = 'loginPage'; 
     
-    if (App.currentUser) {
+    if (App.currentUser && App.currentProfileData) {
         const userTier = App.currentProfileData.membershipTier || 'Member';
         const tierConfig = USER_TIER_CONFIG[userTier];
         const requestedPage = App.pages.includes(hash) ? hash : 'profilePage';
@@ -1043,11 +1010,13 @@
         } else {
             targetPageId = requestedPage;
         }
-    } else if (hash === 'searchPage') {
-        targetPageId = 'searchPage';
-    } else if (hash) {
-        sessionStorage.setItem('redirectAfterLogin', hash);
-        targetPageId = 'loginPage';
+    } else if (!App.currentUser) {
+        if (hash === 'searchPage') {
+            targetPageId = 'searchPage';
+        } else if (hash) {
+            sessionStorage.setItem('redirectAfterLogin', hash);
+            targetPageId = 'loginPage';
+        }
     }
 
     if (App.currentUser) {
@@ -1182,7 +1151,8 @@
         promoTop.innerHTML = topPromoHTML;
         promoTop.classList.remove('hidden');
         if (!isOwnerViewing) {
-            promoTop.querySelector('#promo-action-btn-top').onclick = () => {
+            const btn = promoTop.querySelector('#promo-action-btn-top');
+            if(btn) btn.onclick = () => {
                 const cleanUrl = window.location.origin + window.location.pathname;
                 window.location.href = cleanUrl;
             };
@@ -1192,7 +1162,8 @@
         promoBottom.innerHTML = bottomPromoHTML;
         promoBottom.classList.remove('hidden');
         if (!isOwnerViewing) {
-            promoBottom.querySelector('#promo-action-btn-bottom').onclick = () => {
+            const btn = promoBottom.querySelector('#promo-action-btn-bottom');
+            if(btn) btn.onclick = () => {
                 const cleanUrl = window.location.origin + window.location.pathname;
                 window.location.href = cleanUrl;
             };
@@ -1837,6 +1808,4 @@
  </script>
 </body>
 </html>
-
-
 
