@@ -258,6 +258,14 @@
     border-radius: 8px; margin-bottom: 10px; font-weight: 500;
     animation: feature-reveal 0.5s ease-out backwards;
  }
+ #profile-team-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--input-bg); padding: 6px 12px;
+    border-radius: 8px; margin-top: 15px;
+    border: 1px solid var(--border-color);
+ }
+ #profile-team-badge img { width: 24px; height: 24px; border-radius: 4px; }
+ #profile-team-badge span { font-weight: 600; color: var(--text); }
  </style>
 </head>
 <body>
@@ -301,6 +309,7 @@
  <div style="padding: 0 20px 20px 20px;">
  <h1 class="profile-name" id="profile-name">Loading...</h1>
  <div id="membership-tier-display-container" class="role-badge-container"></div>
+ <div id="profile-team-badge-container"></div>
  <div class="profile-emoji" id="profile-emoji">❓</div>
  <p class="profile-message" id="profile-message">Fetching status...</p>
  <div class="profile-timer" id="profile-timer"></div>
@@ -370,26 +379,67 @@
  <div id="all-tiers-info"><p class="muted">Loading all tiers...</p></div>
  </div>
  </div>
- <div id="teamsPage" class="page">
+ <div id="teamTiersPage" class="page">
     <div class="card">
-        <h2>My Teams</h2>
-        <div id="my-teams-list">
-            <p class="muted">You are not a member of any teams yet.</p>
+        <h2>Team Progression</h2>
+        <div class="form-group">
+            <label for="team-progress-select">View Progress For:</label>
+            <select id="team-progress-select"></select>
         </div>
-        <div class="form-group" style="margin-top: 20px;">
-            <input type="text" id="new-team-name" placeholder="New Team Name">
+        <div id="team-progress-dashboard">
+            <p class="muted">Select a team to view its progress.</p>
+        </div>
+    </div>
+    <div class="card">
+        <h2>All Team Tiers</h2>
+        <div id="all-team-tiers-info"><p class="muted">Loading all team tiers...</p></div>
+    </div>
+ </div>
+ <div id="teamsPage" class="page">
+    <div class="card" style="text-align: center;">
+        <h2 id="teams-welcome-header">Welcome to Teams</h2>
+        <p id="teams-summary">Loading your team information...</p>
+    </div>
+    <div id="my-teams-grid" class="tier-plan-grid">
+    </div>
+    <div class="card">
+        <h2>Team Actions</h2>
+        <div class="form-group">
+            <input type="text" id="join-team-id" placeholder="Enter Team Invite ID...">
+        </div>
+        <button id="join-team-by-id-btn" class="btn secondary">Join by ID</button>
+        <hr style="border: none; border-top: 1px solid var(--border-color); margin: 20px 0;">
+        <div class="form-group">
+            <input type="text" id="new-team-name" placeholder="New Team Name...">
         </div>
         <button id="create-team-btn" class="btn">Create New Team</button>
     </div>
-    <div id="team-details-view" class="card hidden">
-        <h2 id="team-details-name"></h2>
+ </div>
+ <div id="teamDetailsPage" class="page">
+    <div class="card">
+        <h2 id="team-details-name" style="display: flex; align-items: center; gap: 10px;"></h2>
         <div id="team-members-grid" class="analytics-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
         </div>
-        <div id="team-invite-section" style="margin-top: 20px;">
+    </div>
+    <div class="card" id="team-settings-card">
+        <h2>Team Settings</h2>
+        <div id="team-invite-section">
             <p><strong>Invite Link:</strong></p>
             <input type="text" id="team-invite-link" readonly>
             <button id="copy-invite-link-btn" class="btn secondary" style="margin-top: 10px;">Copy Invite Link</button>
+            <hr style="border: none; border-top: 1px solid var(--border-color); margin: 20px 0;">
+            <p><strong>Invite ID:</strong></p>
+            <input type="text" id="team-invite-id" readonly style="font-weight: bold; text-align: center; font-size: 1.2rem;">
+            <button id="generate-invite-id-btn" class="btn secondary" style="margin-top: 10px;">Generate Invite ID</button>
         </div>
+        <div id="team-visibility-section" class="form-group" style="margin-top: 20px;">
+            <label for="team-visibility-toggle">Team Visibility</label>
+            <select id="team-visibility-toggle">
+                <option value="private">Private (Invite-Only)</option>
+                <option value="public">Public (Discoverable)</option>
+            </select>
+        </div>
+         <div id="team-verification-section" style="margin-top: 20px;"></div>
     </div>
  </div>
  <div id="adminPage" class="page">
@@ -430,6 +480,15 @@
  <option value="Playfair Display, serif">Playfair Display</option>
  </select>
  </div>
+ </div>
+ <div class="card" id="team-affiliation-card" class="hidden">
+    <h2>Team Affiliation</h2>
+    <div class="form-group">
+        <label for="team-badge-select">Display Team Badge on Profile</label>
+        <select id="team-badge-select">
+            <option value="none">None</option>
+        </select>
+    </div>
  </div>
  <div class="card">
  <h2>Personal Info</h2>
@@ -640,7 +699,7 @@
  let isAuthResolved = false;
 
  const App = {
- pages: ['loginPage', 'profilePage', 'searchPage', 'analyticsPage', 'settingsPage', 'tiersPage', 'adminPage', 'teamsPage'],
+ pages: ['loginPage', 'profilePage', 'searchPage', 'analyticsPage', 'settingsPage', 'tiersPage', 'adminPage', 'teamsPage', 'teamDetailsPage', 'teamTiersPage'],
  elements: {},
  currentUser: null,
  currentProfileData: null,
@@ -650,28 +709,35 @@
   'Member': { 
     name: 'Basic', linkLimit: 1, pfp: false, qrCode: false, customFont: false, customColor: false, 
     timetable: false, scheduling: false, analytics: false, verification: false, 
-    canCustomizeAds: false, canControlPlatformAd: false
+    canCustomizeAds: false, canControlPlatformAd: false, teamCreateLimit: 0, teamJoinLimit: 1
   },
   'Plus': { 
     name: 'Personal', linkLimit: 3, pfp: true, qrCode: true, customFont: true, customColor: true, 
     timetable: false, scheduling: false, analytics: false, verification: false, 
-    canCustomizeAds: false, canControlPlatformAd: false
+    canCustomizeAds: false, canControlPlatformAd: false, teamCreateLimit: 2, teamJoinLimit: 3
   },
   'Pro': { 
     name: 'Professional', linkLimit: 5, pfp: true, qrCode: true, customFont: true, customColor: true, 
     timetable: true, scheduling: false, analytics: true, verification: true, 
-    canCustomizeAds: true, canControlPlatformAd: false
+    canCustomizeAds: true, canControlPlatformAd: false, teamCreateLimit: 5, teamJoinLimit: 5
   },
   'Max': { 
     name: 'Power User', linkLimit: 10, pfp: true, qrCode: true, customFont: true, customColor: true, 
     timetable: true, scheduling: true, analytics: true, verification: true, 
-    canCustomizeAds: true, canControlPlatformAd: true 
+    canCustomizeAds: true, canControlPlatformAd: true, teamCreateLimit: 10, teamJoinLimit: 10
   },
   'Owner': {
     name: 'Owner', linkLimit: 10, pfp: true, qrCode: true, customFont: true, customColor: true, 
     timetable: true, scheduling: true, analytics: true, verification: true, 
-    canCustomizeAds: true, canControlPlatformAd: true
+    canCustomizeAds: true, canControlPlatformAd: true, teamCreateLimit: 99, teamJoinLimit: 99
   },
+ };
+
+ const TEAM_TIER_CONFIG = {
+    'Squad': { name: 'Squad', memberLimit: 5, roles: ['Owner', 'Member'], analytics: false, customBranding: false, verification: false },
+    'Collaborative': { name: 'Collaborative', memberLimit: 15, roles: ['Owner', 'Admin', 'Member'], analytics: true, customBranding: true, verification: false },
+    'Division': { name: 'Division', memberLimit: 50, roles: ['Owner', 'Admin', 'Member'], analytics: true, customBranding: true, verification: true },
+    'Collective': { name: 'Collective', memberLimit: Infinity, roles: ['Owner', 'Admin', 'Member'], analytics: true, customBranding: true, verification: true }
  };
  
  const ACHIEVEMENT_CONFIG = {
@@ -696,6 +762,27 @@
     { id: 'scheduler', label: 'Automation Pro: Create a timetable with 3+ entries', goal: 3 },
     { id: 'expressive', label: 'Status Guru: Use 10 different statuses', goal: 10 }
   ]
+ };
+
+ const TEAM_ACHIEVEMENT_CONFIG = {
+    toCollaborative: [
+        { id: 'memberCount', label: 'Assemble the Core Team', goal: 3 },
+        { id: 'initialUpdates', label: 'First Wave of Updates (10 total)', goal: 10 },
+        { id: 'hasLogo', label: 'Give the Team an Identity (Upload Logo)', goal: 1 },
+        { id: 'fullHouse', label: 'Full House (Reach 5 members)', goal: 5 }
+    ],
+    toDivision: [
+        { id: 'memberCount', label: 'Expand the Roster', goal: 10 },
+        { id: 'dailyStreak', label: '3-Day Activity Streak', goal: 3 },
+        { id: 'adminCount', label: 'Active Management (2 Admins)', goal: 2 },
+        { id: 'analyticsViewed', label: 'Data-Driven (View Analytics)', goal: 1 }
+    ],
+    toCollective: [
+        { id: 'memberCount', label: 'Scale Up', goal: 25 },
+        { id: 'highVolumeUpdates', label: 'High-Volume Activity (250 total)', goal: 250 },
+        { id: 'sustainedStreak', label: '7-Day Activity Streak', goal: 7 },
+        { id: 'inviteUses', label: 'Become a Hub (15 invite uses)', goal: 15 }
+    ]
  };
 
  const FEATURE_FRIENDLY_NAMES = {
@@ -847,6 +934,8 @@
  pfpText: defaultPfpText,
  adsEnabled: false,
  platformAdDisplay: 'both',
+ teamsCreatedCount: 0,
+ teamsJoinedCount: 0,
  achievements: { 
  profileComplete: 0, scheduler: 0, socialButterfly: 0, firstShare: 0,
  views: 0, loyalUser: 1, expressive: 0, referral: 0, picturePerfect: 0,
@@ -892,15 +981,15 @@
  }
 
  applyVisuals(data);
- populateSettings(data);
+ await populateSettings(data);
 
  document.querySelector('#mainHeader').innerHTML = `
  <nav>
  <button class="nav-btn" data-page="profilePage"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5a5.5 5.5 0 0 1 3.096 10.047 9.005 9.005 0 0 1 5.9 8.181.75.75 0 0 1-1.498.07 7.502 7.502 0 0 0-15 0 .75.75 0 0 1-1.498-.07A9.005 9.005 0 0 1 9 12.55a5.5 5.5 0 0 1 3-10.05ZM12 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z"></path></svg><span>Profile</span></button>
- <button class="nav-btn" data-page="tiersPage"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M11.47 1.72a.75.75 0 0 1 1.06 0l3 3a.75.75 0 0 1-1.06 1.06l-1.72-1.72V7.5h-1.5V4.06L9.53 5.78a.75.75 0 0 1-1.06-1.06l3-3ZM11.25 7.5V15a.75.75 0 0 0 1.5 0V7.5h3.75a3 3 0 0 1 3 3v9a3 3 0 0 1-3 3h-9a3 3 0 0 1-3-3v-9a3 3 0 0 1 3-3h3.75Z"></path></svg><span>Tiers</span></button>
- <button class="nav-btn" data-page="teamsPage"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M14.25 6.375a.75.75 0 0 1 .75-.75h4.5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0V7.125h-3.75a.75.75 0 0 1-.75-.75Zm-10.5 0a.75.75 0 0 1 .75-.75h4.5a.75.75 0 0 1 0 1.5H5.25v3.75a.75.75 0 0 1-1.5 0v-4.5Z" /><path fill-rule="evenodd" d="M4.5 12a.75.75 0 0 1 .75-.75h13.5a.75.75 0 0 1 0 1.5H5.25a.75.75 0 0 1-.75-.75Zm-.75 6a.75.75 0 0 1 .75-.75h3.75v-3.75a.75.75 0 0 1 1.5 0v4.5a.75.75 0 0 1-.75.75h-4.5a.75.75 0 0 1-.75-.75Zm10.5 0a.75.75 0 0 1 .75-.75h3.75a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0v-3.75H15a.75.75 0 0 1-.75-.75Z" clip-rule="evenodd" /></svg><span>Teams</span></button>
+ <button class="nav-btn" data-page="tiersPage"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M11.47 1.72a.75.75 0 0 1 1.06 0l3 3a.75.75 0 0 1-1.06 1.06l-1.72-1.72V7.5h-1.5V4.06L9.53 5.78a.75.75 0 0 1-1.06-1.06l3-3ZM11.25 7.5V15a.75.75 0 0 0 1.5 0V7.5h3.75a3 3 0 0 1 3 3v9a3 3 0 0 1-3 3h-9a3 3 0 0 1-3-3v-9a3 3 0 0 1 3-3h3.75Z"></path></svg><span>My Tier</span></button>
+ <button class="nav-btn" data-page="teamsPage"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M14.25 6.375a.75.75 0 0 1 .75-.75h4.5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0V7.125h-3.75a.75.75 0 0 1-.75-.75Zm-10.5 0a.75.75 0 0 1 .75-.75h4.5a.75.75 0 0 1 0 1.5H5.25v3.75a.75.75 0 0 1-1.5 0v-4.5Z" /><path fill-rule="evenodd" d="M4.5 12a.75.75 0 0 1 .75-.75h13.5a.75.75 0 0 1 0 1.5H5.25a.75.75 0 0 1-.75-.75Zm-.75 6a.75.75 0 0 1 .75-.75h3.75v-3.75a.75.75 0 0 1 1.5 0v4.5a.75.75 0 0 1-.75.75h-4.5a.75.75 0 0 1-.75-.75Zm10.5 0a.75.75 0 0 1 .75-.75h3.75a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0v-3.75H15a.75.75 0 0 1-.75-.75Z" clip-rule="evenodd" /></svg><span>My Teams</span></button>
+ <button class="nav-btn" data-page="teamTiersPage"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M3 6a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V6Zm4.5 9a.75.75 0 0 1 .75-.75h.75a.75.75 0 0 1 .75.75v.75a.75.75 0 0 1-.75.75h-.75a.75.75 0 0 1-.75-.75v-.75Zm3.75-1.5a.75.75 0 0 0-.75.75v2.25a.75.75 0 0 0 1.5 0v-2.25a.75.75 0 0 0-.75-.75Zm3-1.5a.75.75 0 0 1 .75-.75h.75a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0v-4.5a.75.75 0 0 1 .75-.75Z" clip-rule="evenodd" /></svg><span>Team Tiers</span></button>
  <button class="nav-btn" data-page="searchPage"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M10.5 3.75a6.75 6.75 0 1 0 0 13.5 6.75 6.75 0 0 0 0-13.5ZM2.25 10.5a8.25 8.25 0 1 1 14.59 5.28l4.69 4.69a.75.75 0 1 1-1.06 1.06l-4.69-4.69A8.25 8.25 0 0 1 2.25 10.5Z" clip-rule="evenodd"></path></svg><span>Search</span></button>
- <button id="analytics-nav-btn" class="nav-btn" data-page="analyticsPage"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M10.5 4.5a.75.75 0 0 0-1.5 0V7.5a.75.75 0 0 0 1.5 0V4.5ZM17.25 5.25a.75.75 0 0 0-1.5 0V9a.75.75 0 0 0 1.5 0V5.25ZM14.25 7.5a.75.75 0 0 0-1.5 0v10.5a.75.75 0 0 0 1.5 0V7.5ZM21 9a.75.75 0 0 0-1.5 0v7.5a.75.75 0 0 0 1.5 0V9ZM3.75 12a.75.75 0 0 0-1.5 0v4.5a.75.75 0 0 0 1.5 0V12Z"></path><path fill-rule="evenodd" d="M3 3a1.5 1.5 0 0 0-1.5 1.5V19.5A1.5 1.5 0 0 0 3 21h18a1.5 1.5 0 0 0 1.5-1.5V4.5A1.5 1.5 0 0 0 21 3H3ZM5.25 19.5h13.5V4.5H5.25v15Z" clip-rule="evenodd"></path></svg><span>Analytics</span></button>
  <button class="nav-btn" data-page="settingsPage"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M11.64 3.023a.75.75 0 0 1 .72 0l1.517.65a.75.75 0 0 0 .841-.252l1.11-1.48A.75.75 0 0 1 17 2.25a.75.75 0 0 1 .633.368l1.11 1.48a.75.75 0 0 0 .84.253l1.518-.65a.75.75 0 0 1 .72 0l1.016.436a.75.75 0 0 1 .45 1.033l-.74 1.385a.75.75 0 0 0 .14.925l1.28.96a.75.75 0 0 1 0 1.302l-1.28.96a.75.75 0 0 0-.14.925l.74 1.385a.75.75 0 0 1-.45 1.033l-1.017.436a.75.75 0 0 1-.72 0l-1.517-.65a.75.75 0 0 0-.84.252l-1.11 1.48A.75.75 0 0 1 17 21.75a.75.75 0 0 1-.633-.368l-1.11-1.48a.75.75 0 0 0-.84-.253l-1.518.65a.75.75 0 0 1-.72 0l-1.016-.436a.75.75 0 0 1-.45-1.033l.74-1.385a.75.75 0 0 0-.14-.925l-1.28-.96a.75.75 0 0 1 0-1.302l1.28.96a.75.75 0 0 0 .14-.925l-.74-1.385a.75.75 0 0 1 .45-1.033l1.017-.436ZM12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"></path></svg><span>Settings</span></button>
  <button id="admin-nav-btn" class="nav-btn hidden" data-page="adminPage"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M4.5 2.25a.75.75 0 0 0 0 1.5v16.5a.75.75 0 0 0 0 1.5h15a.75.75 0 0 0 0-1.5V3.75a.75.75 0 0 0 0-1.5h-15ZM5.25 21a1.5 1.5 0 0 0 1.5-1.5V3.75A1.5 1.5 0 0 0 5.25 2.25h-1.5A3 3 0 0 0 .75 5.25v13.5A3 3 0 0 0 3.75 21h1.5Zm15-1.5V3.75A1.5 1.5 0 0 0 18.75 2.25h-1.5a.75.75 0 0 0 0 1.5h1.5c.414 0 .75.336.75.75v16.5c0 .414-.336.75-.75.75h-1.5a.75.75 0 0 0 0 1.5h1.5a3 3 0 0 0 3-3V5.25a3 3 0 0 0-3-3h-1.5ZM8.25 7.5a.75.75 0 0 0 0 1.5h7.5a.75.75 0 0 0 0-1.5h-7.5Zm.75 3.75a.75.75 0 0 1 .75-.75h4.5a.75.75 0 0 1 0 1.5h-4.5a.75.75 0 0 1-.75-.75Z" clip-rule="evenodd" /></svg><span>Admin</span></button>
  </nav>
@@ -928,7 +1017,7 @@
  userData.status = activeSchedule.status;
  userData.message = activeSchedule.message;
  }
- renderProfile(userData);
+ await renderProfile(userData);
  if (!App.currentUser || App.currentUser.userId !== userId) {
  trackProfileView(userId);
  }
@@ -997,8 +1086,8 @@
     App.currentProfileData = { ...finalSnapshot.val(), userId: App.currentUser.userId };
 
     applyVisuals(App.currentProfileData);
-    renderProfile(App.currentProfileData);
-    populateSettings(App.currentProfileData);
+    await renderProfile(App.currentProfileData);
+    await populateSettings(App.currentProfileData);
 
     if (oldTier === App.currentProfileData.membershipTier) {
         showToast('Settings Saved & Status Updated! 💾');
@@ -1008,7 +1097,8 @@
  function navigateTo(pageId, isInternal = true) {
  if(isInternal) {
     const cleanUrl = window.location.origin + window.location.pathname;
-    history.pushState({}, '', cleanUrl);
+    let newHash = pageId.startsWith('teamDetailsPage') ? pageId : `#${pageId}`;
+    history.pushState({}, '', `${cleanUrl}${newHash}`);
  }
  window.location.hash = pageId;
  }
@@ -1042,6 +1132,14 @@
         history.pushState("", document.title, window.location.pathname + window.location.search);
         return; 
     }
+    
+    if (hash.startsWith('teamDetailsPage=')) {
+        const teamId = hash.split('=')[1];
+        App.pages.forEach(pId => App.elements[pId]?.classList.remove('active'));
+        App.elements.teamDetailsPage?.classList.add('active');
+        await renderTeamDetails(teamId);
+        return;
+    }
 
     let targetPageId = 'loginPage'; 
     
@@ -1069,7 +1167,7 @@
 
     if (App.currentUser) {
         if(targetPageId === 'profilePage') {
-            renderProfile(App.currentProfileData);
+            await renderProfile(App.currentProfileData);
         } else if (targetPageId === 'analyticsPage') {
             await fetchAndRenderAnalytics();
         } else if (targetPageId === 'tiersPage') {
@@ -1078,6 +1176,8 @@
             renderAdminPanel();
         } else if (targetPageId === 'teamsPage') {
             await renderTeamsPage();
+        } else if (targetPageId === 'teamTiersPage') {
+            await renderTeamTiersPage();
         }
     }
     
@@ -1119,7 +1219,7 @@
  }
  }
 
- function renderProfile(data) {
+ async function renderProfile(data) {
     if (!data) return;
     
     const isOwnerViewing = App.currentUser && App.currentUser.userId === data.userId;
@@ -1136,6 +1236,17 @@
     const tierConfig = USER_TIER_CONFIG[tier];
     profileNameEl.classList.toggle('is-owner', tier === 'Owner');
     membershipContainer.innerHTML = `<div class="membership-badge tier-${tier}">${tierConfig.name || tier}</div>`;
+    
+    const badgeContainer = document.getElementById('profile-team-badge-container');
+    badgeContainer.innerHTML = '';
+    if (data.displayTeamBadge) {
+        const teamSnap = await get(ref(db, `teams/${data.displayTeamBadge}`));
+        if (teamSnap.exists()) {
+            const team = teamSnap.val();
+            badgeContainer.innerHTML = `<div id="profile-team-badge"><img src="${team.logoUrl || 'https://via.placeholder.com/24'}" alt="Team Logo"><span>${team.teamName}</span></div>`;
+        }
+    }
+
     document.getElementById('profile-emoji').textContent = data.status || '❓';
     document.getElementById('profile-message').textContent = data.message || 'No message set.';
     renderPersonalDetails(data);
@@ -1293,7 +1404,7 @@
  container.innerHTML = html;
  }
 
- function populateSettings(data) {
+ async function populateSettings(data) {
     if (!data || !document.getElementById('display-name')) return;
     const tier = data.membershipTier || 'Member';
     const tierConfig = USER_TIER_CONFIG[tier] || USER_TIER_CONFIG['Member'];
@@ -1337,6 +1448,32 @@
     document.getElementById('status-message').value = data.message || '';
     renderTimetableSettings(data.timetable);
     renderVerificationSettings(data);
+    
+    const teamAffiliationCard = document.getElementById('team-affiliation-card');
+    const teamBadgeSelect = document.getElementById('team-badge-select');
+    teamBadgeSelect.innerHTML = '<option value="none">None</option>';
+    let hasEligibleTeams = false;
+
+    const userTeamsSnap = await get(ref(db, `users/${App.currentUser.userId}/teams`));
+    if (userTeamsSnap.exists()) {
+        const teamIds = Object.keys(userTeamsSnap.val());
+        for(const teamId of teamIds) {
+            const teamSnap = await get(ref(db, `teams/${teamId}`));
+            if(teamSnap.exists()) {
+                const team = teamSnap.val();
+                if(team.tier !== 'Squad') {
+                    hasEligibleTeams = true;
+                    const option = document.createElement('option');
+                    option.value = teamId;
+                    option.textContent = team.teamName;
+                    if(data.displayTeamBadge === teamId) option.selected = true;
+                    teamBadgeSelect.appendChild(option);
+                }
+            }
+        }
+    }
+    teamAffiliationCard.classList.toggle('hidden', !hasEligibleTeams);
+
 
     const customAdCard = document.getElementById('custom-ads-settings-card');
     customAdCard.classList.toggle('hidden', !tierConfig.canCustomizeAds);
@@ -1423,7 +1560,8 @@
         phone: document.getElementById('phone-number').value,
         status: document.getElementById('status-emoji').value,
         message: document.getElementById('status-message').value,
-        links: customLinks
+        links: customLinks,
+        displayTeamBadge: document.getElementById('team-badge-select').value
     };
     if(!dataToSave.pfpUrl) dataToSave.pfpText = App.currentProfileData.displayName.charAt(0).toUpperCase();
 
@@ -1798,120 +1936,6 @@
  showToast(`User ${field} updated.`);
  }
 
- async function handleCreateTeam() {
-    const teamName = document.getElementById('new-team-name').value.trim();
-    if (!teamName) return showToast("Please enter a team name.", "error");
-
-    const currentUser = App.currentUser;
-    const teamRef = push(ref(db, 'teams'));
-    const teamId = teamRef.key;
-
-    const teamData = {
-        teamName: teamName,
-        ownerId: currentUser.userId,
-        createdAt: new Date().toISOString(),
-        members: {
-            [currentUser.userId]: {
-                displayName: currentUser.displayName,
-                status: App.currentProfileData.status,
-                message: App.currentProfileData.message
-            }
-        }
-    };
-
-    await set(teamRef, teamData);
-    await set(ref(db, `users/${currentUser.userId}/teams/${teamId}`), true);
-
-    showToast(`Team "${teamName}" created!`);
-    document.getElementById('new-team-name').value = '';
-    await renderTeamsPage();
- }
-
- async function handleJoinTeam(teamId) {
-    const currentUser = App.currentUser;
-    if (!currentUser) return showToast("You must be logged in to join a team.", "error");
-
-    const teamRef = ref(db, `teams/${teamId}`);
-    const teamSnap = await get(teamRef);
-
-    if (!teamSnap.exists()) return showToast("Invalid invite link.", "error");
-
-    await update(ref(db, `teams/${teamId}/members/${currentUser.userId}`), {
-        displayName: currentUser.displayName,
-        status: App.currentProfileData.status,
-        message: App.currentProfileData.message
-    });
-
-    await set(ref(db, `users/${currentUser.userId}/teams/${teamId}`), true);
-
-    showToast(`Successfully joined the team!`);
-    navigateTo('teamsPage');
- }
-
- async function renderTeamsPage() {
-    const teamsListContainer = document.getElementById('my-teams-list');
-    document.getElementById('team-details-view').classList.add('hidden');
-    teamsListContainer.innerHTML = '<p class="muted">Loading your teams...</p>';
-
-    const userTeamsRef = ref(db, `users/${App.currentUser.userId}/teams`);
-    const snapshot = await get(userTeamsRef);
-
-    if (!snapshot.exists()) {
-        teamsListContainer.innerHTML = '<p class="muted">You are not a member of any teams yet.</p>';
-        return;
-    }
-
-    const teamIds = Object.keys(snapshot.val());
-    let teamsHtml = '';
-    for (const teamId of teamIds) {
-        const teamSnap = await get(ref(db, `teams/${teamId}`));
-        if (teamSnap.exists()) {
-            const team = teamSnap.val();
-            teamsHtml += `<div class="search-result-item">
-                <strong>${team.teamName}</strong>
-                <button class="btn secondary view-team-btn" data-team-id="${teamId}" style="padding: 8px 12px; width: auto;">View</button>
-            </div>`;
-        }
-    }
-    teamsListContainer.innerHTML = teamsHtml || '<p class="muted">No teams found.</p>';
-    document.querySelectorAll('.view-team-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => renderTeamDetails(e.target.dataset.teamId));
-    });
- }
-
- async function renderTeamDetails(teamId) {
-    document.getElementById('team-details-view').classList.remove('hidden');
-    const teamSnap = await get(ref(db, `teams/${teamId}`));
-    if (!teamSnap.exists()) return showToast("Team not found.", "error");
-
-    const team = teamSnap.val();
-    document.getElementById('team-details-name').textContent = team.teamName;
-
-    const membersGrid = document.getElementById('team-members-grid');
-    membersGrid.innerHTML = ''; 
-
-    for (const memberId in team.members) {
-        const member = team.members[memberId];
-        const memberCard = document.createElement('div');
-        memberCard.className = 'analytics-metric';
-        memberCard.innerHTML = `
-            <p class="metric-value">${member.status}</p>
-            <p class="metric-label" style="font-weight: bold;">${member.displayName}</p>
-            <p class="metric-label">${member.message || '...'}</p>
-        `;
-        membersGrid.appendChild(memberCard);
-    }
-
-    const inviteSection = document.getElementById('team-invite-section');
-    if (team.ownerId === App.currentUser.userId) {
-        inviteSection.classList.remove('hidden');
-        const inviteLink = `${window.location.origin}${window.location.pathname}#join=${teamId}`;
-        document.getElementById('team-invite-link').value = inviteLink;
-    } else {
-        inviteSection.classList.add('hidden');
-    }
- }
-
  function addEventListeners() {
  document.querySelector('.auth-tabs')?.addEventListener('click', e => {
  if (e.target.classList.contains('tab')) {
@@ -1934,12 +1958,15 @@
  document.getElementById('run-search-btn')?.addEventListener('click', handleSearchUsers);
  document.getElementById('generate-qrcode-btn')?.addEventListener('click', handleGenerateQrCode);
  document.getElementById('create-team-btn')?.addEventListener('click', handleCreateTeam);
+ document.getElementById('join-team-by-id-btn')?.addEventListener('click', handleJoinTeamById);
  document.getElementById('copy-invite-link-btn')?.addEventListener('click', () => {
     const linkInput = document.getElementById('team-invite-link');
     linkInput.select();
     document.execCommand('copy');
     showToast("Invite link copied!");
  });
+  document.getElementById('generate-invite-id-btn')?.addEventListener('click', generateTeamInviteId);
+
 
  App.elements.mainHeader?.addEventListener('click', e => {
  const navBtn = e.target.closest('.nav-btn');
