@@ -667,7 +667,6 @@
  orderByKey, 
  limitToLast
  } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-database.js";
-
  const firebaseConfig = {
  apiKey: "AIzaSyChwjwXFgIj9f64zGeIoS-q_odZm2ogFMw",
  authDomain: "happp-96438.firebaseapp.com",
@@ -677,11 +676,9 @@
  messagingSenderId: "703348367691",
  appId: "1:703348367691:web:376cd50d08d94bccf588ce"
  };
-
  const app = initializeApp(firebaseConfig);
  const auth = getAuth(app);
  const db = getDatabase(app);
-
  window.onerror = function(message, source, lineno, colno, error) {
  const errorDiv = document.getElementById('global-error-display');
  if (errorDiv) {
@@ -691,20 +688,17 @@
  console.error("Global Error Caught:", message, source, lineno, colno, error);
  return false;
  };
-
  let countdownInterval;
  let timetableCheckInterval;
  let isPublicView = false;
  let publicViewInterval = null;
  let isAuthResolved = false;
-
  const App = {
  pages: ['loginPage', 'profilePage', 'searchPage', 'analyticsPage', 'settingsPage', 'tiersPage', 'adminPage', 'teamsPage', 'teamDetailsPage', 'teamTiersPage'],
  elements: {},
  currentUser: null,
  currentProfileData: null,
  };
-
  const USER_TIER_CONFIG = {
   'Member': { 
     name: 'Basic', linkLimit: 1, pfp: false, qrCode: false, customFont: false, customColor: false, 
@@ -732,14 +726,12 @@
     canCustomizeAds: true, canControlPlatformAd: true, teamCreateLimit: 99, teamJoinLimit: 99
   },
  };
-
  const TEAM_TIER_CONFIG = {
     'Squad': { name: 'Squad', memberLimit: 5, roles: ['Owner', 'Member'], analytics: false, customBranding: false, verification: false },
     'Collaborative': { name: 'Collaborative', memberLimit: 15, roles: ['Owner', 'Admin', 'Member'], analytics: true, customBranding: true, verification: false },
     'Division': { name: 'Division', memberLimit: 50, roles: ['Owner', 'Admin', 'Member'], analytics: true, customBranding: true, verification: true },
     'Collective': { name: 'Collective', memberLimit: Infinity, roles: ['Owner', 'Admin', 'Member'], analytics: true, customBranding: true, verification: true }
  };
- 
  const ACHIEVEMENT_CONFIG = {
   toPlus: [
     { id: 'profileComplete', label: 'The Basics: Fill in Bio, Birthday, and Country', goal: 1 },
@@ -763,7 +755,6 @@
     { id: 'expressive', label: 'Status Guru: Use 10 different statuses', goal: 10 }
   ]
  };
-
  const TEAM_ACHIEVEMENT_CONFIG = {
     toCollaborative: [
         { id: 'memberCount', label: 'Assemble the Core Team', goal: 3 },
@@ -784,7 +775,6 @@
         { id: 'inviteUses', label: 'Become a Hub (15 invite uses)', goal: 15 }
     ]
  };
-
  const FEATURE_FRIENDLY_NAMES = {
     pfp: "Custom Profile Picture",
     qrCode: "Profile QR Code Sharing",
@@ -797,7 +787,6 @@
     canCustomizeAds: "Custom Promotional Blocks",
     canControlPlatformAd: "Platform Ad Controls"
  };
-
  const VERIFICATION_QUESTIONS = [
  "What is the primary purpose of your HAP profile? (e.g., professional networking, personal status, team coordination)",
  "Please provide a link to an existing public profile that can help verify your identity (e.g., LinkedIn, Twitter, personal website, or official company page).",
@@ -805,10 +794,8 @@
  "Briefly describe why you should be granted a verified status on this platform.",
  "Please provide a contact email or phone number that we can use to follow up on this verification request (this will be kept private)."
  ];
-
  const DAYS_OF_WEEK = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
  const COUNTRY_LIST = [ {name: "Afghanistan", code: "AF"}, {name: "Åland Islands", code: "AX"}, {name: "Albania", code: "AL"}, {name: "Algeria", code: "DZ"}, {name: "American Samoa", code: "AS"}, {name: "Andorra", code: "AD"}, {name: "Angola", code: "AO"}, {name: "Anguilla", code: "AI"}, {name: "Antarctica", code: "AQ"}, {name: "Antigua and Barbuda", code: "AG"}, {name: "Argentina", code: "AR"}, {name: "Armenia", code: "AM"}, {name: "Aruba", code: "AW"}, {name: "Australia", code: "AU"}, {name: "Austria", code: "AT"}, {name: "Azerbaijan", code: "AZ"}, {name: "Bahamas", code: "BS"}, {name: "Bahrain", code: "BH"}, {name: "Bangladesh", code: "BD"}, {name: "Barbados", code: "BB"}, {name: "Belarus", code: "BY"}, {name: "Belgium", code: "BE"}, {name: "Belize", code: "BZ"}, {name: "Benin", code: "BJ"}, {name: "Bermuda", code: "BM"}, {name: "Bhutan", code: "BT"}, {name: "Bolivia", code: "BO"}, {name: "Bosnia and Herzegovina", code: "BA"}, {name: "Botswana", code: "BW"}, {name: "Bouvet Island", code: "BV"}, {name: "Brazil", code: "BR"}, {name: "British Indian Ocean Territory", code: "IO"}, {name: "Brunei Darussalam", code: "BN"}, {name: "Bulgaria", code: "BG"}, {name: "Burkina Faso", code: "BF"}, {name: "Burundi", code: "BI"}, {name: "Cambodia", code: "KH"}, {name: "Cameroon", code: "CM"}, {name: "Canada", code: "CA"}, {name: "Cape Verde", code: "CV"}, {name: "Cayman Islands", code: "KY"}, {name: "Central African Republic", code: "CF"}, {name: "Chad", code: "TD"}, {name: "Chile", code: "CL"}, {name: "China", code: "CN"}, {name: "Christmas Island", code: "CX"}, {name: "Cocos (Keeling) Islands", code: "CC"}, {name: "Colombia", code: "CO"}, {name: "Comoros", code: "KM"}, {name: "Congo", code: "CG"}, {name: "Congo, The Democratic Republic of the", code: "CD"}, {name: "Cook Islands", code: "CK"}, {name: "Costa Rica", code: "CR"}, {name: "Cote D'Ivoire", code: "CI"}, {name: "Croatia", code: "HR"}, {name: "Cuba", code: "CU"}, {name: "Cyprus", code: "CY"}, {name: "Czech Republic", code: "CZ"}, {name: "Denmark", code: "DK"}, {name: "Djibouti", code: "DJ"}, {name: "Dominica", code: "DM"}, {name: "Dominican Republic", code: "DO"}, {name: "Ecuador", code: "EC"}, {name: "Egypt", code: "EG"}, {name: "El Salvador", code: "SV"}, {name: "Equatorial Guinea", code: "GQ"}, {name: "Eritrea", code: "ER"}, {name: "Estonia", code: "EE"}, {name: "Ethiopia", code: "ET"}, {name: "Falkland Islands (Malvinas)", code: "FK"}, {name: "Faroe Islands", code: "FO"}, {name: "Fiji", code: "FJ"}, {name: "Finland", code: "FI"}, {name: "France", code: "FR"}, {name: "French Guiana", code: "GF"}, {name: "French Polynesia", code: "PF"}, {name: "French Southern Territories", code: "TF"}, {name: "Gabon", code: "GA"}, {name: "Gambia", code: "GM"}, {name: "Georgia", code: "GE"}, {name: "Germany", code: "DE"}, {name: "Ghana", code: "GH"}, {name: "Gibraltar", code: "GI"}, {name: "Greece", code: "GR"}, {name: "Greenland", code: "GL"}, {name: "Grenada", code: "GD"}, {name: "Guadeloupe", code: "GP"}, {name: "Guam", code: "GU"}, {name: "Guatemala", code: "GT"}, {name: "Guernsey", code: "GG"}, {name: "Guinea", code: "GN"}, {name: "Guinea-Bissau", code: "GW"}, {name: "Guyana", code: "GY"}, {name: "Haiti", code: "HT"}, {name: "Heard Island and Mcdonald Islands", code: "HM"}, {name: "Holy See (Vatican City State)", code: "VA"}, {name: "Honduras", code: "HN"}, {name: "Hong Kong", code: "HK"}, {name: "Hungary", code: "HU"}, {name: "Iceland", code: "IS"}, {name: "India", code: "IN"}, {name: "Indonesia", code: "ID"}, {name: "Iran, Islamic Republic Of", code: "IR"}, {name: "Iraq", code: "IQ"}, {name: "Ireland", code: "IE"}, {name: "Isle of Man", code: "IM"}, {name: "Israel", code: "IL"}, {name: "Italy", code: "IT"}, {name: "Jamaica", code: "JM"}, {name: "Japan", code: "JP"}, {name: "Jersey", code: "JE"}, {name: "Jordan", code: "JO"}, {name: "Kazakhstan", code: "KZ"}, {name: "Kenya", code: "KE"}, {name: "Kiribati", code: "KI"}, {name: "Korea, Democratic People'S Republic of", code: "KP"}, {name: "Korea, Republic of", code: "KR"}, {name: "Kuwait", code: "KW"}, {name: "Kyrgyzstan", code: "KG"}, {name: "Lao People'S Democratic Republic", code: "LA"}, {name: "Latvia", code: "LV"}, {name: "Lebanon", code: "LB"}, {name: "Lesotho", code: "LS"}, {name: "Liberia", code: "LR"}, {name: "Libyan Arab Jamahiriya", code: "LY"}, {name: "Liechtenstein", code: "LI"}, {name: "Lithuania", code: "LT"}, {name: "Luxembourg", code: "LU"}, {name: "Macao", code: "MO"}, {name: "Macedonia, The Former Yugoslav Republic of", code: "MK"}, {name: "Madagascar", code: "MG"}, {name: "Malawi", code: "MW"}, {name: "Malaysia", code: "MY"}, {name: "Maldives", code: "MV"}, {name: "Mali", code: "ML"}, {name: "Malta", code: "MT"}, {name: "Marshall Islands", code: "MH"}, {name: "Mauritania", code: "MR"}, {name: "Mauritius", code: "MU"}, {name: "Mayotte", code: "YT"}, {name: "Mexico", code: "MX"}, {name: "Micronesia, Federated States of", code: "FM"}, {name: "Moldova, Republic of", code: "MD"}, {name: "Monaco", code: "MC"}, {name: "Mongolia", code: "MN"}, {name: "Montserrat", code: "MS"}, {name: "Morocco", code: "MA"}, {name: "Mozambique", code: "MZ"}, {name: "Myanmar", code: "MM"}, {name: "Namibia", code: "NA"}, {name: "Nauru", code: "NR"}, {name: "Nepal", code: "NP"}, {name: "Netherlands", code: "NL"}, {name: "Netherlands Antilles", code: "AN"}, {name: "New Caledonia", code: "NC"}, {name: "New Zealand", code: "NZ"}, {name: "Nicaragua", code: "NI"}, {name: "Niger", code: "NE"}, {name: "Nigeria", code: "NG"}, {name: "Niue", code: "NU"}, {name: "Norfolk Island", code: "NF"}, {name: "Northern Mariana Islands", code: "MP"}, {name: "Norway", code: "NO"}, {name: "Oman", code: "OM"}, {name: "Pakistan", code: "PK"}, {name: "Palau", code: "PW"}, {name: "Palestinian Territory, Occupied", code: "PS"}, {name: "Panama", code: "PA"}, {name: "Papua New Guinea", code: "PG"}, {name: "Paraguay", code: "PY"}, {name: "Peru", code: "PE"}, {name: "Philippines", code: "PH"}, {name: "Pitcairn", code: "PN"}, {name: "Poland", code: "PL"}, {name: "Portugal", code: "PT"}, {name: "Puerto Rico", code: "PR"}, {name: "Qatar", code: "QA"}, {name: "Reunion", code: "RE"}, {name: "Romania", code: "RO"}, {name: "Russian Federation", code: "RU"}, {name: "RWANDA", code: "RW"}, {name: "Saint Helena", code: "SH"}, {name: "Saint Kitts and Nevis", code: "KN"}, {name: "Saint Lucia", code: "LC"}, {name: "Saint Pierre and Miquelon", code: "PM"}, {name: "Saint Vincent and the Grenadines", code: "VC"}, {name: "Samoa", code: "WS"}, {name: "San Marino", code: "SM"}, {name: "Sao Tome and Principe", code: "ST"}, {name: "Saudi Arabia", code: "SA"}, {name: "Senegal", code: "SN"}, {name: "Serbia and Montenegro", code: "CS"}, {name: "Seychelles", code: "SC"}, {name: "Sierra Leone", code: "SL"}, {name: "Singapore", code: "SG"}, {name: "Slovakia", code: "SK"}, {name: "Slovenia", code: "SI"}, {name: "Solomon Islands", code: "SB"}, {name: "Somalia", code: "SO"}, {name: "South Africa", code: "ZA"}, {name: "South Georgia and the South Sandwich Islands", code: "GS"}, {name: "Spain", code: "ES"}, {name: "Sri Lanka", code: "LK"}, {name: "Sudan", code: "SD"}, {name: "Suriname", code: "SR"}, {name: "Svalbard and Jan Mayen", code: "SJ"}, {name: "Swaziland", code: "SZ"}, {name: "Sweden", code: "SE"}, {name: "Switzerland", code: "CH"}, {name: "Syrian Arab Republic", code: "SY"}, {name: "Taiwan", code: "TW"}, {name: "Tajikistan", code: "TJ"}, {name: "Tanzania, United Republic of", code: "TZ"}, {name: "Thailand", code: "TH"}, {name: "Timor-Leste", code: "TL"}, {name: "Togo", code: "TG"}, {name: "Tokelau", code: "TK"}, {name: "Tonga", code: "TO"}, {name: "Trinidad and Tobago", code: "TT"}, {name: "Tunisia", code: "TN"}, {name: "Turkey", code: "TR"}, {name: "Turkmenistan", code: "TM"}, {name: "Turks and Caicos Islands", code: "TC"}, {name: "Tuvalu", code: "TV"}, {name: "Uganda", code: "UG"}, {name: "Ukraine", code: "UA"}, {name: "United Arab Emirates", code: "AE"}, {name: "United Kingdom", code: "GB"}, {name: "United States", code: "US"}, {name: "United States Minor Outlying Islands", code: "UM"}, {name: "Uruguay", code: "UY"}, {name: "Uzbekistan", code: "UZ"}, {name: "Vanuatu", code: "VU"}, {name: "Venezuela", code: "VE"}, {name: "Viet Nam", code: "VN"}, {name: "Virgin Islands, British", code: "VG"}, {name: "Virgin Islands, U.S.", code: "VI"}, {name: "Wallis and Futuna", code: "WF"}, {name: "Western Sahara", code: "EH"}, {name: "Yemen", code: "YE"}, {name: "Zambia", code: "ZM"}, {name: "Zimbabwe", code: "ZW"} ];
-
  function showToast(message, type = 'info') {
  const toast = App.elements.toast;
  if (!toast) return;
@@ -817,19 +804,16 @@
  toast.classList.add('show');
  setTimeout(() => toast.classList.remove('show'), 3000);
  }
-
  function timeToMinutes(timeStr) {
  if (!timeStr || !timeStr.includes(':')) return 0;
  const [hours, minutes] = timeStr.split(':').map(Number);
  return hours * 60 + minutes;
  }
-
  function getCountryFlagEmoji(countryCode) {
  if (!countryCode || countryCode.length !== 2) return '';
  const codePoints = countryCode.toUpperCase().split('').map(char => 127397 + char.charCodeAt());
  return String.fromCodePoint(...codePoints);
  }
-
  function getLocalTimeData() {
  const now = new Date();
  const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
@@ -840,7 +824,6 @@
  const minutes = String(absOffset % 60).padStart(2, '0');
  return { time: timeStr, offset: `UTC${sign}${hours}:${minutes}`, hour: now.getHours() };
  }
-
  function getFriendlyAuthError(errorCode) {
  switch (errorCode) {
  case 'auth/invalid-credential':
@@ -854,7 +837,6 @@
  return 'An unexpected error occurred. Please try again.';
  }
  }
-
  async function handleEmailSignup(e) {
  e.preventDefault();
  const name = document.getElementById('signup-name').value.trim();
@@ -869,7 +851,6 @@
   document.getElementById('error-message').textContent = getFriendlyAuthError(error.code);
  }
  }
-
  async function handleGoogleLogin() {
  const provider = new GoogleAuthProvider();
  try {
@@ -879,7 +860,6 @@
   document.getElementById('error-message').textContent = getFriendlyAuthError(error.code);
  }
  }
-
  async function handleEmailLogin(e) {
  e.preventDefault();
  const email = document.getElementById('login-email').value.trim();
@@ -890,14 +870,11 @@
   document.getElementById('error-message').textContent = getFriendlyAuthError(error.code);
  }
  }
-
  function handleLogout() {
  signOut(auth);
  }
-
  onAuthStateChanged(auth, async (user) => {
     const wasLoggedIn = !!App.currentUser;
-
     if (user) {
         await setupSession(user.uid);
         App.currentUser = { email: user.email, displayName: user.displayName, userId: user.uid };
@@ -906,7 +883,6 @@
         App.currentProfileData = null;
         clearInterval(timetableCheckInterval);
     }
-
     if (!isAuthResolved) {
         isAuthResolved = true;
         hashChangeRouter();
@@ -914,7 +890,6 @@
         hashChangeRouter();
     }
  });
-
  async function initializeNewUser(user, additionalData = {}) {
  const userRef = ref(db, `users/${user.uid}`);
  const snapshot = await get(userRef);
@@ -946,7 +921,6 @@
  ...additionalData
  };
  await set(userRef, initialProfile);
-
  const referrerId = sessionStorage.getItem('referrerId');
  if (referrerId && referrerId !== user.uid) {
  const referrerRef = ref(db, `users/${referrerId}/achievements/referral`);
@@ -956,19 +930,15 @@
  }
  }
  }
- 
  async function setupSession(userId) {
  if (!userId) return;
  if (timetableCheckInterval) clearInterval(timetableCheckInterval);
- 
  const userRef = ref(db, `users/${userId}`);
  const userSnap = await get(userRef);
-
  if (userSnap.exists()) {
  const data = userSnap.val();
  data.userId = userId; 
  App.currentProfileData = data;
-
  const today = new Date().toISOString().split('T')[0];
  const loginHistory = data.achievements?.loginHistory || {};
  if (!loginHistory[today]) {
@@ -979,10 +949,8 @@
  App.currentProfileData.achievements.loyalUser = updates['achievements/loyalUser'];
  App.currentProfileData.achievements.loginHistory = {...loginHistory, [today]: true};
  }
-
  applyVisuals(data);
  await populateSettings(data);
-
  document.querySelector('#mainHeader').innerHTML = `
  <nav>
  <button class="nav-btn" data-page="profilePage"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5a5.5 5.5 0 0 1 3.096 10.047 9.005 9.005 0 0 1 5.9 8.181.75.75 0 0 1-1.498.07 7.502 7.502 0 0 0-15 0 .75.75 0 0 1-1.498-.07A9.005 9.005 0 0 1 9 12.55a5.5 5.5 0 0 1 3-10.05ZM12 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z"></path></svg><span>Profile</span></button>
@@ -997,13 +965,11 @@
  document.querySelector('#admin-nav-btn').classList.toggle('hidden', data.membershipTier !== 'Owner');
  await checkTimetableAndApplyStatus();
  timetableCheckInterval = setInterval(checkTimetableAndApplyStatus, 60000);
-
  } else {
  console.error("User account exists but no profile in users/");
  handleLogout();
  }
  }
-
  async function displayPublicProfile(userId) {
  try {
  const userRef = ref(db, `users/${userId}`);
@@ -1032,7 +998,6 @@
  console.error("Error loading public profile:", error);
  }
  }
-
  async function saveAndLogStatus(data) {
     const dataWithTimestamp = { ...data, updatedAt: new Date().toISOString() };
     const userRef = ref(db, `users/${App.currentUser.userId}`);
@@ -1040,10 +1005,8 @@
         await updateProfile(auth.currentUser, { displayName: data.displayName });
         if (!data.pfpUrl) dataWithTimestamp.pfpText = data.displayName.charAt(0).toUpperCase();
     }
-
     const achievements = App.currentProfileData.achievements || {};
     const achievementUpdates = {};
-
     const newEmoji = data.status;
     const newUsedEmojis = achievements.usedEmojis || {};
     if (!newUsedEmojis[newEmoji]) {
@@ -1051,18 +1014,13 @@
         achievementUpdates['achievements/usedEmojis'] = newUsedEmojis;
         achievementUpdates['achievements/expressive'] = Object.keys(newUsedEmojis).length;
     }
-
     achievementUpdates['achievements/socialButterfly'] = data.links?.length || 0;
     achievementUpdates['achievements/picturePerfect'] = data.pfpUrl ? 1 : (achievements.picturePerfect || 0);
     const isBasicProfileComplete = data.bio && data.birthday && data.countryCode;
     achievementUpdates['achievements/profileComplete'] = isBasicProfileComplete ? 1 : 0;
-    
     await update(userRef, { ...dataWithTimestamp, ...achievementUpdates });
-
     const historyRef = ref(db, `history/${App.currentUser.userId}`);
     await push(historyRef, { status: data.status, message: data.message, timestamp: dataWithTimestamp.updatedAt });
-    
-    // Update team member status if user is in any teams
     const userTeamsSnap = await get(ref(db, `users/${App.currentUser.userId}/teams`));
     if (userTeamsSnap.exists()) {
         const teamIds = Object.keys(userTeamsSnap.val());
@@ -1075,25 +1033,19 @@
             await update(ref(db, `teams/${teamId}/members/${App.currentUser.userId}`), statusUpdate);
         }
     }
-
-
     const updatedSnapshot = await get(userRef);
     const oldTier = App.currentProfileData.membershipTier;
     App.currentProfileData = { ...updatedSnapshot.val(), userId: App.currentUser.userId };
     await updateMembershipTier(App.currentUser.userId, App.currentProfileData, oldTier);
-
     const finalSnapshot = await get(userRef);
     App.currentProfileData = { ...finalSnapshot.val(), userId: App.currentUser.userId };
-
     applyVisuals(App.currentProfileData);
     await renderProfile(App.currentProfileData);
     await populateSettings(App.currentProfileData);
-
     if (oldTier === App.currentProfileData.membershipTier) {
         showToast('Settings Saved & Status Updated! 💾');
     }
  }
-
  function navigateTo(pageId, isInternal = true) {
  if(isInternal) {
     const cleanUrl = window.location.origin + window.location.pathname;
@@ -1102,14 +1054,11 @@
  }
  window.location.hash = pageId;
  }
-
  async function hashChangeRouter() {
     clearInterval(countdownInterval);
     if(publicViewInterval) clearInterval(publicViewInterval);
-
     const params = new URLSearchParams(window.location.search);
     const userIdFromUrl = params.get('user');
-
     if (userIdFromUrl) {
         isPublicView = true;
         App.pages.forEach(pId => App.elements[pId]?.classList.remove('active'));
@@ -1120,19 +1069,15 @@
         publicViewInterval = setInterval(() => displayPublicProfile(userIdFromUrl), 30000);
         return;
     }
-    
     isPublicView = false;
     document.body.style.paddingBottom = "100px";
-
     const hash = window.location.hash.substring(1);
-
     if (hash.startsWith('join=')) {
         const teamId = hash.split('=')[1];
         await handleJoinTeam(teamId);
         history.pushState("", document.title, window.location.pathname + window.location.search);
         return; 
     }
-    
     if (hash.startsWith('teamDetailsPage=')) {
         const teamId = hash.split('=')[1];
         App.pages.forEach(pId => App.elements[pId]?.classList.remove('active'));
@@ -1140,14 +1085,11 @@
         await renderTeamDetails(teamId);
         return;
     }
-
     let targetPageId = 'loginPage'; 
-    
     if (App.currentUser && App.currentProfileData) {
         const userTier = App.currentProfileData.membershipTier || 'Member';
         const tierConfig = USER_TIER_CONFIG[userTier];
         const requestedPage = App.pages.includes(hash) ? hash : 'profilePage';
-
         if (requestedPage === 'analyticsPage' && !tierConfig.analytics) {
             targetPageId = 'profilePage';
             showToast("Upgrade to Professional to view analytics.", "error");
@@ -1164,7 +1106,6 @@
             targetPageId = 'loginPage';
         }
     }
-
     if (App.currentUser) {
         if(targetPageId === 'profilePage') {
             await renderProfile(App.currentProfileData);
@@ -1180,30 +1121,25 @@
             await renderTeamTiersPage();
         }
     }
-    
     if (targetPageId === 'searchPage') {
         document.getElementById('search-results-list').innerHTML = '<p class="muted">Search for users by name or click \'Search\' to view all public profiles.</p>';
     }
-    
     App.pages.forEach(pId => App.elements[pId]?.classList.toggle('active', pId === targetPageId));
     document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.page === targetPageId));
     App.elements.mainHeader?.classList.toggle('hidden', !App.currentUser || targetPageId === 'loginPage');
     window.scrollTo(0, 0);
  }
-
  function applyVisuals(userData) {
  if (!userData) return;
  const theme = userData.theme || 'auto';
  const timeData = getLocalTimeData();
  const isNight = timeData.hour >= 20 || timeData.hour < 6;
  document.body.className = (theme === 'dark' || (theme === 'auto' && isNight)) ? 'dark' : '';
-
  const accent = userData?.profileAccentColor || '#0ea5e9';
  document.documentElement.style.setProperty('--primary', accent);
  document.documentElement.style.setProperty('--primary-dark', document.body.classList.contains('dark') ? '#7dd3fc' : '#0369a1'); 
  document.documentElement.style.setProperty('--link-text-color', userData?.linkTextColor || '#0369a1');
  document.documentElement.style.setProperty('--display-font', userData?.displayNameFont || 'Inter, sans-serif');
-
  const pfpElement = document.getElementById('profile-pfp');
  if(pfpElement && userData) {
  const tierConfig = USER_TIER_CONFIG[userData.membershipTier || 'Member'];
@@ -1218,14 +1154,10 @@
  pfpElement.style.borderColor = accent;
  }
  }
-
  async function renderProfile(data) {
     if (!data) return;
-    
     const isOwnerViewing = App.currentUser && App.currentUser.userId === data.userId;
-
     document.getElementById('share-profile-card').classList.remove('hidden');
-
     const profileNameEl = document.getElementById('profile-name');
     const membershipContainer = document.getElementById('membership-tier-display-container');
     const name = data.displayName || 'Unnamed User';
@@ -1236,7 +1168,6 @@
     const tierConfig = USER_TIER_CONFIG[tier];
     profileNameEl.classList.toggle('is-owner', tier === 'Owner');
     membershipContainer.innerHTML = `<div class="membership-badge tier-${tier}">${tierConfig.name || tier}</div>`;
-    
     const badgeContainer = document.getElementById('profile-team-badge-container');
     badgeContainer.innerHTML = '';
     if (data.displayTeamBadge) {
@@ -1246,7 +1177,6 @@
             badgeContainer.innerHTML = `<div id="profile-team-badge"><img src="${team.logoUrl || 'https://via.placeholder.com/24'}" alt="Team Logo"><span>${team.teamName}</span></div>`;
         }
     }
-
     document.getElementById('profile-emoji').textContent = data.status || '❓';
     document.getElementById('profile-message').textContent = data.message || 'No message set.';
     renderPersonalDetails(data);
@@ -1254,7 +1184,6 @@
     document.getElementById('local-time-info').textContent = `Local Time: ${timeData.time} (${timeData.offset})`;
     renderCustomLinks(data.links, document.getElementById('profile-links'), tierConfig);
     renderActionLinks(data);
-
     const qrBtn = document.getElementById('generate-qrcode-btn');
     if (isOwnerViewing) {
         if(tierConfig.qrCode) {
@@ -1268,13 +1197,10 @@
         qrBtn.disabled = true;
         qrBtn.textContent = tierConfig.qrCode ? "QR Code (Owner Only)" : "QR Code (Unavailable)";
     }
-
-
     const topAdContainer = document.getElementById('top-ad-container');
     const bottomAdContainer = document.getElementById('bottom-ad-container');
     topAdContainer.innerHTML = ''; topAdContainer.classList.add('hidden');
     bottomAdContainer.innerHTML = ''; bottomAdContainer.classList.add('hidden');
-
     if (tierConfig.canCustomizeAds && data.adsEnabled) {
         if (data.topAd?.imageUrl && data.topAd?.linkUrl) {
             topAdContainer.innerHTML = `<a href="${data.topAd.linkUrl}" target="_blank" rel="noopener noreferrer nofollow"><img src="${data.topAd.imageUrl}" alt="Promotional Banner"></a>`;
@@ -1285,20 +1211,16 @@
             bottomAdContainer.classList.remove('hidden');
         }
     }
-    
     const promoTop = document.getElementById('create-hap-promo-top');
     const promoBottom = document.getElementById('create-hap-promo-bottom');
     promoTop.innerHTML = ''; promoTop.classList.add('hidden');
     promoBottom.innerHTML = ''; promoBottom.classList.add('hidden');
-
     const topPromoHTML = isOwnerViewing
         ? `<div><h3>Like this status page?</h3><p>Example ad shown to visitors.</p></div><p style="font-style: italic; margin:0;">Preview</p>`
         : `<div><h3>Like this status page?</h3><p>Create your own in seconds!</p></div><button class="btn" id="promo-action-btn-top">Get Started</button>`;
-
     const bottomPromoHTML = isOwnerViewing
         ? `<h3 style="text-align: center;">Platform Promotion Preview</h3><p style="text-align: center;">This is an example of the ad visitors will see at the bottom of your profile.</p>`
         : `<h3 style="text-align: center;">Like this status page?</h3><p style="text-align: center;">Create your own real-time availability profile in seconds!</p><div style="display: flex; justify-content: center; margin-top: 15px;"><button class="btn" id="promo-action-btn-bottom" style="flex: 0 1 250px;">Get Started Now</button></div>`;
-
     let platformAdPosition = 'off';
     if(tier === 'Member') {
         platformAdPosition = 'both';
@@ -1307,7 +1229,6 @@
     } else if (tierConfig.canControlPlatformAd) {
         platformAdPosition = data.platformAdDisplay || 'off';
     }
-    
     if (platformAdPosition === 'top' || platformAdPosition === 'both') {
         promoTop.innerHTML = topPromoHTML;
         promoTop.classList.remove('hidden');
@@ -1331,7 +1252,6 @@
         }
     }
  }
-
  function findActiveSchedule(user) {
  if (!user || !user.timetable || user.timetable.length === 0) return null;
  const now = new Date();
@@ -1339,7 +1259,6 @@
  const currentTimeInMinutes = now.getHours() * 60 + now.getMinutes();
  return user.timetable.find(entry => entry.day === currentDay && currentTimeInMinutes >= timeToMinutes(entry.start) && currentTimeInMinutes < timeToMinutes(entry.end));
  }
-
  function renderPersonalDetails(data) {
  const container = document.getElementById('personal-details-list');
  if (!container) return;
@@ -1347,7 +1266,6 @@
  const addDetail = (label, value) => {
  if (value) detailsHtml += `<div class="personal-detail-item"><strong>${label}:</strong> ${value}</div>`;
  };
-
  if (data.countryCode) {
  const country = COUNTRY_LIST.find(c => c.code === data.countryCode);
  if (country) {
@@ -1355,7 +1273,6 @@
  }
  }
  addDetail('Bio', data.bio);
-
  const isOwnerViewing = App.currentUser && App.currentUser.userId === data.userId;
  if (!isPublicView || isOwnerViewing) {
  addDetail('Phone', data.phone ? `<a href="tel:${data.phone}">${data.phone}</a>` : null);
@@ -1363,7 +1280,6 @@
  }
  container.innerHTML = detailsHtml || '<p class="muted">No public details shared.</p>';
  }
-
  async function checkTimetableAndApplyStatus() {
  if (!App.currentUser || !App.currentProfileData) return;
  const data = App.currentProfileData;
@@ -1379,7 +1295,6 @@
  }
  }
  }
-
  function renderCustomLinks(links, container, tierConfig) {
  if (!container || !tierConfig) return;
  container.innerHTML = '';
@@ -1394,7 +1309,6 @@
  });
  container.innerHTML = html;
  }
-
  function renderActionLinks(data) {
  const container = document.getElementById('profile-action-links');
  if (!container) return;
@@ -1403,12 +1317,10 @@
  if (data.schedulingLink) html += `<a href="${data.schedulingLink}" target="_blank" rel="noopener noreferrer" class="btn secondary" style="max-width: 250px;">Book a Meeting</a>`;
  container.innerHTML = html;
  }
-
  async function populateSettings(data) {
     if (!data || !document.getElementById('display-name')) return;
     const tier = data.membershipTier || 'Member';
     const tierConfig = USER_TIER_CONFIG[tier] || USER_TIER_CONFIG['Member'];
-
     document.getElementById('display-name').value = data.displayName || '';
     document.getElementById('themeSelect').value = data.theme || 'auto';
     document.getElementById('pfp-url').value = data.pfpUrl || '';
@@ -1419,20 +1331,17 @@
     document.getElementById('bio').value = data.bio || '';
     document.getElementById('birthday').value = data.birthday || '';
     document.getElementById('phone-number').value = data.phone || '';
-    
     const countrySearch = document.getElementById('country-search'), countryCodeInput = document.getElementById('country-code');
     if(data.countryCode) {
         const country = COUNTRY_LIST.find(c => c.code === data.countryCode);
         if (country) { countrySearch.value = `${getCountryFlagEmoji(country.code)} ${country.name}`; countryCodeInput.value = country.code; }
     } else { countrySearch.value = ''; countryCodeInput.value = ''; }
-
     document.getElementById('pfp-url-group').classList.toggle('hidden', !tierConfig.pfp);
     document.getElementById('font-customization-field').classList.toggle('hidden', !tierConfig.customFont);
     document.getElementById('scheduling-link-field').classList.toggle('hidden', !tierConfig.scheduling);
     document.getElementById('accent-color-field').classList.toggle('hidden', !tierConfig.customColor);
     document.getElementById('link-text-color-field').classList.toggle('hidden', !tierConfig.customColor);
     document.getElementById('automatic-timetable-card').classList.toggle('hidden', !tierConfig.timetable);
-    
     const linksContainer = document.getElementById('custom-links-container');
     linksContainer.innerHTML = '';
     const linkLimit = tierConfig.linkLimit;
@@ -1443,17 +1352,14 @@
     if (tier !== 'Max' && tier !== 'Owner') {
         linksContainer.innerHTML += `<p class="muted">Upgrade your tier to add more links!</p>`;
     }
-
     document.getElementById('status-emoji').value = data.status || '🟢';
     document.getElementById('status-message').value = data.message || '';
     renderTimetableSettings(data.timetable);
     renderVerificationSettings(data);
-    
     const teamAffiliationCard = document.getElementById('team-affiliation-card');
     const teamBadgeSelect = document.getElementById('team-badge-select');
     teamBadgeSelect.innerHTML = '<option value="none">None</option>';
     let hasEligibleTeams = false;
-
     const userTeamsSnap = await get(ref(db, `users/${App.currentUser.userId}/teams`));
     if (userTeamsSnap.exists()) {
         const teamIds = Object.keys(userTeamsSnap.val());
@@ -1473,8 +1379,6 @@
         }
     }
     teamAffiliationCard.classList.toggle('hidden', !hasEligibleTeams);
-
-
     const customAdCard = document.getElementById('custom-ads-settings-card');
     customAdCard.classList.toggle('hidden', !tierConfig.canCustomizeAds);
     if (tierConfig.canCustomizeAds) {
@@ -1488,14 +1392,12 @@
         document.getElementById('bottom-ad-link-url').value = data.bottomAd?.linkUrl || '';
         adToggle.onchange = () => adFields.classList.toggle('hidden', adToggle.value !== 'true');
     }
-
     const platformAdCard = document.getElementById('platform-ad-settings-card');
     platformAdCard.classList.toggle('hidden', !tierConfig.canControlPlatformAd);
     if(tierConfig.canControlPlatformAd) {
         document.getElementById('platform-ad-toggle').value = data.platformAdDisplay || 'off';
     }
  }
-
  function handlePageLoad() {
  App.pages.forEach(pId => App.elements[pId] = document.getElementById(pId));
  App.elements.mainHeader = document.getElementById('mainHeader');
@@ -1503,16 +1405,13 @@
  window.addEventListener('hashchange', hashChangeRouter);
  addEventListeners();
  }
-
  async function handleDeleteAccount() {
  if (!App.currentUser) return;
  const confirmation = confirm("Are you sure you want to permanently delete your account and all associated data? This action cannot be undone.");
  if (!confirmation) return showToast("Account deletion cancelled.");
-
  const accountId = App.currentUser.userId;
  const account = auth.currentUser;
  if (!account) return showToast("Error: No authenticated user found.", "error");
-
  try {
  await set(ref(db, `users/${accountId}`), null);
  await set(ref(db, `history/${accountId}`), null);
@@ -1529,13 +1428,11 @@
  }
  }
  }
-
  async function handleSaveSettings() {
     if (!App.currentUser) return;
     const saveBtn = document.getElementById('save-settings-btn');
     saveBtn.textContent = 'Saving...';
     saveBtn.classList.add('btn-loading');
-
     const tier = App.currentProfileData.membershipTier || 'Member';
     const tierConfig = USER_TIER_CONFIG[tier];
     const linkLimit = tierConfig.linkLimit || 1;
@@ -1545,7 +1442,6 @@
         const url = document.getElementById(`link-url-${i}`)?.value.trim();
         if (label && url) { customLinks.push({ label, url }); }
     }
-
     const dataToSave = {
         displayName: document.getElementById('display-name').value, 
         theme: document.getElementById('themeSelect').value,
@@ -1564,7 +1460,6 @@
         displayTeamBadge: document.getElementById('team-badge-select').value
     };
     if(!dataToSave.pfpUrl) dataToSave.pfpText = App.currentProfileData.displayName.charAt(0).toUpperCase();
-
     if (tierConfig.canCustomizeAds) {
         dataToSave.adsEnabled = document.getElementById('ads-enabled-toggle').value === 'true';
         dataToSave.topAd = {
@@ -1576,11 +1471,9 @@
             linkUrl: document.getElementById('bottom-ad-link-url').value.trim()
         };
     }
-    
     if(tierConfig.canControlPlatformAd) {
         dataToSave.platformAdDisplay = document.getElementById('platform-ad-toggle').value;
     }
-
     try {
         await saveAndLogStatus(dataToSave); 
     } catch (error) {
@@ -1591,21 +1484,17 @@
         saveBtn.classList.remove('btn-loading');
     }
  }
-
  function handleGenerateQrCode() {
     const profileId = isPublicView ? new URLSearchParams(window.location.search).get('user') : App.currentUser.userId;
     if (!profileId) return;
-
     const img = document.getElementById('profile-qrcode-img'), placeholder = document.getElementById('qrcode-placeholder');
     const shareUrl = `${window.location.origin}${window.location.pathname}?user=${profileId}`;
     img.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(shareUrl)}`;
     img.onload = () => { img.style.display = 'block'; placeholder.classList.add('hidden'); showToast('QR Code generated! 🖼️'); };
  }
-
  function handleShareStatus() {
     const profileId = isPublicView ? new URLSearchParams(window.location.search).get('user') : App.currentUser.userId;
     if (!profileId) return;
-    
     const shareUrl = `${window.location.origin}${window.location.pathname}?user=${profileId}&ref=${profileId}`;
     navigator.clipboard.writeText(shareUrl).then(() => {
         showToast('Profile link copied to clipboard! 🔗');
@@ -1614,28 +1503,23 @@
         }
     });
  }
-
  function renderTimetableSettings(timetable = []) {
  const container = document.getElementById('timetable-entries-container');
  container.innerHTML = (!timetable || timetable.length === 0) ? '<p class="muted" id="no-timetable-message">No scheduled entries yet.</p>' : '';
  if (timetable && timetable.length > 0) document.getElementById('no-timetable-message')?.remove();
- 
  timetable.forEach((entry, index) => {
  const entryDiv = document.createElement('div');
  entryDiv.className = 'timetable-entry-card';
  entryDiv.innerHTML = `<div style="display: flex; justify-content: space-between; align-items: center;"><strong>${entry.status} ${entry.message || ''}</strong><button data-index="${index}" class="remove-timetable-btn btn secondary" style="padding: 5px 10px; width: auto; font-size: 0.8rem;">Remove</button></div><p style="color: var(--primary);">${DAYS_OF_WEEK[entry.day]} ${entry.start} - ${entry.end}</p>`;
  container.appendChild(entryDiv);
  });
- 
  document.querySelectorAll('.remove-timetable-btn').forEach(btn => btn.addEventListener('click', handleRemoveTimetableEntry));
  }
-
  async function handleAddTimetableEntry() {
  const day = parseInt(prompt("Enter Day (0=Sun, 1=Mon...):"), 10);
  if (isNaN(day) || day < 0 || day > 6) return showToast("Invalid day.");
  const start = prompt("Start Time (HH:MM 24hr):"), end = prompt("End Time (HH:MM 24hr):"), status = prompt("Status Emoji:");
  if (!start || !end || !status) return showToast("All fields required.");
- 
  const newEntry = { day, start, end, status, message: prompt("Message:") || '' };
  const newTimetable = [...(App.currentProfileData.timetable || []), newEntry];
  const userRef = ref(db, `users/${App.currentUser.userId}`);
@@ -1645,7 +1529,6 @@
  const newSchedulerCount = newTimetable.length;
  update(ref(db, `users/${App.currentUser.userId}/achievements`), { scheduler: newSchedulerCount });
  }
-
  async function handleRemoveTimetableEntry(e) {
  const index = parseInt(e.currentTarget.dataset.index, 10);
  const newTimetable = App.currentProfileData.timetable.filter((_, i) => i !== index);
@@ -1656,7 +1539,6 @@
  const newSchedulerCount = newTimetable.length;
  update(ref(db, `users/${App.currentUser.userId}/achievements`), { scheduler: newSchedulerCount });
  }
-
  async function fetchAndRenderAnalytics() {
  if (!App.currentUser) return;
  const userId = App.currentUser.userId;
@@ -1674,14 +1556,12 @@
  });
  } else { historyLog.innerHTML = '<p class="muted">No status history found.</p>'; }
  } catch (error) { historyLog.innerHTML = '<p class="muted">Error loading history.</p>'; }
-
  const totalViews = App.currentProfileData.achievements?.views || 0;
  document.getElementById('views-total').textContent = totalViews;
  document.getElementById('views-today').textContent = 'N/A';
  document.getElementById('views-week').textContent = 'N/A';
  document.getElementById('views-month').textContent = 'N/A';
  }
-
  async function handleSearchUsers() {
  const queryText = document.getElementById('user-search-input').value.toLowerCase().trim();
  const resultsList = document.getElementById('search-results-list');
@@ -1696,7 +1576,6 @@
  results.push({ id: userId, ...user });
  }
  }
- 
  const rank = { 'Owner': 0, 'Max': 1, 'Pro': 2, 'Plus': 3, 'Member': 4 };
  results.sort((a, b) => {
  const prioA = (a.membershipTier === 'Owner' ? -1 : rank[a.membershipTier]);
@@ -1704,7 +1583,6 @@
  if (prioA !== prioB) return prioA - prioB;
  return a.displayName.localeCompare(b.displayName);
  });
-
  if (results.length > 0) {
  resultsList.innerHTML = results.map(item => {
  const userVerifiedIcon = `<svg class="inline-verified-icon" style="width:20px; height:20px;" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm13.36-1.814a.75.75 0 1 0-1.06-1.06l-3.103 3.103-1.53-1.53a.75.75 0 0 0-1.06 1.06l2.06 2.06a.75.75 0 0 0 1.06 0l3.64-3.64Z" clip-rule="evenodd" /></svg>`;
@@ -1719,7 +1597,6 @@
  console.error(e);
  }
  }
-
  async function trackProfileView(profileId) {
  try {
  let visitorId = localStorage.getItem('hapVisitorId');
@@ -1727,11 +1604,9 @@
  visitorId = 'visitor_' + Date.now() + Math.random().toString(36).substring(2, 15);
  localStorage.setItem('hapVisitorId', visitorId);
  }
-
  const today = new Date().toISOString().split('T')[0];
  const viewRef = ref(db, `analytics/${profileId}/viewsByDay/${today}/${visitorId}`);
  const snapshot = await get(viewRef);
-
  if (!snapshot.exists()) {
  await set(viewRef, true);
  const totalViewsRef = ref(db, `users/${profileId}/achievements/views`);
@@ -1740,7 +1615,6 @@
  }
  } catch (error) { console.error("Failed to track profile view:", error); }
  }
-
  function filterCountries(inputId, dropdownId) {
  const searchTerm = document.getElementById(inputId).value.toLowerCase();
  const dropdown = document.getElementById(dropdownId);
@@ -1757,14 +1631,11 @@
  dropdown.appendChild(option);
  });
  }
-
  async function updateMembershipTier(userId, userData, oldTier) {
     const currentTier = userData.membershipTier;
     if (currentTier === 'Owner') return;
-
     const achievements = userData.achievements || {};
     const check = (reqs) => reqs.every(req => (achievements[req.id] || 0) >= req.goal);
-    
     let newTier = currentTier;
     if (currentTier === 'Member' && check(ACHIEVEMENT_CONFIG.toPlus)) {
         newTier = 'Plus';
@@ -1775,7 +1646,6 @@
     if (currentTier === 'Pro' && check(ACHIEVEMENT_CONFIG.toMax)) {
         newTier = 'Max';
     }
-
     if (newTier !== oldTier) {
         await update(ref(db, `users/${userId}`), { membershipTier: newTier });
         if(userId === App.currentUser?.userId) {
@@ -1783,12 +1653,10 @@
         }
     }
  }
-
  function showTierUpgradeAnimation(oldTier, newTier) {
     const oldFeatures = USER_TIER_CONFIG[oldTier];
     const newFeatures = USER_TIER_CONFIG[newTier];
     const unlockedFeatures = [];
-
     for (const key in newFeatures) {
         if (newFeatures[key] === true && oldFeatures[key] === false) {
             if (FEATURE_FRIENDLY_NAMES[key]) {
@@ -1796,23 +1664,19 @@
             }
         }
     }
-
     const modal = document.getElementById('tier-upgrade-modal');
     document.getElementById('new-tier-name').textContent = newFeatures.name;
     const featuresList = document.getElementById('unlocked-features-list');
     featuresList.innerHTML = unlockedFeatures.map((feature, i) => 
         `<div class="unlocked-feature" style="animation-delay: ${i * 0.1}s">${feature}</div>`
     ).join('');
-
     modal.classList.add('show');
  }
-
  function renderVerificationSettings(data) {
  const container = document.getElementById('verification-section');
  container.classList.toggle('hidden', data.membershipTier === 'Member' || data.membershipTier === 'Plus');
  let html = `<h3>Verification ✔️</h3>`;
  const tierConfig = USER_TIER_CONFIG[data.membershipTier];
-
  if (data.verified) {
  html += `<p style="color: green; font-weight: bold;">This account is officially verified.</p>`;
  } else if (data.verificationRequested) {
@@ -1823,7 +1687,6 @@
  container.innerHTML = html;
  container.querySelector('#request-verification-btn')?.addEventListener('click', handleRequestVerification);
  }
-
  async function handleRequestVerification() {
  const answers = {};
  for (let i = 0; i < VERIFICATION_QUESTIONS.length; i++) {
@@ -1834,7 +1697,6 @@
  }
  answers[`q${i+1}`] = answer;
  }
-
  if (confirm("You are about to submit your profile and answers for manual review. Continue?")) {
  const updates = { verificationRequested: true, verificationAnswers: answers };
  await update(ref(db, `users/${App.currentUser.userId}`), updates);
@@ -1843,17 +1705,14 @@
  renderVerificationSettings(currentData);
  }
  }
-
  function renderTiersPage() {
  const detailsContainer = document.getElementById('my-plan-details');
  const progressContainer = document.getElementById('my-plan-progress');
  const allTiersContainer = document.getElementById('all-tiers-info');
  if (!App.currentProfileData) return;
-
  const tier = App.currentProfileData.membershipTier || 'Member';
  const achievements = App.currentProfileData.achievements || {};
  detailsContainer.innerHTML = `<h3>Current Tier: <span style="color: var(--primary);">${USER_TIER_CONFIG[tier].name}</span></h3><p>You unlock new perks by completing achievements and engaging with the platform.</p>`;
-
  let nextTierKey, requirements;
  if (tier === 'Member') { nextTierKey = 'Plus'; requirements = ACHIEVEMENT_CONFIG.toPlus; }
  else if (tier === 'Plus') { nextTierKey = 'Pro'; requirements = ACHIEVEMENT_CONFIG.toPro; }
@@ -1861,7 +1720,6 @@
  else {
  progressContainer.innerHTML = '<h2>You have reached the highest public tier! 🚀</h2><p>Thank you for being a power user!</p>';
  }
-
  if (nextTierKey && requirements) {
  let progressHtml = `<h2>Progress to ${USER_TIER_CONFIG[nextTierKey].name}</h2>`;
  let allGoalsMet = true;
@@ -1871,7 +1729,6 @@
  const progress = Math.min((currentValue / req.goal) * 100, 100);
  progressHtml += `<div class="achievement-item"><strong>${req.label} (${currentValue} / ${req.goal})</strong><div class="achievement-progress"><div class="progress-bar" style="width: ${progress}%; background-color: ${progress >= 100 ? '#22c55e' : 'var(--primary)'};"></div></div></div>`;
  });
- 
  if (allGoalsMet) {
  progressHtml += `<button id="level-up-btn" class="btn" style="margin-top: 20px;">Claim Your Promotion to ${USER_TIER_CONFIG[nextTierKey].name}!</button>`;
  }
@@ -1883,7 +1740,6 @@
     renderTiersPage();
  });
  }
-
  let allTiersHtml = '<div class="tier-plan-grid">';
  for (const tierKey of ['Member', 'Plus', 'Pro', 'Max']) {
  const config = USER_TIER_CONFIG[tierKey];
@@ -1892,17 +1748,13 @@
  allTiersHtml += '</div>';
  allTiersContainer.innerHTML = allTiersHtml;
  }
-
  async function renderAdminPanel() {
  const requestsContainer = document.getElementById('admin-verification-requests');
  const usersContainer = document.getElementById('admin-all-users');
  requestsContainer.innerHTML = usersContainer.innerHTML = '<p class="muted">Loading...</p>';
- 
  const usersSnap = await get(ref(db, 'users'));
  const allUsers = usersSnap.val() || {};
- 
  const userRequests = Object.entries(allUsers).filter(([uid, user]) => user.verificationRequested && !user.verified).map(([uid, user]) => ({type: 'User', id: uid, data: user}));
-
  if (userRequests.length > 0) {
  requestsContainer.innerHTML = userRequests.map(req => {
  let answersHtml = '';
@@ -1913,13 +1765,10 @@
  } else {
  requestsContainer.innerHTML = '<p>No active verification requests.</p>';
  }
-
  usersContainer.innerHTML = `<table class="admin-table"><thead><tr><th>Name</th><th>Email</th><th>Tier</th></tr></thead><tbody>${Object.entries(allUsers).map(([uid, user]) => `<tr><td><a href="?user=${uid}" target="_blank">${user.displayName}</a></td><td>${user.email}</td><td><select class="admin-edit-field" data-uid="${uid}" data-field="membershipTier">${Object.keys(USER_TIER_CONFIG).map(t => `<option value="${t}" ${user.membershipTier === t ? 'selected' : ''}>${t}</option>`).join('')}</select></td></tr>`).join('')}</tbody></table>`;
- 
  document.querySelectorAll('.approve-verify-btn, .deny-verify-btn').forEach(btn => btn.addEventListener('click', handleVerificationAction));
  document.querySelectorAll('.admin-edit-field').forEach(sel => sel.addEventListener('change', handleAdminEdit));
  }
-
  async function handleVerificationAction(e) {
  const { id } = e.target.dataset;
  const isApprove = e.target.classList.contains('approve-verify-btn');
@@ -1928,14 +1777,12 @@
  showToast(`User request ${isApprove ? 'approved' : 'denied'}.`);
  renderAdminPanel();
  }
-
  async function handleAdminEdit(e) {
  const { uid, field } = e.target.dataset;
  const value = e.target.value;
  await update(ref(db, `users/${uid}`), { [field]: value });
  showToast(`User ${field} updated.`);
  }
-
  function addEventListeners() {
  document.querySelector('.auth-tabs')?.addEventListener('click', e => {
  if (e.target.classList.contains('tab')) {
@@ -1946,7 +1793,6 @@
  document.getElementById('signup-form').classList.toggle('hidden', isLogin);
  }
  });
-
  document.getElementById('signup-form')?.addEventListener('submit', handleEmailSignup);
  document.getElementById('login-form')?.addEventListener('submit', handleEmailLogin);
  document.getElementById('google-login-btn')?.addEventListener('click', handleGoogleLogin);
@@ -1966,13 +1812,10 @@
     showToast("Invite link copied!");
  });
   document.getElementById('generate-invite-id-btn')?.addEventListener('click', generateTeamInviteId);
-
-
  App.elements.mainHeader?.addEventListener('click', e => {
  const navBtn = e.target.closest('.nav-btn');
  if (navBtn) navigateTo(navBtn.dataset.page);
  });
-
  const countrySearch = document.getElementById('country-search');
  const countryDropdown = document.getElementById('country-dropdown');
  countrySearch?.addEventListener('focus', () => { countryDropdown.classList.remove('hidden'); filterCountries('country-search', 'country-dropdown'); });
@@ -1980,7 +1823,6 @@
  document.addEventListener('click', (e) => {
  if (!e.target.closest('.country-select-wrapper')) countryDropdown?.classList.add('hidden');
  });
- 
  const giftBox = document.getElementById('gift-box-icon');
  giftBox.addEventListener('click', () => {
     giftBox.classList.add('unboxing');
@@ -1989,7 +1831,6 @@
         document.getElementById('upgrade-results-stage').classList.add('show');
     }, 500);
  });
-
  document.getElementById('close-upgrade-modal-btn').addEventListener('click', () => {
     const modal = document.getElementById('tier-upgrade-modal');
     modal.classList.remove('show');
@@ -2001,7 +1842,42 @@
     }, 400);
  });
  }
-
+ async function handleCreateTeam() {
+    const teamName = document.getElementById('new-team-name').value.trim();
+    if (!teamName) return showToast("Please enter a team name.", "error");
+    showToast(`Creating team: ${teamName}...`);
+ }
+ async function handleJoinTeamById() {
+    const teamId = document.getElementById('join-team-id').value.trim();
+    if (!teamId) return showToast("Please enter a team ID.", "error");
+    showToast(`Joining team with ID: ${teamId}...`);
+ }
+ async function generateTeamInviteId() {
+    showToast("Generating new invite ID...");
+ }
+ async function handleJoinTeam(teamId) {
+    if (!teamId) return;
+    showToast(`Attempting to join team with ID: ${teamId}`);
+ }
+ async function renderTeamDetails(teamId) {
+    if (!teamId) return;
+    const teamDetailsName = document.getElementById('team-details-name');
+    if (teamDetailsName) {
+        teamDetailsName.textContent = `Details for Team ${teamId}`;
+    }
+ }
+ async function renderTeamsPage() {
+    const teamsWelcomeHeader = document.getElementById('teams-welcome-header');
+    if(teamsWelcomeHeader) {
+        teamsWelcomeHeader.textContent = "Your Teams";
+    }
+ }
+ async function renderTeamTiersPage() {
+    const teamProgressDashboard = document.getElementById('team-progress-dashboard');
+    if(teamProgressDashboard) {
+        teamProgressDashboard.innerHTML = "<p>Team Tiers and Progress Loaded.</p>";
+    }
+ }
  document.addEventListener('DOMContentLoaded', handlePageLoad);
  </script>
 </body>
