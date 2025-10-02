@@ -773,7 +773,6 @@
   const result = await createUserWithEmailAndPassword(auth, email, password);
   await updateProfile(result.user, { displayName: name });
   await initializeNewUser(result.user, { displayName: name });
-  navigateTo('profilePage');
  } catch (error) {
   document.getElementById('error-message').textContent = getFriendlyAuthError(error.code);
  }
@@ -784,7 +783,6 @@
  try {
     const result = await signInWithPopup(auth, provider);
     await initializeNewUser(result.user);
-    navigateTo('profilePage');
  } catch (error) {
   document.getElementById('error-message').textContent = getFriendlyAuthError(error.code);
  }
@@ -796,7 +794,6 @@
  const password = document.getElementById('login-password').value;
  try {
   await signInWithEmailAndPassword(auth, email, password);
-  navigateTo('profilePage');
  } catch (error) {
   document.getElementById('error-message').textContent = getFriendlyAuthError(error.code);
  }
