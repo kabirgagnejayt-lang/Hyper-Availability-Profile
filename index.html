@@ -25,6 +25,7 @@
  --border-color: #334155; --input-bg: #1e293b;
  }
  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+ @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
  @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
  @keyframes spin { 100% { transform: rotate(360deg); } }
  @keyframes shake {
@@ -264,9 +265,69 @@
  .chart-bar-wrapper { flex: 1; text-align: center; display: flex; flex-direction: column; justify-content: flex-end; }
  .chart-bar { background: var(--primary); width: 60%; margin: 0 auto; transition: height 0.5s ease-out; border-radius: 4px 4px 0 0; }
  .chart-label { font-size: 0.8rem; color: var(--muted); margin-top: 8px; }
+ #loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: var(--bg); z-index: 9999;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    transition: opacity 0.5s ease;
+ }
+ #loading-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+ }
+ .spinner {
+    width: 48px; height: 48px;
+    border: 5px solid var(--border-color);
+    border-bottom-color: var(--primary);
+    border-radius: 50%;
+    display: inline-block;
+    box-sizing: border-box;
+    animation: spin 1s linear infinite;
+    margin-bottom: 20px;
+ }
+ #calendar-view-container {
+    display: grid;
+    grid-template-columns: 50px repeat(7, 1fr);
+    gap: 4px;
+    margin-top: 20px;
+ }
+ .calendar-header, .calendar-time-slot, .calendar-day-col {
+    font-weight: 600;
+    text-align: center;
+    font-size: 0.8rem;
+    padding: 5px 0;
+ }
+ .calendar-day-col {
+    position: relative;
+    border-left: 1px solid var(--border-color);
+    min-height: 200px;
+ }
+ .calendar-time-slot {
+    font-size: 0.75rem;
+    color: var(--muted);
+    padding-right: 10px;
+    text-align: right;
+ }
+ .calendar-event {
+    position: absolute;
+    left: 2px;
+    right: 2px;
+    background-color: var(--primary-light);
+    border-left: 3px solid var(--primary);
+    border-radius: 4px;
+    padding: 4px;
+    font-size: 0.7rem;
+    overflow: hidden;
+    color: var(--primary-dark);
+    font-weight: 500;
+ }
  </style>
 </head>
 <body>
+ <div id="loading-overlay">
+    <div class="spinner"></div>
+    <p>Loading Profile...</p>
+ </div>
  <div id="global-error-display">A critical error occurred. Check the console for details.</div>
  <header id="mainHeader" class="hidden"></header>
  <div class="container">
@@ -313,6 +374,10 @@
  <p class="local-time-display" id="local-time-info" style="font-size: 1rem; margin-top: 10px; font-weight: 500;"></p>
  </div>
  </div>
+ <div id="schedule-calendar-card" class="card hidden">
+    <h2>Weekly Schedule</h2>
+    <div id="calendar-view-container"></div>
+ </div>
  <div class="card action-links-container" id="profile-action-links"></div>
  <div class="card">
  <h2>About</h2>
@@ -326,7 +391,7 @@
  <h2>Share Profile</h2>
  <div style="text-align: center;">
  <div id="qrcode-container" style="display: inline-block; padding: 15px; background: var(--card); border-radius: 8px; border: 1px solid var(--border-color); min-height: 230px;">
- <img id="profile-qrcode-img" width="200" height="200" style="display: none; border-radius: 4px;" alt="Profile QR Code"> 
+ <img id="profile-qrcode-img" width="200" height="200" loading="lazy" style="display: none; border-radius: 4px;" alt="Profile QR Code"> 
  <p id="qrcode-placeholder" class="muted">Click button below to generate QR.</p>
  </div>
  </div>
@@ -627,6 +692,13 @@
  console.error("Global Error Caught:", message, source, lineno, colno, error);
  return false;
  };
+ 
+ function hideLoadingOverlay() {
+    const loader = document.getElementById('loading-overlay');
+    if (loader) {
+        loader.classList.add('hidden');
+    }
+ }
 
  let countdownInterval;
  let timetableCheckInterval;
@@ -935,6 +1007,8 @@
  } catch (error) {
  document.getElementById('profile-name').textContent = 'Error loading profile.';
  console.error("Error loading public profile:", error);
+ } finally {
+    hideLoadingOverlay();
  }
  }
 
@@ -1006,7 +1080,6 @@
         App.elements.mainHeader?.classList.add('hidden');
         App.elements.profilePage?.classList.add('active');
         await displayPublicProfile(userIdFromUrl);
-        publicViewInterval = setInterval(() => displayPublicProfile(userIdFromUrl), 30000);
         return;
     }
     
@@ -1059,34 +1132,36 @@
     document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.page === targetPageId));
     App.elements.mainHeader?.classList.toggle('hidden', !App.currentUser || targetPageId === 'loginPage');
     window.scrollTo(0, 0);
+    hideLoadingOverlay();
  }
 
  function applyVisuals(userData) {
- if (!userData) return;
- const theme = userData.theme || 'auto';
- const timeData = getLocalTimeData();
- const isNight = timeData.hour >= 20 || timeData.hour < 6;
- document.body.className = (theme === 'dark' || (theme === 'auto' && isNight)) ? 'dark' : '';
+    if (!userData) return;
+    const theme = userData.theme || 'auto';
+    const timeData = getLocalTimeData();
+    const isNight = timeData.hour >= 20 || timeData.hour < 6;
+    document.body.className = (theme === 'dark' || (theme === 'auto' && isNight)) ? 'dark' : '';
 
- const accent = userData?.profileAccentColor || '#0ea5e9';
- document.documentElement.style.setProperty('--primary', accent);
- document.documentElement.style.setProperty('--primary-dark', document.body.classList.contains('dark') ? '#7dd3fc' : '#0369a1'); 
- document.documentElement.style.setProperty('--link-text-color', userData?.linkTextColor || '#0369a1');
- document.documentElement.style.setProperty('--display-font', userData?.displayNameFont || 'Inter, sans-serif');
+    const accent = userData?.profileAccentColor || '#0ea5e9';
+    document.documentElement.style.setProperty('--primary', accent);
+    document.documentElement.style.setProperty('--primary-dark', document.body.classList.contains('dark') ? '#7dd3fc' : '#0369a1');
+    document.documentElement.style.setProperty('--link-text-color', userData?.linkTextColor || '#0369a1');
+    document.documentElement.style.setProperty('--display-font', userData?.displayNameFont || 'Inter, sans-serif');
 
- const pfpElement = document.getElementById('profile-pfp');
- if(pfpElement && userData) {
- const tierConfig = USER_TIER_CONFIG[userData.membershipTier || 'Member'];
- if (tierConfig.pfp && userData.pfpUrl) {
- pfpElement.style.backgroundImage = `url(${userData.pfpUrl})`;
- pfpElement.textContent = '';
- } else {
- pfpElement.style.backgroundImage = 'none';
- pfpElement.textContent = userData.pfpText || userData.displayName.charAt(0).toUpperCase();
- }
- pfpElement.style.backgroundColor = isNight ? '#1e293b' : 'var(--primary-light)';
- pfpElement.style.borderColor = accent;
- }
+    const pfpElement = document.getElementById('profile-pfp');
+    if (pfpElement) {
+        const tierConfig = USER_TIER_CONFIG[userData.membershipTier || 'Member'];
+        pfpElement.style.backgroundImage = 'none'; // Clear existing
+        if (tierConfig.pfp && userData.pfpUrl) {
+            pfpElement.setAttribute('data-src', userData.pfpUrl);
+            pfpElement.textContent = '';
+        } else {
+            pfpElement.removeAttribute('data-src');
+            pfpElement.textContent = userData.pfpText || userData.displayName.charAt(0).toUpperCase();
+        }
+        pfpElement.style.backgroundColor = isNight ? '#1e293b' : 'var(--primary-light)';
+        pfpElement.style.borderColor = accent;
+    }
  }
 
  function renderProfile(data) {
@@ -1113,6 +1188,7 @@
     document.getElementById('local-time-info').textContent = `Local Time: ${timeData.time} (${timeData.offset})`;
     renderCustomLinks(data.links, document.getElementById('profile-links'), tierConfig);
     renderActionLinks(data);
+    renderScheduleCalendar(data.timetable);
 
     const qrBtn = document.getElementById('generate-qrcode-btn');
     if (isOwnerViewing) {
@@ -1136,7 +1212,7 @@
 
     if (tierConfig.canCustomizeAds && data.adsEnabled) {
         if (data.topAd?.imageUrl && data.topAd?.linkUrl) {
-            topAdContainer.innerHTML = `<a href="${data.topAd.linkUrl}" target="_blank" rel="noopener noreferrer nofollow"><img src="${data.topAd.imageUrl}" alt="Promotional Banner"></a>`;
+            topAdContainer.innerHTML = `<a href="${data.topAd.linkUrl}" target="_blank" rel="noopener noreferrer nofollow"><img src="${data.topAd.imageUrl}" loading="lazy" alt="Promotional Banner"></a>`;
             topAdContainer.classList.remove('hidden');
         }
         if (data.bottomAd?.text && data.bottomAd?.linkUrl) {
@@ -1263,6 +1339,58 @@
  container.innerHTML = html;
  }
 
+ function renderScheduleCalendar(timetable) {
+    const card = document.getElementById('schedule-calendar-card');
+    const container = document.getElementById('calendar-view-container');
+    if (!timetable || timetable.length === 0) {
+        card.classList.add('hidden');
+        return;
+    }
+    card.classList.remove('hidden');
+
+    // Determine time range
+    let minHour = 24;
+    let maxHour = 0;
+    timetable.forEach(entry => {
+        const startHour = parseInt(entry.start.split(':')[0], 10);
+        const endHour = Math.ceil(timeToMinutes(entry.end) / 60);
+        if (startHour < minHour) minHour = startHour;
+        if (endHour > maxHour) maxHour = endHour;
+    });
+    minHour = Math.max(0, minHour - 1); // Add some padding
+    maxHour = Math.min(24, maxHour);
+
+    let html = '<div class="calendar-header"></div>'; // Empty top-left cell
+    DAYS_OF_WEEK.forEach(day => html += `<div class="calendar-header">${day}</div>`);
+
+    const dayColumns = Array.from({ length: 7 }, () => '');
+
+    timetable.forEach(entry => {
+        const start = timeToMinutes(entry.start);
+        const end = timeToMinutes(entry.end);
+        const top = ((start / 60) - minHour) * 40; // 40px per hour
+        const height = ((end - start) / 60) * 40;
+        dayColumns[entry.day] += `<div class="calendar-event" style="top: ${top}px; height: ${height}px;">${entry.status} ${entry.message}</div>`;
+    });
+    
+    for (let hour = minHour; hour < maxHour; hour++) {
+        const time = new Date(0, 0, 0, hour, 0).toLocaleTimeString('en-US', { hour: 'numeric', hour12: true });
+        html += `<div class="calendar-time-slot" style="height: 40px;">${time}</div>`;
+        for(let day = 0; day < 7; day++) {
+             html += `<div class="calendar-day-col" style="height: 40px; border-top: 1px dotted var(--border-color);"></div>`;
+        }
+    }
+    
+    // This is a trick to render events on top of the grid
+    html += '<div style="grid-column: 2 / span 7; grid-row: 2 / span 99; display: grid; grid-template-columns: repeat(7, 1fr); pointer-events: none;">';
+    dayColumns.forEach(colHtml => {
+        html += `<div style="position: relative;">${colHtml}</div>`;
+    });
+    html += '</div>';
+
+    container.innerHTML = html;
+}
+
  function populateSettings(data) {
     if (!data || !document.getElementById('display-name')) return;
     const tier = data.membershipTier || 'Member';
@@ -1330,12 +1458,28 @@
  }
 
  function handlePageLoad() {
- App.pages.forEach(pId => App.elements[pId] = document.getElementById(pId));
- App.elements.mainHeader = document.getElementById('mainHeader');
- App.elements.toast = document.getElementById('toast');
- window.addEventListener('hashchange', hashChangeRouter);
- addEventListeners();
- }
+    App.pages.forEach(pId => App.elements[pId] = document.getElementById(pId));
+    App.elements.mainHeader = document.getElementById('mainHeader');
+    App.elements.toast = document.getElementById('toast');
+    window.addEventListener('hashchange', hashChangeRouter);
+    addEventListeners();
+    
+    // Setup lazy loading for background images
+    const lazyImageObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const lazyImage = entry.target;
+                const src = lazyImage.getAttribute('data-src');
+                if (src) {
+                    lazyImage.style.backgroundImage = `url(${src})`;
+                }
+                observer.unobserve(lazyImage);
+            }
+        });
+    });
+    const pfpElement = document.getElementById('profile-pfp');
+    if(pfpElement) lazyImageObserver.observe(pfpElement);
+}
 
  async function handleDeleteAccount() {
  if (!App.currentUser) return;
