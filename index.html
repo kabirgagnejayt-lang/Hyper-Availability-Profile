@@ -2073,6 +2073,29 @@
         }
     }
     
+    function handlePageLoad() {
+        App.pages.forEach(pId => App.elements[pId] = document.getElementById(pId));
+        App.elements.mainHeader = document.getElementById('mainHeader');
+        App.elements.toast = document.getElementById('toast');
+        window.addEventListener('hashchange', hashChangeRouter);
+        addEventListeners();
+        
+        const lazyImageObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const lazyImage = entry.target;
+                    const src = lazyImage.getAttribute('data-src');
+                    if (src) {
+                        lazyImage.style.backgroundImage = `url(${src})`;
+                    }
+                    observer.unobserve(lazyImage);
+                }
+            });
+        });
+        const pfpElement = document.getElementById('profile-pfp');
+        if(pfpElement) lazyImageObserver.observe(pfpElement);
+    }
+    
     document.addEventListener('DOMContentLoaded', handlePageLoad);
     </script>
 </body>
