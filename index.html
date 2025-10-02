@@ -516,9 +516,9 @@
        <h2>Calendar Integration</h2>
        <p class="muted">Automatically update your status based on your external calendar events.</p>
        <div id="google-auth-controls">
-           <button id="google-connect-btn" class="btn secondary">
+            <button id="google-connect-btn" class="btn secondary" disabled>
                <svg style="width:20px; height:20px" viewBox="0 0 24 24"><path fill="#EA4335" d="M12.48 10.92v3.28h7.84c-.27 1.45-1.04 3.48-3.5 3.48-2.94 0-5.35-2.45-5.35-5.35s2.41-5.35 5.35-5.35c1.6,0 2.64.7 3.25,1.27l2.25-2.26C16.9,3.2 14.9,2 12.48,2c-4.22,0-7.84,3.34-7.84,7.84s3.62,7.84 7.84,7.84c4.49,0 7.42-3.1 7.42-7.55,0-.53-.06-.95-.12-1.38Z"/></svg>
-               <span>Connect Google Calendar</span>
+               <span>Loading Google Calendar...</span>
            </button>
        </div>
        <div id="google-sync-info" class="hidden" style="margin-top: 15px;">
@@ -659,30 +659,25 @@
     } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-database.js";
 
     const firebaseConfig = {
-    apiKey: "AIzaSyChwjwXFgIj9f64zGeIoS-q_odZm2ogFMw", // Replace with your actual Firebase API key
-    authDomain: "happp-96438.firebaseapp.com",
-    databaseURL: "https://happp-96438-default-rtdb.firebaseio.com",
-    projectId: "happp-96438",
-    storageBucket: "happp-96438.appspot.com",
+    apiKey: "AIzaSyCUhd0JfEzWlolkgAjPvfd6Fsyl60XtEY0",
+    authDomain: "hap-project-403403.firebaseapp.com",
+    projectId: "hap-project-403403",
+    storageBucket: "hap-project-403403.appspot.com",
     messagingSenderId: "703348367691",
-    appId: "1:703348367691:web:376cd50d08d94bccf588ce"
+    appId: "1:703348367691:web:d8c1192a52427218a0327f"
     };
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getDatabase(app);
 
-    // --- NEW: Google Calendar Integration Constants ---
-    // IMPORTANT: Remember to delete and regenerate your credentials in Google Cloud Console.
+    // --- Google Calendar Integration Constants ---
     const GOOGLE_CLIENT_ID = '703348367691-fto8h5ngp2hm5qn5fkbfhtsh7re3pcub.apps.googleusercontent.com';
-    const GOOGLE_API_KEY = 'AIzaSyCUhd0JfEzWlolkgAjPvfd6Fsyl60XtEY0'; // 👈 REPLACE with your new API Key from Google Cloud
+    const GOOGLE_API_KEY = 'AIzaSyCUhd0JfEzWlolkgAjPvfd6Fsyl60XtEY0';
     const GOOGLE_SCOPES = 'https://www.googleapis.com/auth/calendar.readonly';
-    // The Client Secret is NOT needed and NOT used for this client-side implementation.
 
     let googleTokenClient;
     let calendarCheckInterval;
-
-    // --- Your existing code continues below ---
     
     window.onerror = function(message, source, lineno, colno, error) {
     const errorDiv = document.getElementById('global-error-display');
@@ -831,34 +826,50 @@
     }
     }
 
-    // --- NEW: Google Calendar Integration Functions ---
+    // --- Google Calendar Integration Functions ---
 
     window.gapiLoaded = function() {
         gapi.load('client', initializeGapiClient);
     }
 
     async function initializeGapiClient() {
-        await gapi.client.init({
-            apiKey: GOOGLE_API_KEY,
-            discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest'],
-        });
+        try {
+            await gapi.client.init({
+                apiKey: GOOGLE_API_KEY,
+                discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest'],
+            });
+        } catch (error) {
+            console.error("Error initializing Google API Client:", error);
+            showToast("Could not initialize Google Calendar.", "error");
+        }
     }
 
     window.initializeGis = function() {
-        googleTokenClient = google.accounts.oauth2.initTokenClient({
-            client_id: GOOGLE_CLIENT_ID,
-            scope: GOOGLE_SCOPES,
-            callback: async (tokenResponse) => {
-                if (tokenResponse && tokenResponse.access_token) {
-                    localStorage.setItem('gcal_token', JSON.stringify(tokenResponse));
-                    gapi.client.setToken(tokenResponse);
-                    updateUiForGoogleSync(true);
-                    await checkCalendarAndSetStatus();
-                    if (calendarCheckInterval) clearInterval(calendarCheckInterval);
-                    calendarCheckInterval = setInterval(checkCalendarAndSetStatus, 60000);
-                }
-            },
-        });
+        try {
+            googleTokenClient = google.accounts.oauth2.initTokenClient({
+                client_id: GOOGLE_CLIENT_ID,
+                scope: GOOGLE_SCOPES,
+                callback: async (tokenResponse) => {
+                    if (tokenResponse && tokenResponse.access_token) {
+                        localStorage.setItem('gcal_token', JSON.stringify(tokenResponse));
+                        gapi.client.setToken(tokenResponse);
+                        updateUiForGoogleSync(true);
+                        await checkCalendarAndSetStatus();
+                        if (calendarCheckInterval) clearInterval(calendarCheckInterval);
+                        calendarCheckInterval = setInterval(checkCalendarAndSetStatus, 60000);
+                    }
+                },
+            });
+
+            const connectButton = document.getElementById('google-connect-btn');
+            if (connectButton) {
+                connectButton.disabled = false;
+                connectButton.querySelector('span').textContent = 'Connect Google Calendar';
+            }
+        } catch (error) {
+            console.error("Error initializing Google Sign-In:", error);
+            showToast("Could not load Google Sign-In.", "error");
+        }
     }
 
     function handleGoogleAuthClick() {
@@ -866,23 +877,11 @@
             showToast('Google API not ready yet. Please wait a moment.', 'error');
             return;
         }
-        if (gapi.client.getToken() === null) {
-            googleTokenClient.requestAccessToken({ prompt: 'consent' });
-        } else {
-            googleTokenClient.requestAccessToken({ prompt: '' });
-        }
+        googleTokenClient.requestAccessToken({ prompt: '' });
     }
 
     async function checkCalendarAndSetStatus() {
-        if (!App.currentUser) return; // Don't run if not logged into HAP
-
-        const tokenStr = localStorage.getItem('gcal_token');
-        if (!tokenStr) return;
-
-        const token = JSON.parse(tokenStr);
-        // The GSI library handles token refresh, but we can do a simple check
-        if (new Date().getTime() > token.expires_in * 1000) {
-            handleGoogleDisconnect();
+        if (!App.currentUser || !gapi.client.getToken()) {
             return;
         }
 
@@ -924,33 +923,34 @@
             }
         } catch (err) {
             console.error('Error fetching calendar events:', err);
-            if (err.status === 401) {
+            if (err.result?.error?.status === 'UNAUTHENTICATED' || err.status === 401) {
+                showToast('Google session expired. Please connect again.', 'error');
                 handleGoogleDisconnect();
             }
         }
     }
 
     function handleGoogleDisconnect() {
-        localStorage.removeItem('gcal_token');
-        if (gapi.client.getToken()) {
-            google.accounts.oauth2.revoke(gapi.client.getToken().access_token, () => {});
+        const token = gapi.client.getToken();
+        if (token) {
+            google.accounts.oauth2.revoke(token.access_token, () => {});
             gapi.client.setToken(null);
         }
+        localStorage.removeItem('gcal_token');
         if (calendarCheckInterval) clearInterval(calendarCheckInterval);
         updateUiForGoogleSync(false);
         showToast('Disconnected from Google Calendar.');
     }
 
     function updateUiForGoogleSync(isConnected) {
-        document.getElementById('google-auth-controls').classList.toggle('hidden', isConnected);
-        document.getElementById('google-sync-info').classList.toggle('hidden', !isConnected);
+        const authControls = document.getElementById('google-auth-controls');
+        const syncInfo = document.getElementById('google-sync-info');
+        if (authControls) authControls.classList.toggle('hidden', isConnected);
+        if (syncInfo) syncInfo.classList.toggle('hidden', !isConnected);
+        
         if (isConnected) {
-            const token = gapi.client.getToken();
-            if (token) {
-                // You can get the user's email if you add 'email' and 'profile' to the SCOPES
-                // but for now we'll just show it's connected.
-                document.getElementById('google-user-email').textContent = 'Active'; 
-            }
+            const emailSpan = document.getElementById('google-user-email');
+            if (emailSpan) emailSpan.textContent = 'Active'; 
         }
     }
 
@@ -1006,7 +1006,7 @@
        } else {
            App.currentUser = null;
            App.currentProfileData = null;
-           handleGoogleDisconnect(); // Disconnect from Google when logging out of HAP
+           handleGoogleDisconnect();
        }
     
        if (!isAuthResolved) {
@@ -1094,14 +1094,13 @@
     `;
     document.querySelector('#admin-nav-btn').classList.toggle('hidden', data.membershipTier !== 'Owner');
 
-    // NEW: Check for existing Google connection on load
     const tokenStr = localStorage.getItem('gcal_token');
     if (tokenStr) {
         gapi.client.setToken(JSON.parse(tokenStr));
         updateUiForGoogleSync(true);
-        checkCalendarAndSetStatus(); // Check immediately
+        checkCalendarAndSetStatus(); 
         if (calendarCheckInterval) clearInterval(calendarCheckInterval);
-        calendarCheckInterval = setInterval(checkCalendarAndSetStatus, 60000); // Then check every minute
+        calendarCheckInterval = setInterval(checkCalendarAndSetStatus, 60000); 
     }
     
     } else {
@@ -1110,9 +1109,6 @@
     }
     }
     
-    // (The rest of your code remains unchanged...)
-    // ... all functions from displayPublicProfile to the end of the script ...
-
     async function displayPublicProfile(userId) {
     try {
     const userRef = ref(db, `users/${userId}`);
@@ -1138,7 +1134,7 @@
        hideLoadingOverlay();
     }
     }
-
+    
     async function saveAndLogStatus(data) {
        const dataWithTimestamp = { ...data, updatedAt: new Date().toISOString() };
        const userRef = ref(db, `users/${App.currentUser.userId}`);
@@ -1278,7 +1274,7 @@
        const pfpElement = document.getElementById('profile-pfp');
        if (pfpElement) {
            const tierConfig = USER_TIER_CONFIG[userData.membershipTier || 'Member'];
-           pfpElement.style.backgroundImage = 'none'; // Clear existing
+           pfpElement.style.backgroundImage = 'none';
            if (tierConfig.pfp && userData.pfpUrl) {
                pfpElement.setAttribute('data-src', userData.pfpUrl);
                pfpElement.textContent = '';
@@ -1512,7 +1508,6 @@
        window.addEventListener('hashchange', hashChangeRouter);
        addEventListeners();
        
-       // Setup lazy loading for background images
        const lazyImageObserver = new IntersectionObserver((entries, observer) => {
            entries.forEach(entry => {
                if (entry.isIntersecting) {
@@ -1644,7 +1639,6 @@
        const userId = App.currentUser.userId;
        const userTier = App.currentProfileData.membershipTier || 'Member';
    
-       // --- Render History (Available to all tiers with analytics access) ---
        const historyLog = document.getElementById('history-log');
        historyLog.innerHTML = '<p class="muted">Loading history...</p>';
        try {
@@ -1666,7 +1660,6 @@
            console.error("History fetch error:", error);
        }
    
-       // --- Render Core Metrics ---
        document.getElementById('views-total').textContent = App.currentProfileData.achievements?.views || 0;
    
        if (userTier === 'Member') {
@@ -1679,7 +1672,6 @@
            return;
        }
        
-       // --- Render Advanced Metrics (Plus tier and above) ---
        document.getElementById('analytics-chart-card').classList.remove('hidden');
        document.getElementById('analytics-country-card').classList.remove('hidden');
        document.getElementById('analytics-upgrade-prompt').classList.add('hidden');
@@ -1690,7 +1682,6 @@
            const dailyViews = analyticsData.viewsByDay || {};
            const countryViews = analyticsData.viewsByCountry || {};
            
-           // Calculate date-based and unique metrics
            let todayViews = 0, weekViews = 0;
            const uniqueVisitors = new Set();
            const weeklyTrendData = Array(7).fill(0);
@@ -1720,7 +1711,6 @@
            document.getElementById('views-week').textContent = weekViews;
            document.getElementById('views-unique').textContent = uniqueVisitors.size;
    
-           // Render Country Stats
            const countryListEl = document.getElementById('country-stats-list');
            const sortedCountries = Object.entries(countryViews).sort((a, b) => b[1] - a[1]);
            if (sortedCountries.length > 0) {
@@ -1732,9 +1722,8 @@
                countryListEl.innerHTML = '<p class="muted">No country data available yet.</p>';
            }
    
-           // Render 7-Day Trend Chart
            const chartContainer = document.getElementById('views-chart-container');
-           const maxView = Math.max(...weeklyTrendData, 1); // Avoid division by zero
+           const maxView = Math.max(...weeklyTrendData, 1);
            chartContainer.innerHTML = weeklyTrendData.map((count, i) => {
                const date = new Date();
                date.setDate(today.getDate() - (6 - i));
@@ -1804,15 +1793,12 @@
            const snapshot = await get(viewRef);
    
            if (!snapshot.exists()) {
-               // Set the daily view marker
                await set(viewRef, true);
                
-               // Increment total views
                const totalViewsRef = ref(db, `users/${profileId}/achievements/views`);
                const totalViewsSnap = await get(totalViewsRef);
                await set(totalViewsRef, (totalViewsSnap.val() || 0) + 1);
    
-               // Fetch country and increment country-specific view count
                try {
                    const geoResponse = await fetch('https://ipapi.co/json/');
                    if (geoResponse.ok) {
@@ -2051,7 +2037,6 @@
     document.getElementById('run-search-btn')?.addEventListener('click', handleSearchUsers);
     document.getElementById('generate-qrcode-btn')?.addEventListener('click', handleGenerateQrCode);
 
-    // NEW: Listeners for Google Calendar buttons
     document.getElementById('google-connect-btn')?.addEventListener('click', handleGoogleAuthClick);
     document.getElementById('google-disconnect-btn')?.addEventListener('click', handleGoogleDisconnect);
    
