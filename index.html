@@ -287,25 +287,25 @@
  }
  #calendar-view-container {
     display: grid;
-    grid-template-columns: 50px repeat(7, 1fr);
-    gap: 4px;
+    grid-template-columns: 40px repeat(7, 1fr);
+    gap: 2px;
     margin-top: 20px;
  }
  .calendar-header, .calendar-time-slot, .calendar-day-col {
     font-weight: 600;
     text-align: center;
-    font-size: 0.8rem;
-    padding: 5px 0;
+    font-size: 0.75rem;
+    padding: 4px 0;
  }
  .calendar-day-col {
     position: relative;
     border-left: 1px solid var(--border-color);
-    min-height: 200px;
+    min-height: 100px;
  }
  .calendar-time-slot {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     color: var(--muted);
-    padding-right: 10px;
+    padding-right: 8px;
     text-align: right;
  }
  .calendar-event {
@@ -315,12 +315,36 @@
     background-color: var(--primary-light);
     border-left: 3px solid var(--primary);
     border-radius: 4px;
-    padding: 4px;
-    font-size: 0.7rem;
+    padding: 2px 4px;
+    font-size: 0.65rem;
     overflow: hidden;
     color: var(--primary-dark);
     font-weight: 500;
+    white-space: nowrap;
+    text-overflow: ellipsis;
  }
+ .modal {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background-color: rgba(0,0,0,0.6); z-index: 4000;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; visibility: hidden; transition: opacity 0.4s ease, visibility 0.4s;
+ }
+ .modal.show { opacity: 1; visibility: visible; }
+ .modal-content {
+    background: var(--card); color: var(--text); padding: 30px;
+    border-radius: var(--radius); width: 90%; max-width: 500px;
+    position: relative;
+ }
+ .modal-close-btn {
+    position: absolute; top: 10px; right: 10px;
+    background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--muted);
+ }
+ .day-selector { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; }
+ .day-toggle {
+    background: var(--input-bg); border: 1px solid var(--border-color);
+    padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.9rem;
+ }
+ .day-toggle.selected { background: var(--primary); color: white; border-color: var(--primary); }
  </style>
 </head>
 <body>
@@ -561,6 +585,9 @@
  <div class="card" id="automatic-timetable-card">
  <h2>Automatic Timetable ⏰</h2>
  <p class="muted" style="margin-bottom: 15px;">Set your recurring weekly schedule to update your status automatically.</p>
+ <div id="timetable-advanced-controls" class="hidden" style="margin-bottom: 20px;">
+    <button id="launch-timetable-assistant-btn" class="btn secondary">Launch Timetable Assistant</button>
+ </div>
  <div id="timetable-entries-container">
  <p class="muted" id="no-timetable-message">No scheduled entries yet.</p>
  </div>
@@ -629,6 +656,8 @@
  <p>&copy; 2025 HAP | A Demo Project</p>
  </footer>
  <div id="toast"></div>
+ 
+ <!-- Modals -->
  <div id="tier-upgrade-modal" class="tier-upgrade-modal">
     <div class="upgrade-modal-content">
         <div id="upgrade-gift-stage">
@@ -644,6 +673,81 @@
         </div>
     </div>
  </div>
+
+ <div id="timetable-entry-modal" class="modal">
+    <div class="modal-content">
+        <button class="modal-close-btn" data-modal-id="timetable-entry-modal">&times;</button>
+        <h2 id="timetable-modal-title">Add Schedule Entry</h2>
+        <div class="form-group">
+            <label for="entry-day">Day of the Week</label>
+            <select id="entry-day"></select>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div class="form-group">
+                <label for="entry-start-time">Start Time</label>
+                <input type="time" id="entry-start-time">
+            </div>
+            <div class="form-group">
+                <label for="entry-end-time">End Time</label>
+                <input type="time" id="entry-end-time">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="entry-status-emoji">Status</label>
+            <select id="entry-status-emoji"></select>
+        </div>
+        <div class="form-group">
+            <label for="entry-status-message">Message (optional)</label>
+            <input type="text" id="entry-status-message" placeholder="e.g., In a meeting">
+        </div>
+        <button id="save-timetable-entry-btn" class="btn">Save Entry</button>
+    </div>
+ </div>
+
+ <div id="timetable-assistant-modal" class="modal">
+    <div class="modal-content">
+        <button class="modal-close-btn" data-modal-id="timetable-assistant-modal">&times;</button>
+        <h2>Timetable Assistant</h2>
+        <p class="muted">Answer a few questions to generate a baseline schedule automatically.</p>
+        
+        <div id="assistant-step-1">
+            <h3>Work/School Hours</h3>
+            <div class="form-group">
+                <label>Which days do you typically work or study?</label>
+                <div id="work-day-selector" class="day-selector"></div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="form-group">
+                    <label for="work-start-time">Start Time</label>
+                    <input type="time" id="work-start-time" value="09:00">
+                </div>
+                <div class="form-group">
+                    <label for="work-end-time">End Time</label>
+                    <input type="time" id="work-end-time" value="17:00">
+                </div>
+            </div>
+            <button id="assistant-next-btn" class="btn">Next</button>
+        </div>
+
+        <div id="assistant-step-2" class="hidden">
+             <h3>Sleep Hours</h3>
+             <p class="muted">What are your typical sleep hours? (Applied to all days)</p>
+             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="form-group">
+                    <label for="sleep-start-time">Bedtime</label>
+                    <input type="time" id="sleep-start-time" value="23:00">
+                </div>
+                <div class="form-group">
+                    <label for="sleep-end-time">Wake-up Time</label>
+                    <input type="time" id="sleep-end-time" value="07:00">
+                </div>
+            </div>
+             <button id="assistant-generate-btn" class="btn">Generate Schedule</button>
+             <button id="assistant-skip-sleep-btn" class="btn secondary" style="margin-top: 10px;">Skip & Generate</button>
+        </div>
+    </div>
+ </div>
+
  <script type="module">
  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
  import { 
@@ -721,22 +825,22 @@
   },
   'Plus': { 
     name: 'Personal', linkLimit: 3, pfp: true, qrCode: true, customFont: true, customColor: true, 
-    timetable: false, scheduling: false, analytics: true, verification: false, 
+    timetable: 'basic', scheduling: false, analytics: true, verification: false, 
     canCustomizeAds: false, canControlPlatformAd: false
   },
   'Pro': { 
     name: 'Professional', linkLimit: 5, pfp: true, qrCode: true, customFont: true, customColor: true, 
-    timetable: true, scheduling: false, analytics: true, verification: true, 
+    timetable: 'advanced', scheduling: false, analytics: true, verification: true, 
     canCustomizeAds: true, canControlPlatformAd: false
   },
   'Max': { 
     name: 'Power User', linkLimit: 10, pfp: true, qrCode: true, customFont: true, customColor: true, 
-    timetable: true, scheduling: true, analytics: true, verification: true, 
+    timetable: 'advanced', scheduling: true, analytics: true, verification: true, 
     canCustomizeAds: true, canControlPlatformAd: true 
   },
   'Owner': {
     name: 'Owner', linkLimit: 10, pfp: true, qrCode: true, customFont: true, customColor: true, 
-    timetable: true, scheduling: true, analytics: true, verification: true, 
+    timetable: 'advanced', scheduling: true, analytics: true, verification: true, 
     canCustomizeAds: true, canControlPlatformAd: true
   },
  };
@@ -770,7 +874,7 @@
     qrCode: "Profile QR Code Sharing",
     customFont: "Custom Profile Font",
     customColor: "Custom Profile Colors",
-    timetable: "Automatic Timetable",
+    timetable: "Advanced Timetable",
     scheduling: "Scheduling Link Display",
     analytics: "Profile Analytics",
     verification: "Verification Eligibility",
@@ -1348,47 +1452,41 @@
     }
     card.classList.remove('hidden');
 
-    // Determine time range
-    let minHour = 24;
-    let maxHour = 0;
+    let minHour = 8;
+    let maxHour = 18;
     timetable.forEach(entry => {
         const startHour = parseInt(entry.start.split(':')[0], 10);
         const endHour = Math.ceil(timeToMinutes(entry.end) / 60);
         if (startHour < minHour) minHour = startHour;
         if (endHour > maxHour) maxHour = endHour;
     });
-    minHour = Math.max(0, minHour - 1); // Add some padding
+    minHour = Math.max(0, minHour - 1);
     maxHour = Math.min(24, maxHour);
 
-    let html = '<div class="calendar-header"></div>'; // Empty top-left cell
+    let html = '<div class="calendar-header"></div>';
     DAYS_OF_WEEK.forEach(day => html += `<div class="calendar-header">${day}</div>`);
-
-    const dayColumns = Array.from({ length: 7 }, () => '');
-
-    timetable.forEach(entry => {
-        const start = timeToMinutes(entry.start);
-        const end = timeToMinutes(entry.end);
-        const top = ((start / 60) - minHour) * 40; // 40px per hour
-        const height = ((end - start) / 60) * 40;
-        dayColumns[entry.day] += `<div class="calendar-event" style="top: ${top}px; height: ${height}px;">${entry.status} ${entry.message}</div>`;
-    });
+    
+    const HOUR_HEIGHT = 30; // pixels
+    const totalHours = maxHour - minHour;
     
     for (let hour = minHour; hour < maxHour; hour++) {
         const time = new Date(0, 0, 0, hour, 0).toLocaleTimeString('en-US', { hour: 'numeric', hour12: true });
-        html += `<div class="calendar-time-slot" style="height: 40px;">${time}</div>`;
+        html += `<div class="calendar-time-slot" style="height: ${HOUR_HEIGHT}px;">${time}</div>`;
         for(let day = 0; day < 7; day++) {
-             html += `<div class="calendar-day-col" style="height: 40px; border-top: 1px dotted var(--border-color);"></div>`;
+             html += `<div class="calendar-day-col" style="height: ${HOUR_HEIGHT}px; border-top: 1px dotted var(--border-color);"></div>`;
         }
     }
-    
-    // This is a trick to render events on top of the grid
-    html += '<div style="grid-column: 2 / span 7; grid-row: 2 / span 99; display: grid; grid-template-columns: repeat(7, 1fr); pointer-events: none;">';
-    dayColumns.forEach(colHtml => {
-        html += `<div style="position: relative;">${colHtml}</div>`;
-    });
-    html += '</div>';
 
-    container.innerHTML = html;
+    const eventsHtml = timetable.map(entry => {
+        const start = timeToMinutes(entry.start);
+        const end = timeToMinutes(entry.end);
+        const top = ((start / 60) - minHour) * HOUR_HEIGHT;
+        const height = ((end - start) / 60) * HOUR_HEIGHT;
+        return `<div class="calendar-event" style="top: ${top}px; height: ${height-2}px; grid-column: ${entry.day + 1};">${entry.status} ${entry.message}</div>`;
+    }).join('');
+
+    container.style.gridTemplateRows = `auto repeat(${totalHours}, ${HOUR_HEIGHT}px)`;
+    container.innerHTML = html + `<div style="grid-column: 2 / span 7; grid-row: 2 / span ${totalHours}; display: grid; grid-template-columns: repeat(7, 1fr); grid-template-rows: repeat(${totalHours * HOUR_HEIGHT}, 1px); pointer-events: none;">${eventsHtml}</div>`;
 }
 
  function populateSettings(data) {
@@ -1418,8 +1516,14 @@
     document.getElementById('scheduling-link-field').classList.toggle('hidden', !tierConfig.scheduling);
     document.getElementById('accent-color-field').classList.toggle('hidden', !tierConfig.customColor);
     document.getElementById('link-text-color-field').classList.toggle('hidden', !tierConfig.customColor);
-    document.getElementById('automatic-timetable-card').classList.toggle('hidden', !tierConfig.timetable);
     
+    const timetableCard = document.getElementById('automatic-timetable-card');
+    timetableCard.classList.toggle('hidden', !tierConfig.timetable);
+    if (tierConfig.timetable) {
+        document.getElementById('timetable-advanced-controls').classList.toggle('hidden', tierConfig.timetable !== 'advanced');
+        document.getElementById('add-timetable-entry-btn').textContent = tierConfig.timetable === 'advanced' ? 'Quick Add Entry' : 'Add Schedule';
+    }
+
     const linksContainer = document.getElementById('custom-links-container');
     linksContainer.innerHTML = '';
     const linkLimit = tierConfig.linkLimit;
@@ -1607,31 +1711,35 @@
  }
 
  async function handleAddTimetableEntry() {
- const day = parseInt(prompt("Enter Day (0=Sun, 1=Mon...):"), 10);
- if (isNaN(day) || day < 0 || day > 6) return showToast("Invalid day.");
- const start = prompt("Start Time (HH:MM 24hr):"), end = prompt("End Time (HH:MM 24hr):"), status = prompt("Status Emoji:");
- if (!start || !end || !status) return showToast("All fields required.");
- 
- const newEntry = { day, start, end, status, message: prompt("Message:") || '' };
- const newTimetable = [...(App.currentProfileData.timetable || []), newEntry];
- const userRef = ref(db, `users/${App.currentUser.userId}`);
- await update(userRef, { timetable: newTimetable });
- App.currentProfileData.timetable = newTimetable;
- renderTimetableSettings(newTimetable); showToast("Schedule added! 🗓️");
- const newSchedulerCount = newTimetable.length;
- update(ref(db, `users/${App.currentUser.userId}/achievements`), { scheduler: newSchedulerCount });
- }
+    const tier = App.currentProfileData.membershipTier || 'Member';
+    const tierConfig = USER_TIER_CONFIG[tier];
+    if (tierConfig.timetable === 'advanced') {
+        openTimetableModal();
+    } else { // Basic prompt-based for Plus tier
+        const day = parseInt(prompt("Enter Day (0=Sun, 1=Mon...):"), 10);
+        if (isNaN(day) || day < 0 || day > 6) return showToast("Invalid day.");
+        const start = prompt("Start Time (HH:MM 24hr):"), end = prompt("End Time (HH:MM 24hr):"), status = prompt("Status Emoji:");
+        if (!start || !end || !status) return showToast("All fields required.");
+        const newEntry = { day, start, end, status, message: prompt("Message:") || '' };
+        saveTimetableUpdate([...(App.currentProfileData.timetable || []), newEntry]);
+    }
+}
 
  async function handleRemoveTimetableEntry(e) {
  const index = parseInt(e.currentTarget.dataset.index, 10);
  const newTimetable = App.currentProfileData.timetable.filter((_, i) => i !== index);
- const userRef = ref(db, `users/${App.currentUser.userId}`);
- await update(userRef, { timetable: newTimetable });
- App.currentProfileData.timetable = newTimetable;
- renderTimetableSettings(newTimetable); showToast("Schedule removed.");
- const newSchedulerCount = newTimetable.length;
- update(ref(db, `users/${App.currentUser.userId}/achievements`), { scheduler: newSchedulerCount });
+ saveTimetableUpdate(newTimetable, "Schedule removed.");
  }
+
+ async function saveTimetableUpdate(newTimetable, message = "Schedule updated! 🗓️") {
+    const userRef = ref(db, `users/${App.currentUser.userId}`);
+    await update(userRef, { timetable: newTimetable });
+    App.currentProfileData.timetable = newTimetable;
+    renderTimetableSettings(newTimetable);
+    showToast(message);
+    const newSchedulerCount = newTimetable.length;
+    update(ref(db, `users/${App.currentUser.userId}/achievements`), { scheduler: newSchedulerCount });
+}
 
  async function fetchAndRenderAnalytics() {
     if (!App.currentUser) return;
@@ -1874,7 +1982,7 @@
     const unlockedFeatures = [];
 
     for (const key in newFeatures) {
-        if (newFeatures[key] === true && oldFeatures[key] === false) {
+        if (newFeatures[key] && !oldFeatures[key]) {
             if (FEATURE_FRIENDLY_NAMES[key]) {
                 unlockedFeatures.push(FEATURE_FRIENDLY_NAMES[key]);
             }
@@ -1974,8 +2082,12 @@
         let analyticsText = 'No Analytics';
         if (config.analytics === 'limited') analyticsText = 'Limited Analytics';
         else if (config.analytics === true) analyticsText = 'Full Profile Analytics';
+        
+        let timetableText = 'No Timetable';
+        if (config.timetable === 'basic') timetableText = 'Basic Timetable';
+        else if (config.timetable === 'advanced') timetableText = 'Advanced Timetable';
 
-        allTiersHtml += `<div class="tier-plan-card"><h3><div class="membership-badge tier-${tierKey}">${config.name}</div></h3><ul><li>${config.linkLimit} Custom Link${config.linkLimit > 1 ? 's' : ''}</li><li>${config.pfp ? 'Custom Profile Picture' : 'Default Profile Picture'}</li><li>${config.qrCode ? 'Profile QR Code Sharing' : 'No QR Code Sharing'}</li><li>${config.customFont ? 'Custom Profile Font' : 'Standard Font'}</li><li>${config.customColor ? 'Custom Profile Colors' : 'Standard Colors'}</li><li>${config.timetable ? 'Automatic Timetable' : 'Manual Status Only'}</li><li>${config.scheduling ? 'Scheduling Link Display' : 'No Scheduling Link'}</li><li>${analyticsText}</li><li>${config.verification ? 'Verification Eligible' : 'Not Verification Eligible'}</li><li>${config.canCustomizeAds ? 'Custom Promo Blocks' : 'No Custom Blocks'}</li><li>${config.canControlPlatformAd ? 'Ad Controls' : 'Platform Ads On'}</li></ul></div>`;
+        allTiersHtml += `<div class="tier-plan-card"><h3><div class="membership-badge tier-${tierKey}">${config.name}</div></h3><ul><li>${config.linkLimit} Custom Link${config.linkLimit > 1 ? 's' : ''}</li><li>${config.pfp ? 'Custom Profile Picture' : 'Default Profile Picture'}</li><li>${config.qrCode ? 'Profile QR Code Sharing' : 'No QR Code Sharing'}</li><li>${config.customFont ? 'Custom Profile Font' : 'Standard Font'}</li><li>${config.customColor ? 'Custom Profile Colors' : 'Standard Colors'}</li><li>${timetableText}</li><li>${config.scheduling ? 'Scheduling Link Display' : 'No Scheduling Link'}</li><li>${analyticsText}</li><li>${config.verification ? 'Verification Eligible' : 'Not Verification Eligible'}</li><li>${config.canCustomizeAds ? 'Custom Promo Blocks' : 'No Custom Blocks'}</li><li>${config.canControlPlatformAd ? 'Ad Controls' : 'Platform Ads On'}</li></ul></div>`;
     }
     allTiersHtml += '</div>';
     allTiersContainer.innerHTML = allTiersHtml;
