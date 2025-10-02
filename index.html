@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -301,6 +300,24 @@
       position: absolute; top: 10px; right: 10px;
       background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--muted);
     }
+    /* NEW: Timetable Styles */
+    #timetable-grid {
+        display: grid;
+        grid-template-columns: 50px repeat(7, 1fr);
+        gap: 2px;
+        margin-top: 20px;
+        font-size: 0.75rem;
+    }
+    .time-label, .day-header, .time-slot {
+        background-color: var(--input-bg);
+        padding: 5px;
+        text-align: center;
+        border-radius: 4px;
+    }
+    .day-header { font-weight: bold; color: var(--text); }
+    .time-label { font-weight: 500; color: var(--muted); }
+    .time-slot { background-color: #4ade8020; /* Light green for available */ }
+    .time-slot.busy { background-color: var(--primary); opacity: 0.7; }
     </style>
 </head>
 <body>
@@ -355,6 +372,14 @@
     </div>
     </div>
     <div class="card action-links-container" id="profile-action-links"></div>
+
+    <div class="card hidden" id="calendar-view-card">
+        <h2>Weekly Availability</h2>
+        <div id="calendar-timetable">
+            <p class="muted">Connect Google Calendar to see your schedule here.</p>
+        </div>
+    </div>
+
     <div class="card">
     <h2>About</h2>
     <div id="personal-details-list"><p class="muted">Loading personal info...</p></div>
@@ -537,19 +562,30 @@
     </div>
     </div>
 
-    <!-- NEW: Integrations Section -->
-    <div class="card">
+    <div class="card hidden" id="integrations-card">
         <h2>Integrations</h2>
         <p>Connect your HAP to other services for automatic status updates.</p>
         <div id="gcal-integration-section">
             <button id="connect-gcal-btn" class="btn">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5A9.5 9.5 0 0 0 2.5 12a9.5 9.5 0 0 0 9.5 9.5 9.5 9.5 0 0 0 9.5-9.5A9.5 9.5 0 0 0 12 2.5zM12 4a8 8 0 0 1 8 8 8 8 0 0 1-8 8 8 8 0 0 1-8-8 8 8 0 0 1 8-8zm0 2a6 6 0 0 0-6 6 6 6 0 0 0 6 6 6 6 0 0 0 6-6 6 6 0 0 0-6-6zM12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5z"></path></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M10.875 7.75a.75.75 0 0 0-1.5 0v1.5h-1.5a.75.75 0 0 0 0 1.5h1.5v1.5a.75.75 0 0 0 1.5 0v-1.5h1.5a.75.75 0 0 0 0-1.5h-1.5v-1.5Z"/><path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0ZM1.5 8a6.5 6.5 0 1 1 13 0 6.5 6.5 0 0 1-13 0Z"/></svg>
                 Connect Google Calendar
             </button>
             <button id="disconnect-gcal-btn" class="btn secondary hidden" style="background-color: #ef4444; color: white;">
                 Disconnect Google Calendar
             </button>
             <p id="gcal-status-text" class="muted" style="margin-top: 15px;"></p>
+        </div>
+        <div id="gcal-customization-fields" class="hidden" style="margin-top: 25px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+            <h3>Calendar Sync Settings</h3>
+            <div class="form-group">
+                <label for="gcal-busy-status">When an event makes you 'Busy', set status to:</label>
+                <select id="gcal-busy-status"></select>
+            </div>
+            <div class="form-group">
+                <label for="gcal-free-status">During 'Free' time, set status to:</label>
+                <select id="gcal-free-status"></select>
+            </div>
+            <p class="muted">Your backend function will use these rules to automatically update your status.</p>
         </div>
     </div>
 
@@ -655,12 +691,11 @@
     push, 
     query, 
     orderByKey, 
-    limitToLast
+    limitToLast,
+    onValue // NEW: Import onValue for real-time updates
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
     // --- PASTE YOUR FIREBASE CONFIGURATION HERE ---
-    // This object connects your web app to your Firebase project.
-    // You can find this in your Firebase project settings.
     const firebaseConfig = {
         apiKey: "AIzaSyChwjwXFgIj9f64zGeIoS-q_odZm2ogFMw",
         authDomain: "happp-96438.firebaseapp.com",
@@ -696,6 +731,7 @@
     let isPublicView = false;
     let publicViewInterval = null;
     let isAuthResolved = false;
+    let timetableListener = null; // To keep track of the real-time listener
     
     const App = {
     pages: ['loginPage', 'profilePage', 'searchPage', 'analyticsPage', 'settingsPage', 'tiersPage', 'adminPage'],
@@ -704,35 +740,31 @@
     currentProfileData: null,
     };
     
-    // --- (The rest of your existing JS code remains unchanged) ---
-    // ... [ All your existing JS functions from the previous version go here ] ...
-    // ... handleEmailSignup, handleGoogleLogin, saveAndLogStatus, etc. ...
-    // --- SCROLL TO THE addEventListeners() function to see the new code ---
-    
+    // --- UPDATED: Tier configuration with Google Calendar Integration flag ---
     const USER_TIER_CONFIG = {
       'Member': { 
         name: 'Basic', linkLimit: 1, pfp: false, qrCode: false, customFont: false, customColor: false, 
-        scheduling: false, analytics: 'limited', verification: false, 
+        scheduling: false, analytics: 'limited', verification: false, gcalIntegration: false,
         canCustomizeAds: false, canControlPlatformAd: false
       },
       'Plus': { 
         name: 'Personal', linkLimit: 3, pfp: true, qrCode: true, customFont: true, customColor: true, 
-        scheduling: false, analytics: true, verification: false, 
+        scheduling: false, analytics: true, verification: false, gcalIntegration: true,
         canCustomizeAds: false, canControlPlatformAd: false
       },
       'Pro': { 
         name: 'Professional', linkLimit: 5, pfp: true, qrCode: true, customFont: true, customColor: true, 
-        scheduling: false, analytics: true, verification: true, 
+        scheduling: false, analytics: true, verification: true, gcalIntegration: true,
         canCustomizeAds: true, canControlPlatformAd: false
       },
       'Max': { 
         name: 'Power User', linkLimit: 10, pfp: true, qrCode: true, customFont: true, customColor: true, 
-        scheduling: true, analytics: true, verification: true, 
+        scheduling: true, analytics: true, verification: true, gcalIntegration: true,
         canCustomizeAds: true, canControlPlatformAd: true 
       },
       'Owner': {
         name: 'Owner', linkLimit: 10, pfp: true, qrCode: true, customFont: true, customColor: true, 
-        scheduling: true, analytics: true, verification: true, 
+        scheduling: true, analytics: true, verification: true, gcalIntegration: true,
         canCustomizeAds: true, canControlPlatformAd: true
       },
     };
@@ -768,7 +800,8 @@
         analytics: "Profile Analytics",
         verification: "Verification Eligibility",
         canCustomizeAds: "Custom Promotional Blocks",
-        canControlPlatformAd: "Platform Ad Controls"
+        canControlPlatformAd: "Platform Ad Controls",
+        gcalIntegration: "Google Calendar Sync" // NEW
     };
     
     const VERIFICATION_QUESTIONS = [
@@ -911,6 +944,10 @@
     pfpText: defaultPfpText,
     adsEnabled: false,
     platformAdDisplay: 'both',
+    gcalSettings: { // NEW: Default GCal settings
+      busyStatus: '💻',
+      freeStatus: '🟢'
+    },
     achievements: { 
     profileComplete: 0, socialButterfly: 0, firstShare: 0,
     views: 0, loyalUser: 1, expressive: 0, referral: 0, picturePerfect: 0,
@@ -1059,6 +1096,7 @@
     async function hashChangeRouter() {
         clearInterval(countdownInterval);
         if(publicViewInterval) clearInterval(publicViewInterval);
+        if(timetableListener) timetableListener(); // Detach old listener
 
         const params = new URLSearchParams(window.location.search);
         const userIdFromUrl = params.get('user');
@@ -1178,6 +1216,9 @@
         document.getElementById('local-time-info').textContent = `Local Time: ${timeData.time} (${timeData.offset})`;
         renderCustomLinks(data.links, document.getElementById('profile-links'), tierConfig);
         renderActionLinks(data);
+
+        // NEW: Render the timetable
+        renderTimetable(data);
 
         const qrBtn = document.getElementById('generate-qrcode-btn');
         if (isOwnerViewing) {
@@ -1346,12 +1387,28 @@
         document.getElementById('status-message').value = data.message || '';
         renderVerificationSettings(data);
 
-        // NEW: Update Google Calendar button visibility
-        const isGcalConnected = !!data.googleRefreshToken;
-        document.getElementById('connect-gcal-btn').classList.toggle('hidden', isGcalConnected);
-        document.getElementById('disconnect-gcal-btn').classList.toggle('hidden', !isGcalConnected);
-        const gcalStatusText = document.getElementById('gcal-status-text');
-        gcalStatusText.textContent = isGcalConnected ? "✅ Connected! Your status will now sync automatically from your calendar." : "Connect to sync your status from your calendar events.";
+        // --- UPDATED: Google Calendar UI logic ---
+        const integrationsCard = document.getElementById('integrations-card');
+        integrationsCard.classList.toggle('hidden', !tierConfig.gcalIntegration);
+        if (tierConfig.gcalIntegration) {
+            const isGcalConnected = !!data.googleRefreshToken;
+            document.getElementById('connect-gcal-btn').classList.toggle('hidden', isGcalConnected);
+            document.getElementById('disconnect-gcal-btn').classList.toggle('hidden', !isGcalConnected);
+            document.getElementById('gcal-customization-fields').classList.toggle('hidden', !isGcalConnected);
+            
+            const gcalStatusText = document.getElementById('gcal-status-text');
+            gcalStatusText.textContent = isGcalConnected ? "✅ Connected! Your status will sync automatically from your calendar." : "Connect to sync your status from your calendar events.";
+            
+            if(isGcalConnected) {
+                const busySelect = document.getElementById('gcal-busy-status');
+                const freeSelect = document.getElementById('gcal-free-status');
+                const statusOptions = Array.from(document.getElementById('status-emoji').options).map(opt => `<option value="${opt.value}">${opt.textContent}</option>`).join('');
+                busySelect.innerHTML = statusOptions;
+                freeSelect.innerHTML = statusOptions;
+                busySelect.value = data.gcalSettings?.busyStatus || '💻';
+                freeSelect.value = data.gcalSettings?.freeStatus || '🟢';
+            }
+        }
 
         const customAdCard = document.getElementById('custom-ads-settings-card');
         customAdCard.classList.toggle('hidden', !tierConfig.canCustomizeAds);
@@ -1380,6 +1437,7 @@
         App.elements.toast = document.getElementById('toast');
         window.addEventListener('hashchange', hashChangeRouter);
         addEventListeners();
+        handleOAuthCallback(); // NEW: Check for OAuth redirect on page load
         
         const lazyImageObserver = new IntersectionObserver((entries, observer) => {
             entries.forEach(entry => {
@@ -1410,6 +1468,8 @@
     await set(ref(db, `users/${accountId}`), null);
     await set(ref(db, `history/${accountId}`), null);
     await set(ref(db, `analytics/${accountId}`), null);
+    await set(ref(db, `calendar_events/${accountId}`), null); // NEW: Clear calendar data
+    await set(ref(db, `gcal_auth_codes/${accountId}`), null); // NEW: Clear any pending auth codes
     await deleteUser(account);
     showToast("Account successfully deleted. 👋");
     } catch (error) {
@@ -1456,6 +1516,14 @@
             links: customLinks
         };
         if(!dataToSave.pfpUrl) dataToSave.pfpText = App.currentProfileData.displayName.charAt(0).toUpperCase();
+
+        // NEW: Save GCal settings
+        if(tierConfig.gcalIntegration) {
+            dataToSave.gcalSettings = {
+                busyStatus: document.getElementById('gcal-busy-status').value,
+                freeStatus: document.getElementById('gcal-free-status').value
+            };
+        }
 
         if (tierConfig.canCustomizeAds) {
             dataToSave.adsEnabled = document.getElementById('ads-enabled-toggle').value === 'true';
@@ -1846,7 +1914,7 @@
             if (config.analytics === 'limited') analyticsText = 'Limited Analytics';
             else if (config.analytics === true) analyticsText = 'Full Profile Analytics';
             
-            allTiersHtml += `<div class="tier-plan-card"><h3><div class="membership-badge tier-${tierKey}">${config.name}</div></h3><ul><li>${config.linkLimit} Custom Link${config.linkLimit > 1 ? 's' : ''}</li><li>${config.pfp ? 'Custom Profile Picture' : 'Default Profile Picture'}</li><li>${config.qrCode ? 'Profile QR Code Sharing' : 'No QR Code Sharing'}</li><li>${config.customFont ? 'Custom Profile Font' : 'Standard Font'}</li><li>${config.customColor ? 'Custom Profile Colors' : 'Standard Colors'}</li><li>${config.scheduling ? 'Scheduling Link Display' : 'No Scheduling Link'}</li><li>${analyticsText}</li><li>${config.verification ? 'Verification Eligible' : 'Not Verification Eligible'}</li><li>${config.canCustomizeAds ? 'Custom Promo Blocks' : 'No Custom Blocks'}</li><li>${config.canControlPlatformAd ? 'Ad Controls' : 'Platform Ads On'}</li></ul></div>`;
+            allTiersHtml += `<div class="tier-plan-card"><h3><div class="membership-badge tier-${tierKey}">${config.name}</div></h3><ul><li>${config.linkLimit} Custom Link${config.linkLimit > 1 ? 's' : ''}</li><li>${config.gcalIntegration ? 'Google Calendar Sync' : 'No Calendar Sync'}</li><li>${config.pfp ? 'Custom Profile Picture' : 'Default Profile Picture'}</li><li>${config.qrCode ? 'Profile QR Code Sharing' : 'No QR Code Sharing'}</li><li>${config.customFont ? 'Custom Profile Font' : 'Standard Font'}</li><li>${config.customColor ? 'Custom Profile Colors' : 'Standard Colors'}</li><li>${config.scheduling ? 'Scheduling Link Display' : 'No Scheduling Link'}</li><li>${analyticsText}</li><li>${config.verification ? 'Verification Eligible' : 'Not Verification Eligible'}</li><li>${config.canCustomizeAds ? 'Custom Promo Blocks' : 'No Custom Blocks'}</li><li>${config.canControlPlatformAd ? 'Ad Controls' : 'Platform Ads On'}</li></ul></div>`;
         }
         allTiersHtml += '</div>';
         allTiersContainer.innerHTML = allTiersHtml;
@@ -1895,34 +1963,131 @@
     showToast(`User ${field} updated.`);
     }
 
-    // --- NEW FUNCTIONS FOR GOOGLE CALENDAR ---
+    // --- NEW & UPDATED FUNCTIONS FOR GOOGLE CALENDAR & TIMETABLE ---
     
     function handleConnectGoogleCalendar() {
         // --- PASTE YOUR GOOGLE CLOUD CLIENT ID HERE ---
         const clientId = "703348367691-fto8h5ngp2hm5qn5fkbfhtsh7re3pcub.apps.googleusercontent.com";
         
-        // --- PASTE THE URL OF YOUR DEPLOYED `googleOAuthCallback` CLOUD FUNCTION HERE ---
-        const redirectUri = "https://kabirgagnejayt-lang.github.io/Hyper-Availability-Profile/"; // Example: "https://us-central1-YOUR-PROJECT-ID.cloudfunctions.net/googleOAuthCallback"
+        // --- THIS MUST BE THE URL OF YOUR DEPLOYED WEB APP (where this index.html lives) ---
+        // This MUST be added as an "Authorized redirect URI" in your Google Cloud OAuth 2.0 Client ID settings.
+        const redirectUri = window.location.origin + window.location.pathname;
 
         const scope = 'https://www.googleapis.com/auth/calendar.events.readonly';
         
         // We add the user's ID to the state parameter so the callback function knows who is authenticating.
         const state = App.currentUser.userId;
 
-        const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&access_type=offline&prompt=consent&state=${state}`;
+        const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${scope}&access_type=offline&prompt=consent&state=${state}`;
         
         window.location.href = authUrl;
     }
 
     async function handleDisconnectGoogleCalendar() {
         if (!App.currentUser) return;
-        const userRef = ref(db, `users/${App.currentUser.userId}/googleRefreshToken`);
-        await set(userRef, null); // Remove the token from the database
+        const updates = {
+            googleRefreshToken: null // Remove the token from the database
+        };
+        await update(ref(db, `users/${App.currentUser.userId}`), updates);
         App.currentProfileData.googleRefreshToken = null; // Update local state
         populateSettings(App.currentProfileData); // Re-render the settings page
+        renderTimetable(App.currentProfileData); // Re-render the timetable
         showToast("Google Calendar has been disconnected.");
     }
     
+    async function handleOAuthCallback() {
+        const params = new URLSearchParams(window.location.search);
+        const code = params.get('code');
+        const state = params.get('state'); // This should be the userId
+
+        // If 'code' and 'state' are in the URL, the user is coming back from Google Auth
+        if (code && state) {
+            // Clean the URL to avoid re-processing on refresh
+            const cleanUrl = window.location.origin + window.location.pathname + window.location.hash;
+            history.replaceState({}, document.title, cleanUrl);
+            
+            showToast('Finalizing calendar connection...', 'info');
+
+            // Save the authorization code to the database for the backend function to process.
+            // A Cloud Function triggered by writes to this path would handle the token exchange.
+            try {
+                await set(ref(db, `gcal_auth_codes/${state}`), code);
+                showToast('Calendar connected! Your status will begin syncing shortly. ✅', 'info');
+                
+                // Optimistically update UI
+                if(App.currentProfileData && App.currentProfileData.userId === state){
+                    App.currentProfileData.googleRefreshToken = 'pending'; // A temporary truthy value
+                    populateSettings(App.currentProfileData);
+                }
+
+            } catch(error) {
+                console.error("Failed to save auth code:", error);
+                showToast('Could not connect calendar. Please try again.', 'error');
+            }
+        }
+    }
+    
+    function renderTimetable(userData) {
+        const card = document.getElementById('calendar-view-card');
+        const container = document.getElementById('calendar-timetable');
+        const tierConfig = USER_TIER_CONFIG[userData.membershipTier || 'Member'];
+
+        if (!tierConfig.gcalIntegration) {
+            card.classList.add('hidden');
+            return;
+        }
+
+        card.classList.remove('hidden');
+
+        if (!userData.googleRefreshToken) {
+            container.innerHTML = '<p class="muted">Connect your Google Calendar in settings to see your availability here.</p>';
+            return;
+        }
+
+        // Attach a real-time listener to the calendar events path
+        const timetableRef = ref(db, `calendar_events/${userData.userId}`);
+        timetableListener = onValue(timetableRef, (snapshot) => {
+            const eventsData = snapshot.val();
+            const busySlots = eventsData?.busySlots || [];
+            
+            let html = '<div id="timetable-grid">';
+            // Headers
+            html += '<div></div>'; // Top-left empty cell
+            const today = new Date();
+            for (let i = 0; i < 7; i++) {
+                const day = new Date(today);
+                day.setDate(today.getDate() + i);
+                html += `<div class="day-header">${day.toLocaleDateString('en-US', { weekday: 'short' })}<br>${day.getDate()}</div>`;
+            }
+
+            // Time Slots (8 AM to 8 PM)
+            for (let hour = 8; hour < 20; hour++) {
+                const timeStr = (hour % 12 === 0 ? 12 : hour % 12) + (hour < 12 ? 'a' : 'p');
+                html += `<div class="time-label">${timeStr}</div>`; // Time label column
+
+                for (let day = 0; day < 7; day++) {
+                    const slotDate = new Date(today);
+                    slotDate.setDate(today.getDate() + day);
+                    slotDate.setHours(hour, 0, 0, 0);
+                    
+                    const isBusy = busySlots.some(slot => {
+                        const start = new Date(slot.start);
+                        const end = new Date(slot.end);
+                        return slotDate >= start && slotDate < end;
+                    });
+                    
+                    html += `<div class="time-slot ${isBusy ? 'busy' : ''}"></div>`;
+                }
+            }
+
+            html += '</div>';
+            container.innerHTML = html;
+        }, (error) => {
+            console.error("Error listening for timetable data:", error);
+            container.innerHTML = '<p class="muted">Could not load availability data.</p>';
+        });
+    }
+
     function addEventListeners() {
     document.querySelector('.auth-tabs')?.addEventListener('click', e => {
     if (e.target.classList.contains('tab')) {
@@ -1944,7 +2109,7 @@
     document.getElementById('run-search-btn')?.addEventListener('click', handleSearchUsers);
     document.getElementById('generate-qrcode-btn')?.addEventListener('click', handleGenerateQrCode);
     
-    // --- NEW EVENT LISTENERS FOR GOOGLE CALENDAR BUTTONS ---
+    // --- EVENT LISTENERS FOR GOOGLE CALENDAR BUTTONS ---
     document.getElementById('connect-gcal-btn')?.addEventListener('click', handleConnectGoogleCalendar);
     document.getElementById('disconnect-gcal-btn')?.addEventListener('click', handleDisconnectGoogleCalendar);
 
