@@ -718,6 +718,26 @@
         </div>
     </div>
 
+    <!--
+        =========================================================================
+        === IMPORTANT CONFIGURATION STEP ========================================
+        =========================================================================
+        
+        To enable the AI features, you need to provide your Google AI API key.
+        
+        1. Find the <script> tag below with the id "api-key-config".
+        2. Replace "YOUR_API_KEY_HERE" with your actual Gemini API key.
+        
+        This script tag is placed here to keep your key separate from the main
+        application code. For production, consider more secure methods for
+        managing API keys, like using a backend proxy.
+
+        =========================================================================
+    -->
+    <script id="api-key-config">
+      // --- PASTE YOUR GEMINI API KEY HERE ---
+      window.GEMINI_API_KEY = "YOUR_API_KEY_HERE"; 
+    </script>
     <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { 
@@ -763,8 +783,15 @@
     };
     
     // Gemini API Configuration
-    // Your Google AI API key is sourced from the environment variable `process.env.API_KEY`.
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    // Your Google AI API key is sourced from window.GEMINI_API_KEY.
+    // This is set in a script tag right before this module in index.html.
+    const ai = (window.GEMINI_API_KEY && window.GEMINI_API_KEY !== "YOUR_API_KEY_HERE")
+        ? new GoogleGenAI({ apiKey: window.GEMINI_API_KEY })
+        : null;
+
+    if (!ai) {
+        console.warn("Gemini API key not configured. AI features will be disabled. Please set window.GEMINI_API_KEY in index.html.");
+    }
 
     // =================================================================
     // --- FIREBASE & APP INITIALIZATION ---
@@ -1460,7 +1487,7 @@
         const themeContainer = document.getElementById('theme-customization-container');
         themeContainer.classList.toggle('hidden', !tierConfig.canUsePresetThemes);
         if (tierConfig.canUsePresetThemes) {
-            document.getElementById('ai-theme-generator').classList.toggle('hidden', !tierConfig.canUseAiThemes);
+            document.getElementById('ai-theme-generator').classList.toggle('hidden', !tierConfig.canUseAiThemes || !ai);
             document.getElementById('fine-tune-colors-section').classList.toggle('hidden', !tierConfig.canFineTuneThemes);
 
             const presetsEl = document.getElementById('preset-themes-container');
@@ -1503,6 +1530,9 @@
             document.getElementById('connect-gcal-btn').classList.toggle('hidden', isGcalConnected);
             document.getElementById('disconnect-gcal-btn').classList.toggle('hidden', !isGcalConnected);
             document.getElementById('gcal-customization-fields').classList.toggle('hidden', !isGcalConnected);
+            if(document.getElementById('gemini-ai-sync-section')) {
+                document.getElementById('gemini-ai-sync-section').classList.toggle('hidden', !ai);
+            }
             
             const gcalStatusText = document.getElementById('gcal-status-text');
             gcalStatusText.textContent = isGcalConnected ? "✅ Connected! Your status will sync automatically from your calendar." : "Connect to sync your status from your calendar events.";
@@ -2248,6 +2278,10 @@
     }
     
     async function handleGeminiAiSync() {
+        if (!ai) {
+            showToast("AI features are not configured. API key is missing.", "error");
+            return;
+        }
         const btn = document.getElementById('gemini-sync-btn');
         const calendarText = document.getElementById('calendar-input-for-ai').value.trim();
         
@@ -2320,6 +2354,10 @@
     }
     
     async function handleGenerateAiTheme() {
+        if (!ai) {
+            showToast("AI features are not configured. API key is missing.", "error");
+            return;
+        }
         const btn = document.getElementById('generate-ai-theme-btn');
         const prompt = document.getElementById('ai-theme-prompt').value.trim();
         if (!prompt) {
