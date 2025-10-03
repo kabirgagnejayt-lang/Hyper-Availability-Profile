@@ -1,9 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
-    <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title id="app-title">Hyper Availability Profile (HAP)</title>
@@ -303,7 +300,7 @@
       position: absolute; top: 10px; right: 10px;
       background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--muted);
     }
-    /* Timetable Styles */
+    /* NEW: Timetable Styles */
     #timetable-grid {
         display: grid;
         grid-template-columns: 50px repeat(7, 1fr);
@@ -540,9 +537,9 @@
     
     <div class="card">
     <h2>Update Status</h2>
-    <p class="muted">This status can be updated automatically by the Google Calendar sync.</p>
+    <p class="muted">This status will be updated automatically if you connect your Google Calendar.</p>
     <div class="form-group">
-    <label for="status-emoji">Manual Status</label>
+    <label for="status-emoji">Current Status</label>
     <select id="status-emoji">
     <option value="🟢">🟢 Available</option>
     <option value="💻">💻 Busy</option>
@@ -560,20 +557,35 @@
     </select>
     </div>
     <div class="form-group">
-    <label for="status-message">Manual Message</label>
+    <label for="status-message">Message</label>
     <input type="text" id="status-message" placeholder="e.g., Drafting 2026 Strategy">
     </div>
     </div>
 
     <div class="card hidden" id="integrations-card">
         <h2>Integrations</h2>
-        <p>Sync your status from Google Calendar. This sync is only active while this page is open.</p>
+        <p>Connect your HAP to other services for automatic status updates.</p>
         <div id="gcal-integration-section">
-            <button id="authorize-gcal-btn" class="btn">Authorize Google Calendar</button>
-            <button id="toggle-gcal-sync-btn" class="btn secondary hidden">Start Sync</button>
-            <p id="gcal-status-text" class="muted" style="margin-top: 15px;">
-                Grant permission to your Google Calendar to enable status syncing.
-            </p>
+            <button id="connect-gcal-btn" class="btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M10.875 7.75a.75.75 0 0 0-1.5 0v1.5h-1.5a.75.75 0 0 0 0 1.5h1.5v1.5a.75.75 0 0 0 1.5 0v-1.5h1.5a.75.75 0 0 0 0-1.5h-1.5v-1.5Z"/><path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0ZM1.5 8a6.5 6.5 0 1 1 13 0 6.5 6.5 0 0 1-13 0Z"/></svg>
+                Connect Google Calendar
+            </button>
+            <button id="disconnect-gcal-btn" class="btn secondary hidden" style="background-color: #ef4444; color: white;">
+                Disconnect Google Calendar
+            </button>
+            <p id="gcal-status-text" class="muted" style="margin-top: 15px;"></p>
+        </div>
+        <div id="gcal-customization-fields" class="hidden" style="margin-top: 25px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+            <h3>Calendar Sync Settings</h3>
+            <div class="form-group">
+                <label for="gcal-busy-status">When an event makes you 'Busy', set status to:</label>
+                <select id="gcal-busy-status"></select>
+            </div>
+            <div class="form-group">
+                <label for="gcal-free-status">During 'Free' time, set status to:</label>
+                <select id="gcal-free-status"></select>
+            </div>
+            <p class="muted">Your backend function will use these rules to automatically update your status.</p>
         </div>
     </div>
 
@@ -660,29 +672,28 @@
     <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { 
-        getAuth, 
-        GoogleAuthProvider, 
-        signInWithPopup, 
-        createUserWithEmailAndPassword, 
-        signInWithEmailAndPassword, 
-        onAuthStateChanged, 
-        signOut,
-        deleteUser,
-        updateProfile
+    getAuth, 
+    GoogleAuthProvider, 
+    signInWithPopup, 
+    createUserWithEmailAndPassword, 
+    signInWithEmailAndPassword, 
+    onAuthStateChanged, 
+    signOut,
+    deleteUser,
+    updateProfile
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
     import { 
-        getDatabase, 
-        ref, 
-        set, 
-        get, 
-        update,
-        push, 
-        query, 
-        orderByKey, 
-        limitToLast,
-        onValue
+    getDatabase, 
+    ref, 
+    set, 
+    get, 
+    update,
+    push, 
+    query, 
+    orderByKey, 
+    limitToLast,
+    onValue // NEW: Import onValue for real-time updates
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-    import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
 
     // --- PASTE YOUR FIREBASE CONFIGURATION HERE ---
     const firebaseConfig = {
@@ -695,44 +706,41 @@
         appId: "1:703348367691:web:376cd50d08d94bccf588ce"
     };
 
-    // --- START: Configuration for Client-Side Sync ---
-    
-    // ⚠️ WARNING: Your API key is visible to the public here.
-    const GEMINI_API_KEY = "AIzaSyAN2A4rZGOtzwvC48rIfy062iTtRr606ok";
-
-    // PASTE YOUR GOOGLE OAUTH CLIENT ID FROM GOOGLE CLOUD CONSOLE HERE
-    const GOOGLE_CLIENT_ID = "703348367691-fto8h5ngp2hm5qn5fkbfhtsh7re3pcub.apps.googleusercontent.com"; 
-
-    const CALENDAR_API_KEY = firebaseConfig.apiKey;
-    const CALENDAR_SCOPE = "https://www.googleapis.com/auth/calendar.readonly";
-
-    let gapi;
-    let google;
-    let tokenClient;
-    let isSyncing = false;
-    let syncIntervalId = null;
-
-    const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-
-    // --- END: Configuration for Client-Side Sync ---
-
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getDatabase(app);
+    
+    window.onerror = function(message, source, lineno, colno, error) {
+    const errorDiv = document.getElementById('global-error-display');
+    if (errorDiv) {
+    errorDiv.style.display = 'block';
+    errorDiv.textContent = `CRITICAL ERROR: ${message} (Line ${lineno})`;
+    }
+    console.error("Global Error Caught:", message, source, lineno, colno, error);
+    return false;
+    };
+    
+    function hideLoadingOverlay() {
+        const loader = document.getElementById('loading-overlay');
+        if (loader) {
+            loader.classList.add('hidden');
+        }
+    }
     
     let countdownInterval;
     let isPublicView = false;
     let publicViewInterval = null;
     let isAuthResolved = false;
-    let timetableListener = null; 
+    let timetableListener = null; // To keep track of the real-time listener
     
     const App = {
-        pages: ['loginPage', 'profilePage', 'searchPage', 'analyticsPage', 'settingsPage', 'tiersPage', 'adminPage'],
-        elements: {},
-        currentUser: null,
-        currentProfileData: null,
+    pages: ['loginPage', 'profilePage', 'searchPage', 'analyticsPage', 'settingsPage', 'tiersPage', 'adminPage'],
+    elements: {},
+    currentUser: null,
+    currentProfileData: null,
     };
     
+    // --- UPDATED: Tier configuration with Google Calendar Integration flag ---
     const USER_TIER_CONFIG = {
       'Member': { 
         name: 'Basic', linkLimit: 1, pfp: false, qrCode: false, customFont: false, customColor: false, 
@@ -793,297 +801,105 @@
         verification: "Verification Eligibility",
         canCustomizeAds: "Custom Promotional Blocks",
         canControlPlatformAd: "Platform Ad Controls",
-        gcalIntegration: "Google Calendar Sync"
+        gcalIntegration: "Google Calendar Sync" // NEW
     };
     
     const VERIFICATION_QUESTIONS = [
-        "What is the primary purpose of your HAP profile? (e.g., professional networking, personal status, team coordination)",
-        "Please provide a link to an existing public profile that can help verify your identity (e.g., LinkedIn, Twitter, personal website, or official company page).",
-        "What is your full legal name?",
-        "Briefly describe why you should be granted a verified status on this platform.",
-        "Please provide a contact email or phone number that we can use to follow up on this verification request (this will be kept private)."
+    "What is the primary purpose of your HAP profile? (e.g., professional networking, personal status, team coordination)",
+    "Please provide a link to an existing public profile that can help verify your identity (e.g., LinkedIn, Twitter, personal website, or official company page).",
+    "What is your full legal name?",
+    "Briefly describe why you should be granted a verified status on this platform.",
+    "Please provide a contact email or phone number that we can use to follow up on this verification request (this will be kept private)."
     ];
     
     const COUNTRY_LIST = [ {name: "Afghanistan", code: "AF"}, {name: "Åland Islands", code: "AX"}, {name: "Albania", code: "AL"}, {name: "Algeria", code: "DZ"}, {name: "American Samoa", code: "AS"}, {name: "Andorra", code: "AD"}, {name: "Angola", code: "AO"}, {name: "Anguilla", code: "AI"}, {name: "Antarctica", code: "AQ"}, {name: "Antigua and Barbuda", code: "AG"}, {name: "Argentina", code: "AR"}, {name: "Armenia", code: "AM"}, {name: "Aruba", code: "AW"}, {name: "Australia", code: "AU"}, {name: "Austria", code: "AT"}, {name: "Azerbaijan", code: "AZ"}, {name: "Bahamas", code: "BS"}, {name: "Bahrain", code: "BH"}, {name: "Bangladesh", code: "BD"}, {name: "Barbados", code: "BB"}, {name: "Belarus", code: "BY"}, {name: "Belgium", code: "BE"}, {name: "Belize", code: "BZ"}, {name: "Benin", code: "BJ"}, {name: "Bermuda", code: "BM"}, {name: "Bhutan", code: "BT"}, {name: "Bolivia", code: "BO"}, {name: "Bosnia and Herzegovina", code: "BA"}, {name: "Botswana", code: "BW"}, {name: "Bouvet Island", code: "BV"}, {name: "Brazil", code: "BR"}, {name: "British Indian Ocean Territory", code: "IO"}, {name: "Brunei Darussalam", code: "BN"}, {name: "Bulgaria", code: "BG"}, {name: "Burkina Faso", code: "BF"}, {name: "Burundi", code: "BI"}, {name: "Cambodia", code: "KH"}, {name: "Cameroon", code: "CM"}, {name: "Canada", code: "CA"}, {name: "Cape Verde", code: "CV"}, {name: "Cayman Islands", code: "KY"}, {name: "Central African Republic", code: "CF"}, {name: "Chad", code: "TD"}, {name: "Chile", code: "CL"}, {name: "China", code: "CN"}, {name: "Christmas Island", code: "CX"}, {name: "Cocos (Keeling) Islands", code: "CC"}, {name: "Colombia", code: "CO"}, {name: "Comoros", code: "KM"}, {name: "Congo", code: "CG"}, {name: "Congo, The Democratic Republic of the", code: "CD"}, {name: "Cook Islands", code: "CK"}, {name: "Costa Rica", code: "CR"}, {name: "Cote D'Ivoire", code: "CI"}, {name: "Croatia", code: "HR"}, {name: "Cuba", code: "CU"}, {name: "Cyprus", code: "CY"}, {name: "Czech Republic", code: "CZ"}, {name: "Denmark", code: "DK"}, {name: "Djibouti", code: "DJ"}, {name: "Dominica", code: "DM"}, {name: "Dominican Republic", code: "DO"}, {name: "Ecuador", code: "EC"}, {name: "Egypt", code: "EG"}, {name: "El Salvador", code: "SV"}, {name: "Equatorial Guinea", code: "GQ"}, {name: "Eritrea", code: "ER"}, {name: "Estonia", code: "EE"}, {name: "Ethiopia", code: "ET"}, {name: "Falkland Islands (Malvinas)", code: "FK"}, {name: "Faroe Islands", code: "FO"}, {name: "Fiji", code: "FJ"}, {name: "Finland", code: "FI"}, {name: "France", code: "FR"}, {name: "French Guiana", code: "GF"}, {name: "French Polynesia", code: "PF"}, {name: "French Southern Territories", code: "TF"}, {name: "Gabon", code: "GA"}, {name: "Gambia", code: "GM"}, {name: "Georgia", code: "GE"}, {name: "Germany", code: "DE"}, {name: "Ghana", code: "GH"}, {name: "Gibraltar", code: "GI"}, {name: "Greece", code: "GR"}, {name: "Greenland", code: "GL"}, {name: "Grenada", code: "GD"}, {name: "Guadeloupe", code: "GP"}, {name: "Guam", code: "GU"}, {name: "Guatemala", code: "GT"}, {name: "Guernsey", code: "GG"}, {name: "Guinea", code: "GN"}, {name: "Guinea-Bissau", code: "GW"}, {name: "Guyana", code: "GY"}, {name: "Haiti", code: "HT"}, {name: "Heard Island and Mcdonald Islands", code: "HM"}, {name: "Holy See (Vatican City State)", code: "VA"}, {name: "Honduras", code: "HN"}, {name: "Hong Kong", code: "HK"}, {name: "Hungary", code: "HU"}, {name: "Iceland", code: "IS"}, {name: "India", code: "IN"}, {name: "Indonesia", code: "ID"}, {name: "Iran, Islamic Republic Of", code: "IR"}, {name: "Iraq", code: "IQ"}, {name: "Ireland", code: "IE"}, {name: "Isle of Man", code: "IM"}, {name: "Israel", code: "IL"}, {name: "Italy", code: "IT"}, {name: "Jamaica", code: "JM"}, {name: "Japan", code: "JP"}, {name: "Jersey", code: "JE"}, {name: "Jordan", code: "JO"}, {name: "Kazakhstan", code: "KZ"}, {name: "Kenya", code: "KE"}, {name: "Kiribati", code: "KI"}, {name: "Korea, Democratic People'S Republic of", code: "KP"}, {name: "Korea, Republic of", code: "KR"}, {name: "Kuwait", code: "KW"}, {name: "Kyrgyzstan", code: "KG"}, {name: "Lao People'S Democratic Republic", code: "LA"}, {name: "Latvia", code: "LV"}, {name: "Lebanon", code: "LB"}, {name: "Lesotho", code: "LS"}, {name: "Liberia", code: "LR"}, {name: "Libyan Arab Jamahiriya", code: "LY"}, {name: "Liechtenstein", code: "LI"}, {name: "Lithuania", code: "LT"}, {name: "Luxembourg", code: "LU"}, {name: "Macao", code: "MO"}, {name: "Macedonia, The Former Yugoslav Republic of", code: "MK"}, {name: "Madagascar", code: "MG"}, {name: "Malawi", code: "MW"}, {name: "Malaysia", code: "MY"}, {name: "Maldives", code: "MV"}, {name: "Mali", code: "ML"}, {name: "Malta", code: "MT"}, {name: "Marshall Islands", code: "MH"}, {name: "Mauritania", code: "MR"}, {name: "Mauritius", code: "MU"}, {name: "Mayotte", code: "YT"}, {name: "Mexico", code: "MX"}, {name: "Micronesia, Federated States of", code: "FM"}, {name: "Moldova, Republic of", code: "MD"}, {name: "Monaco", code: "MC"}, {name: "Mongolia", code: "MN"}, {name: "Montserrat", code: "MS"}, {name: "Morocco", code: "MA"}, {name: "Mozambique", code: "MZ"}, {name: "Myanmar", code: "MM"}, {name: "Namibia", code: "NA"}, {name: "Nauru", code: "NR"}, {name: "Nepal", code: "NP"}, {name: "Netherlands", code: "NL"}, {name: "Netherlands Antilles", code: "AN"}, {name: "New Caledonia", code: "NC"}, {name: "New Zealand", code: "NZ"}, {name: "Nicaragua", code: "NI"}, {name: "Niger", code: "NE"}, {name: "Nigeria", code: "NG"}, {name: "Niue", code: "NU"}, {name: "Norfolk Island", code: "NF"}, {name: "Northern Mariana Islands", code: "MP"}, {name: "Norway", code: "NO"}, {name: "Oman", code: "OM"}, {name: "Pakistan", code: "PK"}, {name: "Palau", code: "PW"}, {name: "Palestinian Territory, Occupied", code: "PS"}, {name: "Panama", code: "PA"}, {name: "Papua New Guinea", code: "PG"}, {name: "Paraguay", code: "PY"}, {name: "Peru", code: "PE"}, {name: "Philippines", code: "PH"}, {name: "Pitcairn", code: "PN"}, {name: "Poland", code: "PL"}, {name: "Portugal", code: "PT"}, {name: "Puerto Rico", code: "PR"}, {name: "Qatar", code: "QA"}, {name: "Reunion", code: "RE"}, {name: "Romania", code: "RO"}, {name: "Russian Federation", code: "RU"}, {name: "RWANDA", code: "RW"}, {name: "Saint Helena", code: "SH"}, {name: "Saint Kitts and Nevis", code: "KN"}, {name: "Saint Lucia", code: "LC"}, {name: "Saint Pierre and Miquelon", code: "PM"}, {name: "Saint Vincent and the Grenadines", code: "VC"}, {name: "Samoa", code: "WS"}, {name: "San Marino", code: "SM"}, {name: "Sao Tome and Principe", code: "ST"}, {name: "Saudi Arabia", code: "SA"}, {name: "Senegal", code: "SN"}, {name: "Serbia and Montenegro", code: "CS"}, {name: "Seychelles", code: "SC"}, {name: "Sierra Leone", code: "SL"}, {name: "Singapore", code: "SG"}, {name: "Slovakia", code: "SK"}, {name: "Slovenia", code: "SI"}, {name: "Solomon Islands", code: "SB"}, {name: "Somalia", code: "SO"}, {name: "South Africa", code: "ZA"}, {name: "South Georgia and the South Sandwich Islands", code: "GS"}, {name: "Spain", code: "ES"}, {name: "Sri Lanka", code: "LK"}, {name: "Sudan", code: "SD"}, {name: "Suriname", code: "SR"}, {name: "Svalbard and Jan Mayen", code: "SJ"}, {name: "Swaziland", code: "SZ"}, {name: 'Sweden', code: 'SE'}, {name: 'Switzerland', code: 'CH'}, {name: 'Syrian Arab Republic', code: 'SY'}, {name: 'Taiwan', code: 'TW'}, {name: 'Tajikistan', code: 'TJ'}, {name: 'Tanzania, United Republic of', code: 'TZ'}, {name: 'Thailand', code: 'TH'}, {name: 'Timor-Leste', code: 'TL'}, {name: 'Togo', code: 'TG'}, {name: 'Tokelau', code: 'TK'}, {name: 'Tonga', code: 'TO'}, {name: 'Trinidad and Tobago', code: 'TT'}, {name: 'Tunisia', code: 'TN'}, {name: 'Turkey', code: 'TR'}, {name: 'Turkmenistan', code: 'TM'}, {name: 'Turks and Caicos Islands', code: 'TC'}, {name: 'Tuvalu', code: 'TV'}, {name: 'Uganda', code: 'UG'}, {name: 'Ukraine', code: 'UA'}, {name: 'United Arab Emirates', code: 'AE'}, {name: 'United Kingdom', code: 'GB'}, {name: 'United States', code: 'US'}, {name: 'United States Minor Outlying Islands', code: 'UM'}, {name: 'Uruguay', code: 'UY'}, {name: 'Uzbekistan', code: 'UZ'}, {name: 'Vanuatu', code: 'VU'}, {name: 'Venezuela', code: 'VE'}, {name: 'Viet Nam', code: 'VN'}, {name: 'Virgin Islands, British', code: 'VG'}, {name: 'Virgin Islands, U.S.', code: 'VI'}, {name: 'Wallis and Futuna', code: 'WF'}, {name: 'Western Sahara', code: 'EH'}, {name: 'Yemen', code: 'YE'}, {name: 'Zambia', code: 'ZM'}, {name: 'Zimbabwe', code: 'ZW'} ];
 
-    window.onerror = function(message, source, lineno, colno, error) {
-        const errorDiv = document.getElementById('global-error-display');
-        if (errorDiv) {
-            errorDiv.style.display = 'block';
-            errorDiv.textContent = `CRITICAL ERROR: ${message} (Line ${lineno})`;
-        }
-        console.error("Global Error Caught:", message, source, lineno, colno, error);
-        return false;
-    };
-    
-    // --- START: CLIENT-SIDE GOOGLE SYNC FUNCTIONS ---
-
-    window.gapiLoaded = () => {
-        gapi = window.gapi;
-        gapi.load('client', initializeGapiClient);
-    };
-
-    window.gisLoaded = () => {
-        google = window.google;
-        tokenClient = google.accounts.oauth2.initTokenClient({
-            client_id: GOOGLE_CLIENT_ID,
-            scope: CALENDAR_SCOPE,
-            callback: (tokenResponse) => { // This callback fires after the user signs in
-                if (tokenResponse && tokenResponse.access_token) {
-                    showToast("Google Calendar Authorized!", "info");
-                    updateGcalUiState();
-                }
-            },
-        });
-    };
-
-    async function initializeGapiClient() {
-        try {
-            await gapi.client.init({
-                apiKey: CALENDAR_API_KEY,
-                discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest'],
-            });
-            console.log("GAPI client initialized.");
-            if (document.getElementById('settingsPage').classList.contains('active')) {
-                updateGcalUiState();
-            }
-        } catch(e){
-            console.error("Error initializing GAPI client", e);
-            showToast("Could not initialize Google API. Check API Key.", "error");
-        }
-    }
-
-    function handleAuthClick() {
-        if (!tokenClient) {
-            showToast("Google Auth is not ready yet.", "error");
-            return;
-        }
-        if (gapi.client.getToken() === null) {
-            tokenClient.requestAccessToken({ prompt: 'consent' });
-        } else {
-            showToast('You are already authorized.', 'info');
-        }
-    }
-    
-    function toggleGcalSync() {
-        const syncBtn = document.getElementById('toggle-gcal-sync-btn');
-        const statusText = document.getElementById('gcal-status-text');
-
-        if (isSyncing) {
-            clearInterval(syncIntervalId);
-            syncIntervalId = null;
-            isSyncing = false;
-            syncBtn.textContent = 'Start Sync';
-            syncBtn.classList.remove('btn-loading');
-            statusText.textContent = `Sync stopped. Last updated at ${new Date().toLocaleTimeString()}`;
-            showToast('Calendar sync stopped.');
-        } else {
-            isSyncing = true;
-            syncBtn.textContent = 'Stop Sync';
-            showToast('Calendar sync started!');
-            
-            syncCalendarAndSave();
-            syncIntervalId = setInterval(syncCalendarAndSave, 120000); // Sync every 2 minutes
-        }
-    }
-
-    async function syncCalendarAndSave() {
-        if (!App.currentUser) {
-            console.warn("Cannot sync, no user logged in.");
-            if(isSyncing) toggleGcalSync(); 
-            return;
-        }
-
-        const statusText = document.getElementById('gcal-status-text');
-        statusText.textContent = 'Syncing calendar now...';
-        console.log("Starting calendar sync...");
-
-        try {
-            const now = new Date();
-            const future = new Date();
-            future.setDate(now.getDate() + 7);
-
-            const response = await gapi.client.calendar.events.list({
-                'calendarId': 'primary',
-                'timeMin': now.toISOString(),
-                'timeMax': future.toISOString(),
-                'showDeleted': false,
-                'singleEvents': true,
-                'maxResults': 15,
-                'orderBy': 'startTime'
-            });
-
-            const events = response.result.items;
-            let currentEvent = events.find(event => {
-                const start = new Date(event.start.dateTime || event.start.date);
-                const end = new Date(event.end.dateTime || event.end.date);
-                return now >= start && now < end;
-            });
-            
-            let sanitizedMessage = 'Available';
-            let newStatusEmoji = App.currentProfileData.gcalSettings?.freeStatus || '🟢';
-            
-            if (currentEvent) {
-                sanitizedMessage = await getSanitizedMessageFromGemini(currentEvent.summary);
-                newStatusEmoji = App.currentProfileData.gcalSettings?.busyStatus || '💻';
-            }
-
-            const updates = {
-                status: newStatusEmoji,
-                message: sanitizedMessage,
-            };
-
-            const timetableData = {
-                busySlots: events.map(e => ({
-                    start: (e.start.dateTime || e.start.date),
-                    end: (e.end.dateTime || e.end.date)
-                }))
-            };
-
-            await update(ref(db, `users/${App.currentUser.userId}`), updates);
-            await set(ref(db, `calendar_events/${App.currentUser.userId}`), timetableData);
-            
-            statusText.textContent = `Sync active. Last synced at ${new Date().toLocaleTimeString()}`;
-            console.log("Sync successful.");
-
-        } catch (error) {
-            console.error('Error during calendar sync:', error);
-            showToast('Error syncing calendar. Please try re-authorizing.', 'error');
-            if(isSyncing) toggleGcalSync(); 
-        }
-    }
-
-    async function getSanitizedMessageFromGemini(eventTitle) {
-        if (!eventTitle || eventTitle.trim() === "") return "In a meeting";
-
-        try {
-            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
-            const prompt = `Analyze this private calendar title and generate a short, generic, public-safe status message (3-5 words). Do not reveal names, projects, or sensitive info. Examples: "Performance review for Jane Doe" -> "Work meeting"; "Oncology appointment - Dr. Smith" -> "Personal appointment"; "Finalizing Q4 marketing report" -> "Working on a report". Title: "${eventTitle}"`;
-            
-            const result = await model.generateContent(prompt);
-            const response = await result.response;
-            const text = response.text().trim().replace(/^"|"$/g, ''); // Remove quotes if Gemini adds them
-            return text.length > 0 && text.length < 50 ? text : "In a meeting";
-        } catch (error) {
-            console.error("Gemini API error:", error);
-            return "In a meeting";
-        }
-    }
-
-    function updateGcalUiState() {
-        const authBtn = document.getElementById('authorize-gcal-btn');
-        const syncBtn = document.getElementById('toggle-gcal-sync-btn');
-        const statusText = document.getElementById('gcal-status-text');
-
-        if (!gapi || !gapi.client || !tokenClient) {
-            statusText.textContent = 'Google API is loading...';
-            return;
-        }
-
-        const token = gapi.client.getToken();
-        if (token === null) {
-            authBtn.classList.remove('hidden');
-            syncBtn.classList.add('hidden');
-            statusText.textContent = 'Grant permission to your Google Calendar to enable sync.';
-        } else {
-            authBtn.classList.add('hidden');
-            syncBtn.classList.remove('hidden');
-            if (isSyncing) {
-                statusText.textContent = `Sync active. Last synced at ${new Date().toLocaleTimeString()}`;
-                syncBtn.textContent = 'Stop Sync';
-            } else {
-                statusText.textContent = 'Authorized. Click "Start Sync" to begin.';
-                syncBtn.textContent = 'Start Sync';
-            }
-        }
-    }
-    
-    // --- END: CLIENT-SIDE GOOGLE SYNC FUNCTIONS ---
-
-    function hideLoadingOverlay() {
-        document.getElementById('loading-overlay')?.classList.add('hidden');
-    }
-
     function showToast(message, type = 'info') {
-        const toast = document.getElementById('toast');
-        if (!toast) return;
-        toast.textContent = message;
-        toast.style.backgroundColor = type === 'error' ? '#ef4444' : '#0f172a';
-        toast.classList.add('show');
-        setTimeout(() => toast.classList.remove('show'), 3000);
+    const toast = App.elements.toast;
+    if (!toast) return;
+    toast.textContent = message;
+    toast.style.backgroundColor = type === 'error' ? '#ef4444' : '#0f172a';
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    function timeToMinutes(timeStr) {
+    if (!timeStr || !timeStr.includes(':')) return 0;
+    const [hours, minutes] = timeStr.split(':').map(Number);
+    return hours * 60 + minutes;
     }
 
     function getCountryFlagEmoji(countryCode) {
-        if (!countryCode || countryCode.length !== 2) return '';
-        const codePoints = countryCode.toUpperCase().split('').map(char => 127397 + char.charCodeAt());
-        return String.fromCodePoint(...codePoints);
+    if (!countryCode || countryCode.length !== 2) return '';
+    const codePoints = countryCode.toUpperCase().split('').map(char => 127397 + char.charCodeAt());
+    return String.fromCodePoint(...codePoints);
     }
 
     function getLocalTimeData() {
-        const now = new Date();
-        const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-        const offsetMinutes = now.getTimezoneOffset() * -1;
-        const sign = offsetMinutes >= 0 ? '+' : '-';
-        const absOffset = Math.abs(offsetMinutes);
-        const hours = String(Math.floor(absOffset / 60)).padStart(2, '0');
-        const minutes = String(absOffset % 60).padStart(2, '0');
-        return { time: timeStr, offset: `UTC${sign}${hours}:${minutes}`, hour: now.getHours() };
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+    const offsetMinutes = now.getTimezoneOffset() * -1;
+    const sign = offsetMinutes >= 0 ? '+' : '-';
+    const absOffset = Math.abs(offsetMinutes);
+    const hours = String(Math.floor(absOffset / 60)).padStart(2, '0');
+    const minutes = String(absOffset % 60).padStart(2, '0');
+    return { time: timeStr, offset: `UTC${sign}${hours}:${minutes}`, hour: now.getHours() };
     }
 
     function getFriendlyAuthError(errorCode) {
-        switch (errorCode) {
-            case 'auth/invalid-credential':
-            case 'auth/wrong-password':
-                return 'Invalid email or password. Please try again.';
-            case 'auth/email-already-in-use':
-                return 'An account with this email already exists.';
-            case 'auth/weak-password':
-                return 'Your password must be at least 6 characters long.';
-            default:
-                return 'An unexpected error occurred. Please try again.';
-        }
+    switch (errorCode) {
+    case 'auth/invalid-credential':
+    case 'auth/wrong-password':
+    return 'Invalid email or password. Please try again.';
+    case 'auth/email-already-in-use':
+    return 'An account with this email already exists.';
+    case 'auth/weak-password':
+    return 'Your password must be at least 6 characters long.';
+    default:
+    return 'An unexpected error occurred. Please try again.';
+    }
     }
 
     async function handleEmailSignup(e) {
-        e.preventDefault();
-        const name = document.getElementById('signup-name').value.trim();
-        const email = document.getElementById('signup-email').value.trim();
-        const password = document.getElementById('signup-password').value;
-        if (!name || !email || password.length < 6) { return; }
-        try {
-            const result = await createUserWithEmailAndPassword(auth, email, password);
-            await updateProfile(result.user, { displayName: name });
-            await initializeNewUser(result.user, { displayName: name });
-        } catch (error) {
-            document.getElementById('error-message').textContent = getFriendlyAuthError(error.code);
-        }
+    e.preventDefault();
+    const name = document.getElementById('signup-name').value.trim();
+    const email = document.getElementById('signup-email').value.trim();
+    const password = document.getElementById('signup-password').value;
+    if (!name || !email || password.length < 6) { return; }
+    try {
+      const result = await createUserWithEmailAndPassword(auth, email, password);
+      await updateProfile(result.user, { displayName: name });
+      await initializeNewUser(result.user, { displayName: name });
+    } catch (error) {
+      document.getElementById('error-message').textContent = getFriendlyAuthError(error.code);
     }
-
+    }
+    
     async function handleGoogleLogin() {
-        const provider = new GoogleAuthProvider();
-        try {
-            const result = await signInWithPopup(auth, provider);
-            await initializeNewUser(result.user);
-        } catch (error) {
-            document.getElementById('error-message').textContent = getFriendlyAuthError(error.code);
-        }
+    const provider = new GoogleAuthProvider();
+    try {
+        const result = await signInWithPopup(auth, provider);
+        await initializeNewUser(result.user);
+    } catch (error) {
+      document.getElementById('error-message').textContent = getFriendlyAuthError(error.code);
     }
-
+    }
+    
     async function handleEmailLogin(e) {
-        e.preventDefault();
-        const email = document.getElementById('login-email').value.trim();
-        const password = document.getElementById('login-password').value;
-        try {
-            await signInWithEmailAndPassword(auth, email, password);
-        } catch (error) {
-            document.getElementById('error-message').textContent = getFriendlyAuthError(error.code);
-        }
+    e.preventDefault();
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (error) {
+      document.getElementById('error-message').textContent = getFriendlyAuthError(error.code);
     }
-
+    }
+    
     function handleLogout() {
-        signOut(auth);
+    signOut(auth);
     }
-
+    
     onAuthStateChanged(auth, async (user) => {
         const wasLoggedIn = !!App.currentUser;
         try {
@@ -1110,113 +926,116 @@
     });
 
     async function initializeNewUser(user, additionalData = {}) {
-        const userRef = ref(db, `users/${user.uid}`);
-        const snapshot = await get(userRef);
-        if (!snapshot.exists()) {
-            const today = new Date().toISOString().split('T')[0];
-            const displayName = additionalData.displayName || user.displayName || "New User";
-            const defaultPfpText = displayName.charAt(0).toUpperCase();
-            const initialProfile = { 
-                displayName: displayName, 
-                email: user.email, 
-                createdAt: new Date().toISOString(),
-                status: '🟢', 
-                message: 'Just getting started!', 
-                theme: 'auto', 
-                membershipTier: 'Member',
-                verified: false,
-                pfpText: defaultPfpText,
-                adsEnabled: false,
-                platformAdDisplay: 'both',
-                gcalSettings: { 
-                    busyStatus: '💻',
-                    freeStatus: '🟢'
-                },
-                achievements: { 
-                    profileComplete: 0, socialButterfly: 0, firstShare: 0,
-                    views: 0, loyalUser: 1, expressive: 0, referral: 0, picturePerfect: 0,
-                    loginHistory: { [today]: true },
-                    usedEmojis: {}
-                }, 
-                updatedAt: new Date().toISOString(),
-                ...additionalData
-            };
-            await set(userRef, initialProfile);
-            
-            const referrerId = sessionStorage.getItem('referrerId');
-            if (referrerId && referrerId !== user.uid) {
-                const referrerRef = ref(db, `users/${referrerId}/achievements/referral`);
-                const referrerSnap = await get(referrerRef);
-                await set(referrerRef, (referrerSnap.val() || 0) + 1);
-                sessionStorage.removeItem('referrerId');
-            }
-        }
+    const userRef = ref(db, `users/${user.uid}`);
+    const snapshot = await get(userRef);
+    if (!snapshot.exists()) {
+    const today = new Date().toISOString().split('T')[0];
+    const displayName = additionalData.displayName || user.displayName || "New User";
+    const defaultPfpText = displayName.charAt(0).toUpperCase();
+    const initialProfile = { 
+    displayName: displayName, 
+    email: user.email, 
+    createdAt: new Date().toISOString(),
+    status: '🟢', 
+    message: 'Just getting started!', 
+    theme: 'auto', 
+    membershipTier: 'Member',
+    verified: false,
+    pfpText: defaultPfpText,
+    adsEnabled: false,
+    platformAdDisplay: 'both',
+    gcalSettings: { // NEW: Default GCal settings
+      busyStatus: '💻',
+      freeStatus: '🟢'
+    },
+    achievements: { 
+    profileComplete: 0, socialButterfly: 0, firstShare: 0,
+    views: 0, loyalUser: 1, expressive: 0, referral: 0, picturePerfect: 0,
+    loginHistory: { [today]: true },
+    usedEmojis: {}
+    }, 
+    updatedAt: new Date().toISOString(),
+    ...additionalData
+    };
+    await set(userRef, initialProfile);
+    
+    const referrerId = sessionStorage.getItem('referrerId');
+    if (referrerId && referrerId !== user.uid) {
+    const referrerRef = ref(db, `users/${referrerId}/achievements/referral`);
+    const referrerSnap = await get(referrerRef);
+    await set(referrerRef, (referrerSnap.val() || 0) + 1);
+    sessionStorage.removeItem('referrerId');
+    }
+    }
     }
     
     async function setupSession(userId) {
-        if (!userId) return;
-        const userRef = ref(db, `users/${userId}`);
-        const userSnap = await get(userRef);
-        if (userSnap.exists()) {
-            const data = userSnap.val();
-            data.userId = userId; 
-            App.currentProfileData = data;
-            
-            const today = new Date().toISOString().split('T')[0];
-            const loginHistory = data.achievements?.loginHistory || {};
-            if (!loginHistory[today]) {
-                const updates = {};
-                updates[`achievements/loginHistory/${today}`] = true;
-                updates['achievements/loyalUser'] = Object.keys(loginHistory).length + 1;
-                await update(userRef, updates);
-                App.currentProfileData.achievements.loyalUser = updates['achievements/loyalUser'];
-                App.currentProfileData.achievements.loginHistory = {...loginHistory, [today]: true};
-            }
-            
-            applyVisuals(data);
-            populateSettings(data);
-            
-            document.querySelector('#mainHeader').innerHTML = `
-            <nav>
-                <button class="nav-btn" data-page="profilePage"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5a5.5 5.5 0 0 1 3.096 10.047 9.005 9.005 0 0 1 5.9 8.181.75.75 0 0 1-1.498.07 7.502 7.502 0 0 0-15 0 .75.75 0 0 1-1.498-.07A9.005 9.005 0 0 1 9 12.55a5.5 5.5 0 0 1 3-10.05ZM12 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z"></path></svg><span>Profile</span></button>
-                <button class="nav-btn" data-page="tiersPage"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M11.47 1.72a.75.75 0 0 1 1.06 0l3 3a.75.75 0 0 1-1.06 1.06l-1.72-1.72V7.5h-1.5V4.06L9.53 5.78a.75.75 0 0 1-1.06-1.06l3-3ZM11.25 7.5V15a.75.75 0 0 0 1.5 0V7.5h3.75a3 3 0 0 1 3 3v9a3 3 0 0 1-3 3h-9a3 3 0 0 1-3-3v-9a3 3 0 0 1 3-3h3.75Z"></path></svg><span>Tiers</span></button>
-                <button class="nav-btn" data-page="searchPage"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M10.5 3.75a6.75 6.75 0 1 0 0 13.5 6.75 6.75 0 0 0 0-13.5ZM2.25 10.5a8.25 8.25 0 1 1 14.59 5.28l4.69 4.69a.75.75 0 1 1-1.06 1.06l-4.69-4.69A8.25 8.25 0 0 1 2.25 10.5Z" clip-rule="evenodd"></path></svg><span>Search</span></button>
-                <button id="analytics-nav-btn" class="nav-btn" data-page="analyticsPage"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M10.5 4.5a.75.75 0 0 0-1.5 0V7.5a.75.75 0 0 0 1.5 0V4.5ZM17.25 5.25a.75.75 0 0 0-1.5 0V9a.75.75 0 0 0 1.5 0V5.25ZM14.25 7.5a.75.75 0 0 0-1.5 0v10.5a.75.75 0 0 0 1.5 0V7.5ZM21 9a.75.75 0 0 0-1.5 0v7.5a.75.75 0 0 0 1.5 0V9ZM3.75 12a.75.75 0 0 0-1.5 0v4.5a.75.75 0 0 0 1.5 0V12Z"></path><path fill-rule="evenodd" d="M3 3a1.5 1.5 0 0 0-1.5 1.5V19.5A1.5 1.5 0 0 0 3 21h18a1.5 1.5 0 0 0 1.5-1.5V4.5A1.5 1.5 0 0 0 21 3H3ZM5.25 19.5h13.5V4.5H5.25v15Z" clip-rule="evenodd"></path></svg><span>Analytics</span></button>
-                <button class="nav-btn" data-page="settingsPage"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M11.64 3.023a.75.75 0 0 1 .72 0l1.517.65a.75.75 0 0 0 .841-.252l1.11-1.48A.75.75 0 0 1 17 2.25a.75.75 0 0 1 .633.368l1.11 1.48a.75.75 0 0 0 .84.253l1.518-.65a.75.75 0 0 1 .72 0l1.016.436a.75.75 0 0 1 .45 1.033l-.74 1.385a.75.75 0 0 0 .14.925l1.28.96a.75.75 0 0 1 0 1.302l-1.28.96a.75.75 0 0 0-.14.925l.74 1.385a.75.75 0 0 1-.45 1.033l-1.017.436a.75.75 0 0 1-.72 0l-1.517-.65a.75.75 0 0 0-.84.252l-1.11 1.48A.75.75 0 0 1 17 21.75a.75.75 0 0 1-.633-.368l-1.11-1.48a.75.75 0 0 0-.84-.253l-1.518.65a.75.75 0 0 1-.72 0l-1.016-.436a.75.75 0 0 1-.45-1.033l.74-1.385a.75.75 0 0 0-.14-.925l-1.28-.96a.75.75 0 0 1 0-1.302l1.28.96a.75.75 0 0 0 .14-.925l-.74-1.385a.75.75 0 0 1 .45-1.033l1.017-.436ZM12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"></path></svg><span>Settings</span></button>
-                <button id="admin-nav-btn" class="nav-btn hidden" data-page="adminPage"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M4.5 2.25a.75.75 0 0 0 0 1.5v16.5a.75.75 0 0 0 0 1.5h15a.75.75 0 0 0 0-1.5V3.75a.75.75 0 0 0 0-1.5h-15ZM5.25 21a1.5 1.5 0 0 0 1.5-1.5V3.75A1.5 1.5 0 0 0 5.25 2.25h-1.5A3 3 0 0 0 .75 5.25v13.5A3 3 0 0 0 3.75 21h1.5Zm15-1.5V3.75A1.5 1.5 0 0 0 18.75 2.25h-1.5a.75.75 0 0 0 0 1.5h1.5c.414 0 .75.336.75.75v16.5c0 .414-.336.75-.75.75h-1.5a.75.75 0 0 0 0 1.5h1.5a3 3 0 0 0 3-3V5.25a3 3 0 0 0-3-3h-1.5ZM8.25 7.5a.75.75 0 0 0 0 1.5h7.5a.75.75 0 0 0 0-1.5h-7.5Zm.75 3.75a.75.75 0 0 1 .75-.75h4.5a.75.75 0 0 1 0 1.5h-4.5a.75.75 0 0 1-.75-.75Z" clip-rule="evenodd" /></svg><span>Admin</span></button>
-            </nav>
-            `;
-            document.querySelector('#admin-nav-btn').classList.toggle('hidden', data.membershipTier !== 'Owner');
-        } else {
-            console.error("User account exists but no profile in users/ database. Logging out.");
-            handleLogout();
-        }
+    if (!userId) return;
+    
+    const userRef = ref(db, `users/${userId}`);
+    const userSnap = await get(userRef);
+    
+    if (userSnap.exists()) {
+    const data = userSnap.val();
+    data.userId = userId; 
+    App.currentProfileData = data;
+    
+    const today = new Date().toISOString().split('T')[0];
+    const loginHistory = data.achievements?.loginHistory || {};
+    if (!loginHistory[today]) {
+    const updates = {};
+    updates[`achievements/loginHistory/${today}`] = true;
+    updates['achievements/loyalUser'] = Object.keys(loginHistory).length + 1;
+    await update(userRef, updates);
+    App.currentProfileData.achievements.loyalUser = updates['achievements/loyalUser'];
+    App.currentProfileData.achievements.loginHistory = {...loginHistory, [today]: true};
+    }
+    
+    applyVisuals(data);
+    populateSettings(data);
+    
+    document.querySelector('#mainHeader').innerHTML = `
+    <nav>
+    <button class="nav-btn" data-page="profilePage"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5a5.5 5.5 0 0 1 3.096 10.047 9.005 9.005 0 0 1 5.9 8.181.75.75 0 0 1-1.498.07 7.502 7.502 0 0 0-15 0 .75.75 0 0 1-1.498-.07A9.005 9.005 0 0 1 9 12.55a5.5 5.5 0 0 1 3-10.05ZM12 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z"></path></svg><span>Profile</span></button>
+    <button class="nav-btn" data-page="tiersPage"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M11.47 1.72a.75.75 0 0 1 1.06 0l3 3a.75.75 0 0 1-1.06 1.06l-1.72-1.72V7.5h-1.5V4.06L9.53 5.78a.75.75 0 0 1-1.06-1.06l3-3ZM11.25 7.5V15a.75.75 0 0 0 1.5 0V7.5h3.75a3 3 0 0 1 3 3v9a3 3 0 0 1-3 3h-9a3 3 0 0 1-3-3v-9a3 3 0 0 1 3-3h3.75Z"></path></svg><span>Tiers</span></button>
+    <button class="nav-btn" data-page="searchPage"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M10.5 3.75a6.75 6.75 0 1 0 0 13.5 6.75 6.75 0 0 0 0-13.5ZM2.25 10.5a8.25 8.25 0 1 1 14.59 5.28l4.69 4.69a.75.75 0 1 1-1.06 1.06l-4.69-4.69A8.25 8.25 0 0 1 2.25 10.5Z" clip-rule="evenodd"></path></svg><span>Search</span></button>
+    <button id="analytics-nav-btn" class="nav-btn" data-page="analyticsPage"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M10.5 4.5a.75.75 0 0 0-1.5 0V7.5a.75.75 0 0 0 1.5 0V4.5ZM17.25 5.25a.75.75 0 0 0-1.5 0V9a.75.75 0 0 0 1.5 0V5.25ZM14.25 7.5a.75.75 0 0 0-1.5 0v10.5a.75.75 0 0 0 1.5 0V7.5ZM21 9a.75.75 0 0 0-1.5 0v7.5a.75.75 0 0 0 1.5 0V9ZM3.75 12a.75.75 0 0 0-1.5 0v4.5a.75.75 0 0 0 1.5 0V12Z"></path><path fill-rule="evenodd" d="M3 3a1.5 1.5 0 0 0-1.5 1.5V19.5A1.5 1.5 0 0 0 3 21h18a1.5 1.5 0 0 0 1.5-1.5V4.5A1.5 1.5 0 0 0 21 3H3ZM5.25 19.5h13.5V4.5H5.25v15Z" clip-rule="evenodd"></path></svg><span>Analytics</span></button>
+    <button class="nav-btn" data-page="settingsPage"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M11.64 3.023a.75.75 0 0 1 .72 0l1.517.65a.75.75 0 0 0 .841-.252l1.11-1.48A.75.75 0 0 1 17 2.25a.75.75 0 0 1 .633.368l1.11 1.48a.75.75 0 0 0 .84.253l1.518-.65a.75.75 0 0 1 .72 0l1.016.436a.75.75 0 0 1 .45 1.033l-.74 1.385a.75.75 0 0 0 .14.925l1.28.96a.75.75 0 0 1 0 1.302l-1.28.96a.75.75 0 0 0-.14.925l.74 1.385a.75.75 0 0 1-.45 1.033l-1.017.436a.75.75 0 0 1-.72 0l-1.517-.65a.75.75 0 0 0-.84.252l-1.11 1.48A.75.75 0 0 1 17 21.75a.75.75 0 0 1-.633-.368l-1.11-1.48a.75.75 0 0 0-.84-.253l-1.518.65a.75.75 0 0 1-.72 0l-1.016-.436a.75.75 0 0 1-.45-1.033l.74-1.385a.75.75 0 0 0-.14-.925l-1.28-.96a.75.75 0 0 1 0-1.302l1.28.96a.75.75 0 0 0 .14-.925l-.74-1.385a.75.75 0 0 1 .45-1.033l1.017-.436ZM12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"></path></svg><span>Settings</span></button>
+    <button id="admin-nav-btn" class="nav-btn hidden" data-page="adminPage"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M4.5 2.25a.75.75 0 0 0 0 1.5v16.5a.75.75 0 0 0 0 1.5h15a.75.75 0 0 0 0-1.5V3.75a.75.75 0 0 0 0-1.5h-15ZM5.25 21a1.5 1.5 0 0 0 1.5-1.5V3.75A1.5 1.5 0 0 0 5.25 2.25h-1.5A3 3 0 0 0 .75 5.25v13.5A3 3 0 0 0 3.75 21h1.5Zm15-1.5V3.75A1.5 1.5 0 0 0 18.75 2.25h-1.5a.75.75 0 0 0 0 1.5h1.5c.414 0 .75.336.75.75v16.5c0 .414-.336.75-.75.75h-1.5a.75.75 0 0 0 0 1.5h1.5a3 3 0 0 0 3-3V5.25a3 3 0 0 0-3-3h-1.5ZM8.25 7.5a.75.75 0 0 0 0 1.5h7.5a.75.75 0 0 0 0-1.5h-7.5Zm.75 3.75a.75.75 0 0 1 .75-.75h4.5a.75.75 0 0 1 0 1.5h-4.5a.75.75 0 0 1-.75-.75Z" clip-rule="evenodd" /></svg><span>Admin</span></button>
+    </nav>
+    `;
+    document.querySelector('#admin-nav-btn').classList.toggle('hidden', data.membershipTier !== 'Owner');
+
+    } else {
+    console.error("User account exists but no profile in users/ database. Logging out.");
+    handleLogout();
+    }
     }
     
     async function displayPublicProfile(userId) {
-        try {
-            const userRef = ref(db, `users/${userId}`);
-            const snapshot = await get(userRef);
-            let userData = snapshot.val();
-            if (userData) {
-                userData.userId = userId;
-                applyVisuals(userData); 
-                renderProfile(userData);
-                if (!App.currentUser || App.currentUser.userId !== userId) {
-                    trackProfileView(userId);
-                }
-            } else {
-                document.body.className = '';
-                document.getElementById('profile-name').textContent = 'User Not Found';
-                document.getElementById('profile-emoji').textContent = '❌';
-                document.getElementById('profile-message').textContent = 'Profile is missing or deleted.';
-            }
-        } catch (error) {
-            document.getElementById('profile-name').textContent = 'Error loading profile.';
-            console.error("Error loading public profile:", error);
-        } finally {
-            hideLoadingOverlay();
-        }
+    try {
+    const userRef = ref(db, `users/${userId}`);
+    const snapshot = await get(userRef);
+    let userData = snapshot.val();
+    if (userData) {
+    userData.userId = userId;
+    applyVisuals(userData); 
+    renderProfile(userData);
+    if (!App.currentUser || App.currentUser.userId !== userId) {
+    trackProfileView(userId);
+    }
+    } else {
+    document.body.className = '';
+    document.getElementById('profile-name').textContent = 'User Not Found';
+    document.getElementById('profile-emoji').textContent = '❌';
+    document.getElementById('profile-message').textContent = 'Profile is missing or deleted.';
+    }
+    } catch (error) {
+    document.getElementById('profile-name').textContent = 'Error loading profile.';
+    console.error("Error loading public profile:", error);
+    } finally {
+        hideLoadingOverlay();
+    }
     }
     
     async function saveAndLogStatus(data) {
@@ -1267,27 +1086,27 @@
     }
     
     function navigateTo(pageId, isInternal = true) {
-        if(isInternal) {
-            const cleanUrl = window.location.origin + window.location.pathname;
-            history.pushState({}, '', cleanUrl);
-        }
-        window.location.hash = pageId;
+    if(isInternal) {
+        const cleanUrl = window.location.origin + window.location.pathname;
+        history.pushState({}, '', cleanUrl);
+    }
+    window.location.hash = pageId;
     }
     
     async function hashChangeRouter() {
         clearInterval(countdownInterval);
         if(publicViewInterval) clearInterval(publicViewInterval);
-        if(timetableListener) timetableListener();
+        if(timetableListener) timetableListener(); // Detach old listener
 
         const params = new URLSearchParams(window.location.search);
         const userIdFromUrl = params.get('user');
 
         if (userIdFromUrl) {
             isPublicView = true;
-            App.pages.forEach(pId => document.getElementById(pId)?.classList.remove('active'));
+            App.pages.forEach(pId => App.elements[pId]?.classList.remove('active'));
             document.body.style.paddingBottom = "20px";
-            document.getElementById('mainHeader')?.classList.add('hidden');
-            document.getElementById('profilePage')?.classList.add('active');
+            App.elements.mainHeader?.classList.add('hidden');
+            App.elements.profilePage?.classList.add('active');
             await displayPublicProfile(userIdFromUrl);
             return;
         }
@@ -1337,9 +1156,9 @@
             document.getElementById('search-results-list').innerHTML = '<p class="muted">Search for users by name or click \'Search\' to view all public profiles.</p>';
         }
         
-        App.pages.forEach(pId => document.getElementById(pId)?.classList.toggle('active', pId === targetPageId));
+        App.pages.forEach(pId => App.elements[pId]?.classList.toggle('active', pId === targetPageId));
         document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.page === targetPageId));
-        document.getElementById('mainHeader')?.classList.toggle('hidden', !App.currentUser || targetPageId === 'loginPage');
+        App.elements.mainHeader?.classList.toggle('hidden', !App.currentUser || targetPageId === 'loginPage');
         window.scrollTo(0, 0);
         hideLoadingOverlay();
     }
@@ -1397,6 +1216,8 @@
         document.getElementById('local-time-info').textContent = `Local Time: ${timeData.time} (${timeData.offset})`;
         renderCustomLinks(data.links, document.getElementById('profile-links'), tierConfig);
         renderActionLinks(data);
+
+        // NEW: Render the timetable
         renderTimetable(data);
 
         const qrBtn = document.getElementById('generate-qrcode-btn');
@@ -1457,7 +1278,8 @@
             if (!isOwnerViewing) {
                 const btn = promoTop.querySelector('#promo-action-btn-top');
                 if(btn) btn.onclick = () => {
-                    window.location.href = window.location.origin + window.location.pathname;
+                    const cleanUrl = window.location.origin + window.location.pathname;
+                    window.location.href = cleanUrl;
                 };
             }
         }
@@ -1467,116 +1289,200 @@
             if (!isOwnerViewing) {
                 const btn = promoBottom.querySelector('#promo-action-btn-bottom');
                 if(btn) btn.onclick = () => {
-                    window.location.href = window.location.origin + window.location.pathname;
+                    const cleanUrl = window.location.origin + window.location.pathname;
+                    window.location.href = cleanUrl;
                 };
             }
         }
     }
     
     function renderPersonalDetails(data) {
-        const container = document.getElementById('personal-details-list');
-        if (!container) return;
-        let detailsHtml = '';
-        const addDetail = (label, value) => {
-            if (value) detailsHtml += `<div class="personal-detail-item"><strong>${label}:</strong> ${value}</div>`;
-        };
-        
-        if (data.countryCode) {
-            const country = COUNTRY_LIST.find(c => c.code === data.countryCode);
-            if (country) {
-                detailsHtml += `<div class="personal-detail-item profile-country"><span class="flag-emoji">${getCountryFlagEmoji(country.code)}</span> ${country.name}</div>`;
-            }
-        }
-        addDetail('Bio', data.bio);
-        
-        const isOwnerViewing = App.currentUser && App.currentUser.userId === data.userId;
-        if (!isPublicView || isOwnerViewing) {
-            addDetail('Phone', data.phone ? `<a href="tel:${data.phone}">${data.phone}</a>` : null);
-            addDetail('Email', data.email ? `<a href="mailto:${data.email}">${data.email}</a>` : null);
-        }
-        container.innerHTML = detailsHtml || '<p class="muted">No public details shared.</p>';
+    const container = document.getElementById('personal-details-list');
+    if (!container) return;
+    let detailsHtml = '';
+    const addDetail = (label, value) => {
+    if (value) detailsHtml += `<div class="personal-detail-item"><strong>${label}:</strong> ${value}</div>`;
+    };
+    
+    if (data.countryCode) {
+    const country = COUNTRY_LIST.find(c => c.code === data.countryCode);
+    if (country) {
+    detailsHtml += `<div class="personal-detail-item profile-country"><span class="flag-emoji">${getCountryFlagEmoji(country.code)}</span> ${country.name}</div>`;
+    }
+    }
+    addDetail('Bio', data.bio);
+    
+    const isOwnerViewing = App.currentUser && App.currentUser.userId === data.userId;
+    if (!isPublicView || isOwnerViewing) {
+    addDetail('Phone', data.phone ? `<a href="tel:${data.phone}">${data.phone}</a>` : null);
+    addDetail('Email', data.email ? `<a href="mailto:${data.email}">${data.email}</a>` : null);
+    }
+    container.innerHTML = detailsHtml || '<p class="muted">No public details shared.</p>';
     }
     
     function renderCustomLinks(links, container, tierConfig) {
-        if (!container || !tierConfig) return;
-        container.innerHTML = '';
-        const validLinks = links ? links.filter(l => l && l.url && l.label) : [];
-        if (validLinks.length === 0) {
-            container.innerHTML = '<p class="muted">No links provided.</p>';
-            return;
-        }
-        let html = '';
-        validLinks.slice(0, tierConfig.linkLimit).forEach(link => {
-            html += `<a href="${link.url}" target="_blank" rel="noopener noreferrer" class="custom-link"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72"></path></svg><span>${link.label}</span></a>`;
-        });
-        container.innerHTML = html;
+    if (!container || !tierConfig) return;
+    container.innerHTML = '';
+    const validLinks = links ? links.filter(l => l && l.url && l.label) : [];
+    if (validLinks.length === 0) {
+    container.innerHTML = '<p class="muted">No links provided.</p>';
+    return;
+    }
+    let html = '';
+    validLinks.slice(0, tierConfig.linkLimit).forEach(link => {
+    html += `<a href="${link.url}" target="_blank" rel="noopener noreferrer" class="custom-link"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72"></path></svg><span>${link.label}</span></a>`;
+    });
+    container.innerHTML = html;
     }
     
     function renderActionLinks(data) {
-        const container = document.getElementById('profile-action-links');
-        if (!container) return;
-        container.innerHTML = '';
-        if (data.schedulingLink) {
-            container.innerHTML = `<a href="${data.schedulingLink}" target="_blank" rel="noopener noreferrer" class="btn secondary" style="max-width: 250px;">Book a Meeting</a>`;
+    const container = document.getElementById('profile-action-links');
+    if (!container) return;
+    container.innerHTML = '';
+    let html = '';
+    if (data.schedulingLink) html += `<a href="${data.schedulingLink}" target="_blank" rel="noopener noreferrer" class="btn secondary" style="max-width: 250px;">Book a Meeting</a>`;
+    container.innerHTML = html;
+    }
+    
+    function populateSettings(data) {
+        if (!data || !document.getElementById('display-name')) return;
+        const tier = data.membershipTier || 'Member';
+        const tierConfig = USER_TIER_CONFIG[tier] || USER_TIER_CONFIG['Member'];
+
+        document.getElementById('display-name').value = data.displayName || '';
+        document.getElementById('themeSelect').value = data.theme || 'auto';
+        document.getElementById('pfp-url').value = data.pfpUrl || '';
+        document.getElementById('display-font').value = data.displayNameFont || 'Inter, sans-serif';
+        document.getElementById('accent-color').value = data.profileAccentColor || '#0ea5e9';
+        document.getElementById('link-text-color').value = data.linkTextColor || '#0369a1';
+        document.getElementById('scheduling-link').value = data.schedulingLink || '';
+        document.getElementById('bio').value = data.bio || '';
+        document.getElementById('birthday').value = data.birthday || '';
+        document.getElementById('phone-number').value = data.phone || '';
+        
+        const countrySearch = document.getElementById('country-search'), countryCodeInput = document.getElementById('country-code');
+        if(data.countryCode) {
+            const country = COUNTRY_LIST.find(c => c.code === data.countryCode);
+            if (country) { countrySearch.value = `${getCountryFlagEmoji(country.code)} ${country.name}`; countryCodeInput.value = country.code; }
+        } else { countrySearch.value = ''; countryCodeInput.value = ''; }
+
+        document.getElementById('pfp-url-group').classList.toggle('hidden', !tierConfig.pfp);
+        document.getElementById('font-customization-field').classList.toggle('hidden', !tierConfig.customFont);
+        document.getElementById('scheduling-link-field').classList.toggle('hidden', !tierConfig.scheduling);
+        document.getElementById('accent-color-field').classList.toggle('hidden', !tierConfig.customColor);
+        document.getElementById('link-text-color-field').classList.toggle('hidden', !tierConfig.customColor);
+        
+        const linksContainer = document.getElementById('custom-links-container');
+        linksContainer.innerHTML = '';
+        const linkLimit = tierConfig.linkLimit;
+        for (let i = 0; i < linkLimit; i++) {
+            const link = data.links ? data.links[i] : null;
+            linksContainer.innerHTML += `<div class="link-group"><input type="text" id="link-label-${i}" placeholder="Link Label ${i + 1}" value="${link?.label || ''}"><input type="url" id="link-url-${i}" placeholder="URL (https://...)" value="${link?.url || ''}"></div>`;
+        }
+        if (tier !== 'Max' && tier !== 'Owner') {
+            linksContainer.innerHTML += `<p class="muted">Upgrade your tier to add more links!</p>`;
+        }
+
+        document.getElementById('status-emoji').value = data.status || '🟢';
+        document.getElementById('status-message').value = data.message || '';
+        renderVerificationSettings(data);
+
+        // --- UPDATED: Google Calendar UI logic ---
+        const integrationsCard = document.getElementById('integrations-card');
+        integrationsCard.classList.toggle('hidden', !tierConfig.gcalIntegration);
+        if (tierConfig.gcalIntegration) {
+            const isGcalConnected = !!data.googleRefreshToken;
+            document.getElementById('connect-gcal-btn').classList.toggle('hidden', isGcalConnected);
+            document.getElementById('disconnect-gcal-btn').classList.toggle('hidden', !isGcalConnected);
+            document.getElementById('gcal-customization-fields').classList.toggle('hidden', !isGcalConnected);
+            
+            const gcalStatusText = document.getElementById('gcal-status-text');
+            gcalStatusText.textContent = isGcalConnected ? "✅ Connected! Your status will sync automatically from your calendar." : "Connect to sync your status from your calendar events.";
+            
+            if(isGcalConnected) {
+                const busySelect = document.getElementById('gcal-busy-status');
+                const freeSelect = document.getElementById('gcal-free-status');
+                const statusOptions = Array.from(document.getElementById('status-emoji').options).map(opt => `<option value="${opt.value}">${opt.textContent}</option>`).join('');
+                busySelect.innerHTML = statusOptions;
+                freeSelect.innerHTML = statusOptions;
+                busySelect.value = data.gcalSettings?.busyStatus || '💻';
+                freeSelect.value = data.gcalSettings?.freeStatus || '🟢';
+            }
+        }
+
+        const customAdCard = document.getElementById('custom-ads-settings-card');
+        customAdCard.classList.toggle('hidden', !tierConfig.canCustomizeAds);
+        if (tierConfig.canCustomizeAds) {
+            const adToggle = document.getElementById('ads-enabled-toggle');
+            const adFields = document.getElementById('ad-customization-fields');
+            adToggle.value = data.adsEnabled ? 'true' : 'false';
+            adFields.classList.toggle('hidden', !data.adsEnabled);
+            document.getElementById('top-ad-image-url').value = data.topAd?.imageUrl || '';
+            document.getElementById('top-ad-link-url').value = data.topAd?.linkUrl || '';
+            document.getElementById('bottom-ad-text').value = data.bottomAd?.text || '';
+            document.getElementById('bottom-ad-link-url').value = data.bottomAd?.linkUrl || '';
+            adToggle.onchange = () => adFields.classList.toggle('hidden', adToggle.value !== 'true');
+        }
+        
+        const platformAdCard = document.getElementById('platform-ad-settings-card');
+        platformAdCard.classList.toggle('hidden', !tierConfig.canControlPlatformAd);
+        if(tierConfig.canControlPlatformAd) {
+            document.getElementById('platform-ad-toggle').value = data.platformAdDisplay || 'off';
         }
     }
     
-    function renderTimetable(userData) {
-        const card = document.getElementById('calendar-view-card');
-        const container = document.getElementById('calendar-timetable');
-        const tierConfig = USER_TIER_CONFIG[userData.membershipTier || 'Member'];
-
-        if (!tierConfig.gcalIntegration) {
-            card.classList.add('hidden');
-            return;
-        }
-        card.classList.remove('hidden');
-
-        // This listener now just waits for data saved by the owner's browser sync.
-        const timetableRef = ref(db, `calendar_events/${userData.userId}`);
-        timetableListener = onValue(timetableRef, (snapshot) => {
-            const eventsData = snapshot.val();
-            if (!eventsData || !eventsData.busySlots) {
-                container.innerHTML = '<p class="muted">Calendar has not been synced yet. The owner needs to start the sync from their settings page.</p>';
-                return;
-            }
-            const busySlots = eventsData.busySlots || [];
-            
-            let html = '<div id="timetable-grid">';
-            html += '<div></div>'; 
-            const today = new Date();
-            for (let i = 0; i < 7; i++) {
-                const day = new Date(today);
-                day.setDate(today.getDate() + i);
-                html += `<div class="day-header">${day.toLocaleDateString('en-US', { weekday: 'short' })}<br>${day.getDate()}</div>`;
-            }
-
-            for (let hour = 8; hour < 20; hour++) {
-                const timeStr = (hour % 12 === 0 ? 12 : hour % 12) + (hour < 12 ? 'a' : 'p');
-                html += `<div class="time-label">${timeStr}</div>`;
-
-                for (let day = 0; day < 7; day++) {
-                    const slotDate = new Date(today);
-                    slotDate.setDate(today.getDate() + day);
-                    slotDate.setHours(hour, 0, 0, 0);
-                    
-                    const isBusy = busySlots.some(slot => {
-                        const start = new Date(slot.start);
-                        const end = new Date(slot.end);
-                        return slotDate >= start && slotDate < end;
-                    });
-                    
-                    html += `<div class="time-slot ${isBusy ? 'busy' : ''}"></div>`;
+    function handlePageLoad() {
+        App.pages.forEach(pId => App.elements[pId] = document.getElementById(pId));
+        App.elements.mainHeader = document.getElementById('mainHeader');
+        App.elements.toast = document.getElementById('toast');
+        window.addEventListener('hashchange', hashChangeRouter);
+        addEventListeners();
+        handleOAuthCallback(); // NEW: Check for OAuth redirect on page load
+        
+        const lazyImageObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const lazyImage = entry.target;
+                    const src = lazyImage.getAttribute('data-src');
+                    if (src) {
+                        lazyImage.style.backgroundImage = `url(${src})`;
+                    }
+                    observer.unobserve(lazyImage);
                 }
-            }
-            html += '</div>';
-            container.innerHTML = html;
-        }, (error) => {
-            console.error("Error listening for timetable data:", error);
-            container.innerHTML = '<p class="muted">Could not load availability data.</p>';
+            });
         });
+        const pfpElement = document.getElementById('profile-pfp');
+        if(pfpElement) lazyImageObserver.observe(pfpElement);
     }
-
+    
+    async function handleDeleteAccount() {
+    if (!App.currentUser) return;
+    const confirmation = confirm("Are you sure you want to permanently delete your account and all associated data? This action cannot be undone.");
+    if (!confirmation) return showToast("Account deletion cancelled.");
+    
+    const accountId = App.currentUser.userId;
+    const account = auth.currentUser;
+    if (!account) return showToast("Error: No authenticated user found.", "error");
+    
+    try {
+    await set(ref(db, `users/${accountId}`), null);
+    await set(ref(db, `history/${accountId}`), null);
+    await set(ref(db, `analytics/${accountId}`), null);
+    await set(ref(db, `calendar_events/${accountId}`), null); // NEW: Clear calendar data
+    await set(ref(db, `gcal_auth_codes/${accountId}`), null); // NEW: Clear any pending auth codes
+    await deleteUser(account);
+    showToast("Account successfully deleted. 👋");
+    } catch (error) {
+    console.error("Account Deletion Error:", error);
+    if (error.code === 'auth/requires-recent-login') {
+    showToast("Security Alert: Please log in again to confirm this action.", "error");
+    handleLogout(); 
+    } else {
+    showToast(`Deletion failed: ${error.message}`, "error");
+    }
+    }
+    }
+    
     async function handleSaveSettings() {
         if (!App.currentUser) return;
         const saveBtn = document.getElementById('save-settings-btn');
@@ -1610,6 +1516,14 @@
             links: customLinks
         };
         if(!dataToSave.pfpUrl) dataToSave.pfpText = App.currentProfileData.displayName.charAt(0).toUpperCase();
+
+        // NEW: Save GCal settings
+        if(tierConfig.gcalIntegration) {
+            dataToSave.gcalSettings = {
+                busyStatus: document.getElementById('gcal-busy-status').value,
+                freeStatus: document.getElementById('gcal-free-status').value
+            };
+        }
 
         if (tierConfig.canCustomizeAds) {
             dataToSave.adsEnabled = document.getElementById('ads-enabled-toggle').value === 'true';
@@ -1729,6 +1643,7 @@
                         weekViews += viewCount;
                         weeklyTrendData[6 - i] = viewCount;
                     }
+
                     dailyVisitorIds.forEach(id => uniqueVisitors.add(id));
                 }
             }
@@ -1761,6 +1676,7 @@
                             <div class="chart-label">${dayInitial}</div>
                         </div>`;
             }).join('');
+
         } catch(e) {
             console.error("Error fetching advanced analytics:", e);
             showToast("Could not load detailed analytics.", "error");
@@ -1788,7 +1704,9 @@
                 const tierB = b.membershipTier || 'Member';
                 const rankA = rank[tierA] ?? 4;
                 const rankB = rank[tierB] ?? 4;
-                if (rankA !== rankB) return rankA - rankB;
+                if (rankA !== rankB) {
+                    return rankA - rankB;
+                }
                 return (a.displayName || '').localeCompare(b.displayName || '');
             });
 
@@ -1847,20 +1765,20 @@
     }
     
     function filterCountries(inputId, dropdownId) {
-        const searchTerm = document.getElementById(inputId).value.toLowerCase();
-        const dropdown = document.getElementById(dropdownId);
-        dropdown.innerHTML = '';
-        COUNTRY_LIST.filter(c => c.name.toLowerCase().includes(searchTerm)).slice(0, 50).forEach(country => {
-            const option = document.createElement('div');
-            option.className = 'country-option';
-            option.innerHTML = `<span class="flag-emoji">${getCountryFlagEmoji(country.code)}</span> <span>${country.name}</span>`;
-            option.onclick = () => {
-                document.getElementById(inputId).value = `${getCountryFlagEmoji(country.code)} ${country.name}`;
-                document.getElementById(inputId.replace('-search', '-code')).value = country.code;
-                dropdown.classList.add('hidden');
-            };
-            dropdown.appendChild(option);
-        });
+    const searchTerm = document.getElementById(inputId).value.toLowerCase();
+    const dropdown = document.getElementById(dropdownId);
+    dropdown.innerHTML = '';
+    COUNTRY_LIST.filter(c => c.name.toLowerCase().includes(searchTerm)).slice(0, 50).forEach(country => {
+    const option = document.createElement('div');
+    option.className = 'country-option';
+    option.innerHTML = `<span class="flag-emoji">${getCountryFlagEmoji(country.code)}</span> <span>${country.name}</span>`;
+    option.onclick = () => {
+    document.getElementById(inputId).value = `${getCountryFlagEmoji(country.code)} ${country.name}`;
+    document.getElementById(inputId.replace('-search', '-code')).value = country.code;
+    dropdown.classList.add('hidden');
+    };
+    dropdown.appendChild(option);
+    });
     }
     
     async function updateMembershipTier(userId, userData, oldTier) {
@@ -1913,40 +1831,40 @@
     }
     
     function renderVerificationSettings(data) {
-        const container = document.getElementById('verification-section');
-        container.classList.toggle('hidden', data.membershipTier === 'Member' || data.membershipTier === 'Plus');
-        let html = `<h3>Verification ✔️</h3>`;
-        const tierConfig = USER_TIER_CONFIG[data.membershipTier];
-        
-        if (data.verified) {
-            html += `<p style="color: green; font-weight: bold;">This account is officially verified.</p>`;
-        } else if (data.verificationRequested) {
-            html += `<p style="color: orange;">Your verification request is pending review.</p>`;
-        } else if (tierConfig?.verification) {
-            html += `<p>You are eligible to apply for verification.</p><button id="request-verification-btn" class="btn secondary">Apply for Verification</button>`;
-        }
-        container.innerHTML = html;
-        container.querySelector('#request-verification-btn')?.addEventListener('click', handleRequestVerification);
+    const container = document.getElementById('verification-section');
+    container.classList.toggle('hidden', data.membershipTier === 'Member' || data.membershipTier === 'Plus');
+    let html = `<h3>Verification ✔️</h3>`;
+    const tierConfig = USER_TIER_CONFIG[data.membershipTier];
+    
+    if (data.verified) {
+    html += `<p style="color: green; font-weight: bold;">This account is officially verified.</p>`;
+    } else if (data.verificationRequested) {
+    html += `<p style="color: orange;">Your verification request is pending review.</p>`;
+    } else if (tierConfig?.verification) {
+    html += `<p>You are eligible to apply for verification.</p><button id="request-verification-btn" class="btn secondary">Apply for Verification</button>`;
+    }
+    container.innerHTML = html;
+    container.querySelector('#request-verification-btn')?.addEventListener('click', handleRequestVerification);
     }
     
     async function handleRequestVerification() {
-        const answers = {};
-        for (let i = 0; i < VERIFICATION_QUESTIONS.length; i++) {
-            const answer = prompt(`${VERIFICATION_QUESTIONS[i]} (${i+1}/${VERIFICATION_QUESTIONS.length})`);
-            if (answer === null) {
-                showToast("Verification application cancelled.");
-                return;
-            }
-            answers[`q${i+1}`] = answer;
-        }
-        
-        if (confirm("You are about to submit your profile and answers for manual review. Continue?")) {
-            const updates = { verificationRequested: true, verificationAnswers: answers };
-            await update(ref(db, `users/${App.currentUser.userId}`), updates);
-            showToast("Verification request submitted!");
-            const currentData = { ...App.currentProfileData, ...updates };
-            renderVerificationSettings(currentData);
-        }
+    const answers = {};
+    for (let i = 0; i < VERIFICATION_QUESTIONS.length; i++) {
+    const answer = prompt(`${VERIFICATION_QUESTIONS[i]} (${i+1}/${VERIFICATION_QUESTIONS.length})`);
+    if (answer === null) {
+    showToast("Verification application cancelled.");
+    return;
+    }
+    answers[`q${i+1}`] = answer;
+    }
+    
+    if (confirm("You are about to submit your profile and answers for manual review. Continue?")) {
+    const updates = { verificationRequested: true, verificationAnswers: answers };
+    await update(ref(db, `users/${App.currentUser.userId}`), updates);
+    showToast("Verification request submitted!");
+    const currentData = { ...App.currentProfileData, ...updates };
+    renderVerificationSettings(currentData);
+    }
     }
     
     function renderTiersPage() {
@@ -1964,29 +1882,29 @@
         else if (tier === 'Plus') { nextTierKey = 'Pro'; requirements = ACHIEVEMENT_CONFIG.toPro; }
         else if (tier === 'Pro') { nextTierKey = 'Max'; requirements = ACHIEVEMENT_CONFIG.toMax; }
         else {
-            progressContainer.innerHTML = '<h2>You have reached the highest public tier! 🚀</h2><p>Thank you for being a power user!</p>';
+        progressContainer.innerHTML = '<h2>You have reached the highest public tier! 🚀</h2><p>Thank you for being a power user!</p>';
         }
 
         if (nextTierKey && requirements) {
-            let progressHtml = `<h2>Progress to ${USER_TIER_CONFIG[nextTierKey].name}</h2>`;
-            let allGoalsMet = true;
-            requirements.forEach(req => {
-                let currentValue = achievements[req.id] || 0;
-                if(currentValue < req.goal) allGoalsMet = false;
-                const progress = Math.min((currentValue / req.goal) * 100, 100);
-                progressHtml += `<div class="achievement-item"><strong>${req.label} (${currentValue} / ${req.goal})</strong><div class="achievement-progress"><div class="progress-bar" style="width: ${progress}%; background-color: ${progress >= 100 ? '#22c55e' : 'var(--primary)'};"></div></div></div>`;
-            });
-            
-            if (allGoalsMet) {
-                progressHtml += `<button id="level-up-btn" class="btn" style="margin-top: 20px;">Claim Your Promotion to ${USER_TIER_CONFIG[nextTierKey].name}!</button>`;
-            }
-            progressContainer.innerHTML = progressHtml;
-            document.getElementById('level-up-btn')?.addEventListener('click', async () => {
-                await updateMembershipTier(App.currentUser.userId, App.currentProfileData, App.currentProfileData.membershipTier);
-                const finalSnapshot = await get(ref(db, `users/${App.currentUser.userId}`));
-                App.currentProfileData = { ...finalSnapshot.val(), userId: App.currentUser.userId };
-                renderTiersPage();
-            });
+        let progressHtml = `<h2>Progress to ${USER_TIER_CONFIG[nextTierKey].name}</h2>`;
+        let allGoalsMet = true;
+        requirements.forEach(req => {
+        let currentValue = achievements[req.id] || 0;
+        if(currentValue < req.goal) allGoalsMet = false;
+        const progress = Math.min((currentValue / req.goal) * 100, 100);
+        progressHtml += `<div class="achievement-item"><strong>${req.label} (${currentValue} / ${req.goal})</strong><div class="achievement-progress"><div class="progress-bar" style="width: ${progress}%; background-color: ${progress >= 100 ? '#22c55e' : 'var(--primary)'};"></div></div></div>`;
+        });
+        
+        if (allGoalsMet) {
+        progressHtml += `<button id="level-up-btn" class="btn" style="margin-top: 20px;">Claim Your Promotion to ${USER_TIER_CONFIG[nextTierKey].name}!</button>`;
+        }
+        progressContainer.innerHTML = progressHtml;
+        document.getElementById('level-up-btn')?.addEventListener('click', async () => {
+            await updateMembershipTier(App.currentUser.userId, App.currentProfileData, App.currentProfileData.membershipTier);
+            const finalSnapshot = await get(ref(db, `users/${App.currentUser.userId}`));
+            App.currentProfileData = { ...finalSnapshot.val(), userId: App.currentUser.userId };
+            renderTiersPage();
+        });
         }
 
         let allTiersHtml = '<div class="tier-plan-grid">';
@@ -2003,74 +1921,230 @@
     }
     
     async function renderAdminPanel() {
-        const requestsContainer = document.getElementById('admin-verification-requests');
-        const usersContainer = document.getElementById('admin-all-users');
-        requestsContainer.innerHTML = usersContainer.innerHTML = '<p class="muted">Loading...</p>';
-        
-        const usersSnap = await get(ref(db, 'users'));
-        const allUsers = usersSnap.val() || {};
-        
-        const userRequests = Object.entries(allUsers).filter(([uid, user]) => user.verificationRequested && !user.verified).map(([uid, user]) => ({type: 'User', id: uid, data: user}));
-        
-        if (userRequests.length > 0) {
-            requestsContainer.innerHTML = userRequests.map(req => {
-                let answersHtml = '';
-                if (req.data?.verificationAnswers) {
-                    answersHtml = Object.entries(req.data.verificationAnswers).map(([key, value], index) => `<p><strong>Q${index+1}:</strong> ${value || 'Not answered'}</p>`).join('');
-                }
-                return `<div class="verification-request-card"><p><strong>Type:</strong> ${req.type}</p><p><strong>Name:</strong> ${req.data.displayName}</p><p><strong>ID:</strong> ${req.id}</p>${answersHtml ? `<div><h4>Answers:</h4>${answersHtml}</div>` : ''}<div class="verification-actions"><button class="btn approve-verify-btn" data-id="${req.id}">Approve</button><button class="btn secondary deny-verify-btn" data-id="${req.id}">Deny</button></div></div>`
-            }).join('');
-        } else {
-            requestsContainer.innerHTML = '<p>No active verification requests.</p>';
-        }
-        
-        usersContainer.innerHTML = `<table class="admin-table"><thead><tr><th>Name</th><th>Email</th><th>Tier</th></tr></thead><tbody>${Object.entries(allUsers).map(([uid, user]) => `<tr><td><a href="?user=${uid}" target="_blank">${user.displayName}</a></td><td>${user.email}</td><td><select class="admin-edit-field" data-uid="${uid}" data-field="membershipTier">${Object.keys(USER_TIER_CONFIG).map(t => `<option value="${t}" ${user.membershipTier === t ? 'selected' : ''}>${t}</option>`).join('')}</select></td></tr>`).join('')}</tbody></table>`;
-        
-        document.querySelectorAll('.approve-verify-btn, .deny-verify-btn').forEach(btn => btn.addEventListener('click', handleVerificationAction));
-        document.querySelectorAll('.admin-edit-field').forEach(sel => sel.addEventListener('change', handleAdminEdit));
+    const requestsContainer = document.getElementById('admin-verification-requests');
+    const usersContainer = document.getElementById('admin-all-users');
+    requestsContainer.innerHTML = usersContainer.innerHTML = '<p class="muted">Loading...</p>';
+    
+    const usersSnap = await get(ref(db, 'users'));
+    const allUsers = usersSnap.val() || {};
+    
+    const userRequests = Object.entries(allUsers).filter(([uid, user]) => user.verificationRequested && !user.verified).map(([uid, user]) => ({type: 'User', id: uid, data: user}));
+    
+    if (userRequests.length > 0) {
+    requestsContainer.innerHTML = userRequests.map(req => {
+    let answersHtml = '';
+    if (req.data?.verificationAnswers) {
+    answersHtml = Object.entries(req.data.verificationAnswers).map(([key, value], index) => `<p><strong>Q${index+1}:</strong> ${value || 'Not answered'}</p>`).join('');
+    }
+    return `<div class="verification-request-card"><p><strong>Type:</strong> ${req.type}</p><p><strong>Name:</strong> ${req.data.displayName}</p><p><strong>ID:</strong> ${req.id}</p>${answersHtml ? `<div><h4>Answers:</h4>${answersHtml}</div>` : ''}<div class="verification-actions"><button class="btn approve-verify-btn" data-id="${req.id}">Approve</button><button class="btn secondary deny-verify-btn" data-id="${req.id}">Deny</button></div></div>`}).join('');
+    } else {
+    requestsContainer.innerHTML = '<p>No active verification requests.</p>';
+    }
+    
+    usersContainer.innerHTML = `<table class="admin-table"><thead><tr><th>Name</th><th>Email</th><th>Tier</th></tr></thead><tbody>${Object.entries(allUsers).map(([uid, user]) => `<tr><td><a href="?user=${uid}" target="_blank">${user.displayName}</a></td><td>${user.email}</td><td><select class="admin-edit-field" data-uid="${uid}" data-field="membershipTier">${Object.keys(USER_TIER_CONFIG).map(t => `<option value="${t}" ${user.membershipTier === t ? 'selected' : ''}>${t}</option>`).join('')}</select></td></tr>`).join('')}</tbody></table>`;
+    
+    document.querySelectorAll('.approve-verify-btn, .deny-verify-btn').forEach(btn => btn.addEventListener('click', handleVerificationAction));
+    document.querySelectorAll('.admin-edit-field').forEach(sel => sel.addEventListener('change', handleAdminEdit));
     }
     
     async function handleVerificationAction(e) {
-        const { id } = e.target.dataset;
-        const isApprove = e.target.classList.contains('approve-verify-btn');
-        const updates = { verified: isApprove, verificationRequested: false };
-        await update(ref(db, `users/${id}`), updates);
-        showToast(`User request ${isApprove ? 'approved' : 'denied'}.`);
-        renderAdminPanel();
+    const { id } = e.target.dataset;
+    const isApprove = e.target.classList.contains('approve-verify-btn');
+    const updates = { verified: isApprove, verificationRequested: false };
+    await update(ref(db, `users/${id}`), updates);
+    showToast(`User request ${isApprove ? 'approved' : 'denied'}.`);
+    renderAdminPanel();
     }
     
     async function handleAdminEdit(e) {
-        const { uid, field } = e.target.dataset;
-        const value = e.target.value;
-        await update(ref(db, `users/${uid}`), { [field]: value });
-        showToast(`User ${field} updated.`);
+    const { uid, field } = e.target.dataset;
+    const value = e.target.value;
+    await update(ref(db, `users/${uid}`), { [field]: value });
+    showToast(`User ${field} updated.`);
     }
 
-    async function handleDeleteAccount() {
+    // --- NEW & UPDATED FUNCTIONS FOR GOOGLE CALENDAR & TIMETABLE ---
+    
+    function handleConnectGoogleCalendar() {
+        // --- PASTE YOUR GOOGLE CLOUD CLIENT ID HERE ---
+        const clientId = "703348367691-fto8h5ngp2hm5qn5fkbfhtsh7re3pcub.apps.googleusercontent.com";
+        
+        // --- THIS MUST BE THE URL OF YOUR DEPLOYED WEB APP (where this index.html lives) ---
+        // This MUST be added as an "Authorized redirect URI" in your Google Cloud OAuth 2.0 Client ID settings.
+        const redirectUri = window.location.origin + window.location.pathname;
+
+        const scope = 'https://www.googleapis.com/auth/calendar.events.readonly';
+        
+        // We add the user's ID to the state parameter so the callback function knows who is authenticating.
+        const state = App.currentUser.userId;
+
+        const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${scope}&access_type=offline&prompt=consent&state=${state}`;
+        
+        window.location.href = authUrl;
+    }
+
+    async function handleDisconnectGoogleCalendar() {
         if (!App.currentUser) return;
-        const confirmation = confirm("Are you sure you want to permanently delete your account and all associated data? This action cannot be undone.");
-        if (!confirmation) return showToast("Account deletion cancelled.");
-        
-        const accountId = App.currentUser.userId;
-        const account = auth.currentUser;
-        if (!account) return showToast("Error: No authenticated user found.", "error");
-        
-        try {
-            await set(ref(db, `users/${accountId}`), null);
-            await set(ref(db, `history/${accountId}`), null);
-            await set(ref(db, `analytics/${accountId}`), null);
-            await set(ref(db, `calendar_events/${accountId}`), null);
-            await deleteUser(account);
-            showToast("Account successfully deleted. 👋");
-        } catch (error) {
-            console.error("Account Deletion Error:", error);
-            if (error.code === 'auth/requires-recent-login') {
-                showToast("Security Alert: Please log in again to confirm this action.", "error");
-                handleLogout(); 
-            } else {
-                showToast(`Deletion failed: ${error.message}`, "error");
+        const updates = {
+            googleRefreshToken: null // Remove the token from the database
+        };
+        await update(ref(db, `users/${App.currentUser.userId}`), updates);
+        App.currentProfileData.googleRefreshToken = null; // Update local state
+        populateSettings(App.currentProfileData); // Re-render the settings page
+        renderTimetable(App.currentProfileData); // Re-render the timetable
+        showToast("Google Calendar has been disconnected.");
+    }
+    
+    async function handleOAuthCallback() {
+        const params = new URLSearchParams(window.location.search);
+        const code = params.get('code');
+        const state = params.get('state'); // This should be the userId
+
+        // If 'code' and 'state' are in the URL, the user is coming back from Google Auth
+        if (code && state) {
+            // Clean the URL to avoid re-processing on refresh
+            const cleanUrl = window.location.origin + window.location.pathname + window.location.hash;
+            history.replaceState({}, document.title, cleanUrl);
+            
+            showToast('Finalizing calendar connection...', 'info');
+
+            // Save the authorization code to the database for the backend function to process.
+            // A Cloud Function triggered by writes to this path would handle the token exchange.
+            try {
+                await set(ref(db, `gcal_auth_codes/${state}`), code);
+                showToast('Calendar connected! Your status will begin syncing shortly. ✅', 'info');
+                
+                // Optimistically update UI
+                if(App.currentProfileData && App.currentProfileData.userId === state){
+                    App.currentProfileData.googleRefreshToken = 'pending'; // A temporary truthy value
+                    populateSettings(App.currentProfileData);
+                }
+
+            } catch(error) {
+                console.error("Failed to save auth code:", error);
+                showToast('Could not connect calendar. Please try again.', 'error');
             }
         }
+    }
+    
+    function renderTimetable(userData) {
+        const card = document.getElementById('calendar-view-card');
+        const container = document.getElementById('calendar-timetable');
+        const tierConfig = USER_TIER_CONFIG[userData.membershipTier || 'Member'];
+
+        if (!tierConfig.gcalIntegration) {
+            card.classList.add('hidden');
+            return;
+        }
+
+        card.classList.remove('hidden');
+
+        if (!userData.googleRefreshToken) {
+            container.innerHTML = '<p class="muted">Connect your Google Calendar in settings to see your availability here.</p>';
+            return;
+        }
+
+        // Attach a real-time listener to the calendar events path
+        const timetableRef = ref(db, `calendar_events/${userData.userId}`);
+        timetableListener = onValue(timetableRef, (snapshot) => {
+            const eventsData = snapshot.val();
+            const busySlots = eventsData?.busySlots || [];
+            
+            let html = '<div id="timetable-grid">';
+            // Headers
+            html += '<div></div>'; // Top-left empty cell
+            const today = new Date();
+            for (let i = 0; i < 7; i++) {
+                const day = new Date(today);
+                day.setDate(today.getDate() + i);
+                html += `<div class="day-header">${day.toLocaleDateString('en-US', { weekday: 'short' })}<br>${day.getDate()}</div>`;
+            }
+
+            // Time Slots (8 AM to 8 PM)
+            for (let hour = 8; hour < 20; hour++) {
+                const timeStr = (hour % 12 === 0 ? 12 : hour % 12) + (hour < 12 ? 'a' : 'p');
+                html += `<div class="time-label">${timeStr}</div>`; // Time label column
+
+                for (let day = 0; day < 7; day++) {
+                    const slotDate = new Date(today);
+                    slotDate.setDate(today.getDate() + day);
+                    slotDate.setHours(hour, 0, 0, 0);
+                    
+                    const isBusy = busySlots.some(slot => {
+                        const start = new Date(slot.start);
+                        const end = new Date(slot.end);
+                        return slotDate >= start && slotDate < end;
+                    });
+                    
+                    html += `<div class="time-slot ${isBusy ? 'busy' : ''}"></div>`;
+                }
+            }
+
+            html += '</div>';
+            container.innerHTML = html;
+        }, (error) => {
+            console.error("Error listening for timetable data:", error);
+            container.innerHTML = '<p class="muted">Could not load availability data.</p>';
+        });
+    }
+
+    function addEventListeners() {
+    document.querySelector('.auth-tabs')?.addEventListener('click', e => {
+    if (e.target.classList.contains('tab')) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    e.target.classList.add('active');
+    const isLogin = e.target.dataset.tab === 'login';
+    document.getElementById('login-form-container').classList.toggle('hidden', !isLogin);
+    document.getElementById('signup-form').classList.toggle('hidden', isLogin);
+    }
+    });
+    
+    document.getElementById('signup-form')?.addEventListener('submit', handleEmailSignup);
+    document.getElementById('login-form')?.addEventListener('submit', handleEmailLogin);
+    document.getElementById('google-login-btn')?.addEventListener('click', handleGoogleLogin);
+    document.getElementById('logout-btn')?.addEventListener('click', handleLogout);
+    document.getElementById('delete-account-btn')?.addEventListener('click', handleDeleteAccount);
+    document.getElementById('save-settings-btn')?.addEventListener('click', handleSaveSettings);
+    document.getElementById('share-status-btn')?.addEventListener('click', handleShareStatus);
+    document.getElementById('run-search-btn')?.addEventListener('click', handleSearchUsers);
+    document.getElementById('generate-qrcode-btn')?.addEventListener('click', handleGenerateQrCode);
+    
+    // --- EVENT LISTENERS FOR GOOGLE CALENDAR BUTTONS ---
+    document.getElementById('connect-gcal-btn')?.addEventListener('click', handleConnectGoogleCalendar);
+    document.getElementById('disconnect-gcal-btn')?.addEventListener('click', handleDisconnectGoogleCalendar);
+
+    App.elements.mainHeader?.addEventListener('click', e => {
+    const navBtn = e.target.closest('.nav-btn');
+    if (navBtn) navigateTo(navBtn.dataset.page);
+    });
+    
+    const countrySearch = document.getElementById('country-search');
+    const countryDropdown = document.getElementById('country-dropdown');
+    countrySearch?.addEventListener('focus', () => { countryDropdown.classList.remove('hidden'); filterCountries('country-search', 'country-dropdown'); });
+    countrySearch?.addEventListener('keyup', () => filterCountries('country-search', 'country-dropdown'));
+    document.addEventListener('click', (e) => {
+    if (!e.target.closest('.country-select-wrapper')) countryDropdown?.classList.add('hidden');
+    });
+    
+    const giftBox = document.getElementById('gift-box-icon');
+    giftBox.addEventListener('click', () => {
+        giftBox.classList.add('unboxing');
+        setTimeout(() => {
+            document.getElementById('upgrade-gift-stage').style.display = 'none';
+            document.getElementById('upgrade-results-stage').classList.add('show');
+        }, 500);
+    });
+    
+    document.getElementById('close-upgrade-modal-btn').addEventListener('click', () => {
+        const modal = document.getElementById('tier-upgrade-modal');
+        modal.classList.remove('show');
+        setTimeout(() => {
+            document.getElementById('upgrade-gift-stage').style.display = 'block';
+            document.getElementById('upgrade-results-stage').classList.remove('show');
+            giftBox.classList.remove('unboxing');
+            showToast(`Your new perks are active!`);
+        }, 400);
+    });
     }
     
     document.addEventListener('DOMContentLoaded', handlePageLoad);
