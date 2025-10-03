@@ -745,7 +745,13 @@
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
     import { GoogleGenAI, Type } from "@google/genai";
 
-    // --- PASTE YOUR FIREBASE CONFIGURATION HERE ---
+    // =================================================================
+    // --- APP CONFIGURATION ---
+    // All API keys and settings are managed in this section.
+    // =================================================================
+
+    // Firebase Configuration
+    // IMPORTANT: Replace with your own Firebase project settings.
     const firebaseConfig = {
         apiKey: "AIzaSyChwjwXFgIj9f64zGeIoS-q_odZm2ogFMw",
         authDomain: "happp-96438.firebaseapp.com",
@@ -757,9 +763,12 @@
     };
     
     // Gemini API Configuration
+    // Your Google AI API key is sourced from the environment variable `process.env.API_KEY`.
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-
+    // =================================================================
+    // --- FIREBASE & APP INITIALIZATION ---
+    // =================================================================
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getDatabase(app);
