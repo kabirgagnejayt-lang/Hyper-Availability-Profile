@@ -24,6 +24,7 @@
     --primary: #38bdf8; --primary-light: #1e293b; --primary-dark: #7dd3fc;
     --bg: #020617; --card: #0f172a; --text: #e2e8f0; --muted: #94a3b8;
     --border-color: #334155; --input-bg: #1e293b;
+    --link-text-color: #7dd3fc; /* FIXED: Added for dark mode readability */
     }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
@@ -195,8 +196,10 @@
     z-index: 5000; display: none; border-bottom: 2px solid #ef4444;
     }
     .btn-loading { pointer-events: none; opacity: 0.8; }
+    .btn-loading .btn-text { display: none; }
     .btn-loading::after {
-    content: ""; border: 3px solid rgba(255, 255, 255, 0.3);
+    content: ""; display: inline-block;
+    border: 3px solid rgba(255, 255, 255, 0.3);
     border-top: 3px solid white; border-radius: 50%;
     width: 16px; height: 16px; animation: spin 1s linear infinite;
     }
@@ -256,7 +259,8 @@
     .unlocked-feature {
       background-color: var(--input-bg); padding: 10px;
       border-radius: 8px; margin-bottom: 10px; font-weight: 500;
-      animation: feature-reveal 0.5s ease-out backwards;
+      animation: feature-reveal 0.5s ease-out; /* FIXED: Corrected animation property */
+      animation-fill-mode: backwards;
     }
     .country-stat-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border-color); }
     .country-stat-item:last-child { border-bottom: none; }
@@ -300,7 +304,7 @@
       position: absolute; top: 10px; right: 10px;
       background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--muted);
     }
-    /* NEW: Timetable Styles */
+    /* Timetable Styles */
     #timetable-grid {
         display: grid;
         grid-template-columns: 50px repeat(7, 1fr);
@@ -340,7 +344,7 @@
     <form id="login-form">
     <div class="form-group"><input type="email" id="login-email" placeholder="Email" required autocomplete="email"></div>
     <div class="form-group"><input type="password" id="login-password" placeholder="Password" required autocomplete="current-password"></div>
-    <button type="submit" class="btn">Login</button>
+    <button type="submit" class="btn"><span class="btn-text">Login</span></button>
     </form>
     <button id="google-login-btn" class="social-login-btn">
     <svg viewBox="0 0 24 24" width="24" height="24" style="background: white; border-radius: 50%; padding: 4px;"><path fill="#EA4335" d="M5.266 9.389a6.6 6.6 0 0 1 .235-1.565h3.08v3.136H5.266z"></path><path fill="#4285F4" d="M12 21.36c-2.333 0-4.32-.778-5.755-2.072L9.36 17.06c.9.605 2.07 1.05 3.398 1.05 2.872 0 4.673-1.637 4.673-3.957 0-1.724-.96-2.91-2.5-3.69v-3.3h3.045c2.324 0 3.86 1.764 3.86 5.25 0 4.8-3.045 7.027-7.426 7.027z"></path><path fill="#FBBC05" d="M12 7.03c1.64 0 2.977.674 3.69 1.344l2.42-2.348C17.042 4.417 15.02 3 12 3 7.61 3 4.195 5.253 2.57 9.172l3.045 2.368c.57-1.897 2.37-3.67 6.385-3.67z"></path><path fill="#34A853" d="M5.504 12.87a6.22 6.22 0 0 1-.238-1.564H2.227v3.136h3.277z"></path></svg>
@@ -352,7 +356,7 @@
     <div class="form-group"><input type="text" id="signup-name" placeholder="Display Name" required autocomplete="name"></div>
     <div class="form-group"><input type="email" id="signup-email" placeholder="Email" required autocomplete="email"></div>
     <div class="form-group"><input type="password" id="signup-password" placeholder="Password (min. 6 chars)" required autocomplete="new-password"></div>
-    <button type="submit" class="btn">Create Personal Account</button>
+    <button type="submit" class="btn"><span class="btn-text">Create Personal Account</span></button>
     </form>
     <p id="error-message"></p>
     </div>
@@ -396,8 +400,8 @@
     <p id="qrcode-placeholder" class="muted">Click button below to generate QR.</p>
     </div>
     </div>
-    <button id="generate-qrcode-btn" class="btn secondary" style="margin-top: 15px;">Generate QR Code</button>
-    <button id="share-status-btn" class="btn" style="margin-top: 10px;">Copy Profile Link</button>
+    <button id="generate-qrcode-btn" class="btn secondary" style="margin-top: 15px;"><span class="btn-text">Generate QR Code</span></button>
+    <button id="share-status-btn" class="btn" style="margin-top: 10px;"><span class="btn-text">Copy Profile Link</span></button>
     </div>
     <div id="bottom-ad-container" class="card hidden" style="padding: 20px; text-align: center;"></div>
     <div id="create-hap-promo-bottom" class="card hidden"></div>
@@ -408,7 +412,7 @@
     <div class="form-group" style="margin-bottom: 0;">
     <input type="text" id="user-search-input" placeholder="Search users by name...">
     </div>
-    <button id="run-search-btn" class="btn secondary" style="margin-top: 10px;">Search / Load Directory</button>
+    <button id="run-search-btn" class="btn secondary" style="margin-top: 10px;"><span class="btn-text">Search / Load Directory</span></button>
     <div id="search-results-list" style="margin-top: 20px;">
     <p class="muted">Search for users by name or click 'Search' to view all public profiles.</p>
     </div>
@@ -568,10 +572,10 @@
         <div id="gcal-integration-section">
             <button id="connect-gcal-btn" class="btn">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M10.875 7.75a.75.75 0 0 0-1.5 0v1.5h-1.5a.75.75 0 0 0 0 1.5h1.5v1.5a.75.75 0 0 0 1.5 0v-1.5h1.5a.75.75 0 0 0 0-1.5h-1.5v-1.5Z"/><path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0ZM1.5 8a6.5 6.5 0 1 1 13 0 6.5 6.5 0 0 1-13 0Z"/></svg>
-                Connect Google Calendar
+                <span class="btn-text">Connect Google Calendar</span>
             </button>
             <button id="disconnect-gcal-btn" class="btn secondary hidden" style="background-color: #ef4444; color: white;">
-                Disconnect Google Calendar
+                <span class="btn-text">Disconnect Google Calendar</span>
             </button>
             <p id="gcal-status-text" class="muted" style="margin-top: 15px;"></p>
         </div>
@@ -585,7 +589,18 @@
                 <label for="gcal-free-status">During 'Free' time, set status to:</label>
                 <select id="gcal-free-status"></select>
             </div>
-            <p class="muted">Your backend function will use these rules to automatically update your status.</p>
+            <div id="gemini-ai-sync-section" style="margin-top: 25px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+                <h3>✨ AI-Powered Status Sync</h3>
+                <p class="muted">Paste your calendar agenda for today below. The AI will analyze it to determine your current status, stripping any private details.</p>
+                <div class="form-group">
+                    <label for="calendar-input-for-ai">Today's Calendar Events</label>
+                    <textarea id="calendar-input-for-ai" placeholder="e.g., 9:00 AM - 10:00 AM: Project Phoenix sync with Alice\n12:30 PM - 1:00 PM: Lunch at Mom's place" style="min-height: 120px;"></textarea>
+                </div>
+                <button id="gemini-sync-btn" class="btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M8 1a2.5 2.5 0 0 1 2.5 2.5V4h-5v-.5A2.5 2.5 0 0 1 8 1zm3.5 3v-.5a3.5 3.5 0 1 0-7 0V4H1v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V4h-3.5zM2 5h12v9a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V5z"/></svg>
+                    <span class="btn-text">Analyze with Gemini AI & Update Status</span>
+                </button>
+            </div>
         </div>
     </div>
 
@@ -642,9 +657,9 @@
         </div>
     </div>
     <div class="card">
-    <button id="save-settings-btn" class="btn">Save All Changes</button>
-    <button id="logout-btn" class="btn secondary" style="margin-top: 12px;">Logout</button>
-    <button id="delete-account-btn" class="btn" style="margin-top: 20px; background-color: #ef4444; color: white;">Delete My Account Permanently</button>
+    <button id="save-settings-btn" class="btn"><span class="btn-text">Save All Changes</span></button>
+    <button id="logout-btn" class="btn secondary" style="margin-top: 12px;"><span class="btn-text">Logout</span></button>
+    <button id="delete-account-btn" class="btn" style="margin-top: 20px; background-color: #ef4444; color: white;"><span class="btn-text">Delete My Account Permanently</span></button>
     </div>
     </div>
     </div>
@@ -664,7 +679,7 @@
                 <h2>Welcome to <span id="new-tier-name"></span>!</h2>
                 <p>You've unlocked these new features:</p>
                 <div id="unlocked-features-list"></div>
-                <button id="close-upgrade-modal-btn" class="btn" style="margin-top: 20px;">Awesome!</button>
+                <button id="close-upgrade-modal-btn" class="btn" style="margin-top: 20px;"><span class="btn-text">Awesome!</span></button>
             </div>
         </div>
     </div>
@@ -692,7 +707,7 @@
     query, 
     orderByKey, 
     limitToLast,
-    onValue // NEW: Import onValue for real-time updates
+    onValue
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
     // --- PASTE YOUR FIREBASE CONFIGURATION HERE ---
@@ -705,6 +720,14 @@
         messagingSenderId: "703348367691",
         appId: "1:703348367691:web:376cd50d08d94bccf588ce"
     };
+    
+    // NEW: Gemini API Configuration
+    // ⚠️ WARNING: Exposing API keys in client-side code is a major security risk.
+    // Anyone can view this key and use it, potentially leading to high costs.
+    // For a production application, this API call MUST be handled by a secure backend (e.g., Firebase Cloud Function).
+    const GEMINI_API_KEY = "AIzaSyAN2A4rZGOtzwvC48rIfy062iTtRr60..."; // Key truncated for safety
+    const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`;
+
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
@@ -731,7 +754,7 @@
     let isPublicView = false;
     let publicViewInterval = null;
     let isAuthResolved = false;
-    let timetableListener = null; // To keep track of the real-time listener
+    let timetableListener = null;
     
     const App = {
     pages: ['loginPage', 'profilePage', 'searchPage', 'analyticsPage', 'settingsPage', 'tiersPage', 'adminPage'],
@@ -740,7 +763,6 @@
     currentProfileData: null,
     };
     
-    // --- UPDATED: Tier configuration with Google Calendar Integration flag ---
     const USER_TIER_CONFIG = {
       'Member': { 
         name: 'Basic', linkLimit: 1, pfp: false, qrCode: false, customFont: false, customColor: false, 
@@ -801,7 +823,7 @@
         verification: "Verification Eligibility",
         canCustomizeAds: "Custom Promotional Blocks",
         canControlPlatformAd: "Platform Ad Controls",
-        gcalIntegration: "Google Calendar Sync" // NEW
+        gcalIntegration: "Google Calendar Sync"
     };
     
     const VERIFICATION_QUESTIONS = [
@@ -812,7 +834,7 @@
     "Please provide a contact email or phone number that we can use to follow up on this verification request (this will be kept private)."
     ];
     
-    const COUNTRY_LIST = [ {name: "Afghanistan", code: "AF"}, {name: "Åland Islands", code: "AX"}, {name: "Albania", code: "AL"}, {name: "Algeria", code: "DZ"}, {name: "American Samoa", code: "AS"}, {name: "Andorra", code: "AD"}, {name: "Angola", code: "AO"}, {name: "Anguilla", code: "AI"}, {name: "Antarctica", code: "AQ"}, {name: "Antigua and Barbuda", code: "AG"}, {name: "Argentina", code: "AR"}, {name: "Armenia", code: "AM"}, {name: "Aruba", code: "AW"}, {name: "Australia", code: "AU"}, {name: "Austria", code: "AT"}, {name: "Azerbaijan", code: "AZ"}, {name: "Bahamas", code: "BS"}, {name: "Bahrain", code: "BH"}, {name: "Bangladesh", code: "BD"}, {name: "Barbados", code: "BB"}, {name: "Belarus", code: "BY"}, {name: "Belgium", code: "BE"}, {name: "Belize", code: "BZ"}, {name: "Benin", code: "BJ"}, {name: "Bermuda", code: "BM"}, {name: "Bhutan", code: "BT"}, {name: "Bolivia", code: "BO"}, {name: "Bosnia and Herzegovina", code: "BA"}, {name: "Botswana", code: "BW"}, {name: "Bouvet Island", code: "BV"}, {name: "Brazil", code: "BR"}, {name: "British Indian Ocean Territory", code: "IO"}, {name: "Brunei Darussalam", code: "BN"}, {name: "Bulgaria", code: "BG"}, {name: "Burkina Faso", code: "BF"}, {name: "Burundi", code: "BI"}, {name: "Cambodia", code: "KH"}, {name: "Cameroon", code: "CM"}, {name: "Canada", code: "CA"}, {name: "Cape Verde", code: "CV"}, {name: "Cayman Islands", code: "KY"}, {name: "Central African Republic", code: "CF"}, {name: "Chad", code: "TD"}, {name: "Chile", code: "CL"}, {name: "China", code: "CN"}, {name: "Christmas Island", code: "CX"}, {name: "Cocos (Keeling) Islands", code: "CC"}, {name: "Colombia", code: "CO"}, {name: "Comoros", code: "KM"}, {name: "Congo", code: "CG"}, {name: "Congo, The Democratic Republic of the", code: "CD"}, {name: "Cook Islands", code: "CK"}, {name: "Costa Rica", code: "CR"}, {name: "Cote D'Ivoire", code: "CI"}, {name: "Croatia", code: "HR"}, {name: "Cuba", code: "CU"}, {name: "Cyprus", code: "CY"}, {name: "Czech Republic", code: "CZ"}, {name: "Denmark", code: "DK"}, {name: "Djibouti", code: "DJ"}, {name: "Dominica", code: "DM"}, {name: "Dominican Republic", code: "DO"}, {name: "Ecuador", code: "EC"}, {name: "Egypt", code: "EG"}, {name: "El Salvador", code: "SV"}, {name: "Equatorial Guinea", code: "GQ"}, {name: "Eritrea", code: "ER"}, {name: "Estonia", code: "EE"}, {name: "Ethiopia", code: "ET"}, {name: "Falkland Islands (Malvinas)", code: "FK"}, {name: "Faroe Islands", code: "FO"}, {name: "Fiji", code: "FJ"}, {name: "Finland", code: "FI"}, {name: "France", code: "FR"}, {name: "French Guiana", code: "GF"}, {name: "French Polynesia", code: "PF"}, {name: "French Southern Territories", code: "TF"}, {name: "Gabon", code: "GA"}, {name: "Gambia", code: "GM"}, {name: "Georgia", code: "GE"}, {name: "Germany", code: "DE"}, {name: "Ghana", code: "GH"}, {name: "Gibraltar", code: "GI"}, {name: "Greece", code: "GR"}, {name: "Greenland", code: "GL"}, {name: "Grenada", code: "GD"}, {name: "Guadeloupe", code: "GP"}, {name: "Guam", code: "GU"}, {name: "Guatemala", code: "GT"}, {name: "Guernsey", code: "GG"}, {name: "Guinea", code: "GN"}, {name: "Guinea-Bissau", code: "GW"}, {name: "Guyana", code: "GY"}, {name: "Haiti", code: "HT"}, {name: "Heard Island and Mcdonald Islands", code: "HM"}, {name: "Holy See (Vatican City State)", code: "VA"}, {name: "Honduras", code: "HN"}, {name: "Hong Kong", code: "HK"}, {name: "Hungary", code: "HU"}, {name: "Iceland", code: "IS"}, {name: "India", code: "IN"}, {name: "Indonesia", code: "ID"}, {name: "Iran, Islamic Republic Of", code: "IR"}, {name: "Iraq", code: "IQ"}, {name: "Ireland", code: "IE"}, {name: "Isle of Man", code: "IM"}, {name: "Israel", code: "IL"}, {name: "Italy", code: "IT"}, {name: "Jamaica", code: "JM"}, {name: "Japan", code: "JP"}, {name: "Jersey", code: "JE"}, {name: "Jordan", code: "JO"}, {name: "Kazakhstan", code: "KZ"}, {name: "Kenya", code: "KE"}, {name: "Kiribati", code: "KI"}, {name: "Korea, Democratic People'S Republic of", code: "KP"}, {name: "Korea, Republic of", code: "KR"}, {name: "Kuwait", code: "KW"}, {name: "Kyrgyzstan", code: "KG"}, {name: "Lao People'S Democratic Republic", code: "LA"}, {name: "Latvia", code: "LV"}, {name: "Lebanon", code: "LB"}, {name: "Lesotho", code: "LS"}, {name: "Liberia", code: "LR"}, {name: "Libyan Arab Jamahiriya", code: "LY"}, {name: "Liechtenstein", code: "LI"}, {name: "Lithuania", code: "LT"}, {name: "Luxembourg", code: "LU"}, {name: "Macao", code: "MO"}, {name: "Macedonia, The Former Yugoslav Republic of", code: "MK"}, {name: "Madagascar", code: "MG"}, {name: "Malawi", code: "MW"}, {name: "Malaysia", code: "MY"}, {name: "Maldives", code: "MV"}, {name: "Mali", code: "ML"}, {name: "Malta", code: "MT"}, {name: "Marshall Islands", code: "MH"}, {name: "Mauritania", code: "MR"}, {name: "Mauritius", code: "MU"}, {name: "Mayotte", code: "YT"}, {name: "Mexico", code: "MX"}, {name: "Micronesia, Federated States of", code: "FM"}, {name: "Moldova, Republic of", code: "MD"}, {name: "Monaco", code: "MC"}, {name: "Mongolia", code: "MN"}, {name: "Montserrat", code: "MS"}, {name: "Morocco", code: "MA"}, {name: "Mozambique", code: "MZ"}, {name: "Myanmar", code: "MM"}, {name: "Namibia", code: "NA"}, {name: "Nauru", code: "NR"}, {name: "Nepal", code: "NP"}, {name: "Netherlands", code: "NL"}, {name: "Netherlands Antilles", code: "AN"}, {name: "New Caledonia", code: "NC"}, {name: "New Zealand", code: "NZ"}, {name: "Nicaragua", code: "NI"}, {name: "Niger", code: "NE"}, {name: "Nigeria", code: "NG"}, {name: "Niue", code: "NU"}, {name: "Norfolk Island", code: "NF"}, {name: "Northern Mariana Islands", code: "MP"}, {name: "Norway", code: "NO"}, {name: "Oman", code: "OM"}, {name: "Pakistan", code: "PK"}, {name: "Palau", code: "PW"}, {name: "Palestinian Territory, Occupied", code: "PS"}, {name: "Panama", code: "PA"}, {name: "Papua New Guinea", code: "PG"}, {name: "Paraguay", code: "PY"}, {name: "Peru", code: "PE"}, {name: "Philippines", code: "PH"}, {name: "Pitcairn", code: "PN"}, {name: "Poland", code: "PL"}, {name: "Portugal", code: "PT"}, {name: "Puerto Rico", code: "PR"}, {name: "Qatar", code: "QA"}, {name: "Reunion", code: "RE"}, {name: "Romania", code: "RO"}, {name: "Russian Federation", code: "RU"}, {name: "RWANDA", code: "RW"}, {name: "Saint Helena", code: "SH"}, {name: "Saint Kitts and Nevis", code: "KN"}, {name: "Saint Lucia", code: "LC"}, {name: "Saint Pierre and Miquelon", code: "PM"}, {name: "Saint Vincent and the Grenadines", code: "VC"}, {name: "Samoa", code: "WS"}, {name: "San Marino", code: "SM"}, {name: "Sao Tome and Principe", code: "ST"}, {name: "Saudi Arabia", code: "SA"}, {name: "Senegal", code: "SN"}, {name: "Serbia and Montenegro", code: "CS"}, {name: "Seychelles", code: "SC"}, {name: "Sierra Leone", code: "SL"}, {name: "Singapore", code: "SG"}, {name: "Slovakia", code: "SK"}, {name: "Slovenia", code: "SI"}, {name: "Solomon Islands", code: "SB"}, {name: "Somalia", code: "SO"}, {name: "South Africa", code: "ZA"}, {name: "South Georgia and the South Sandwich Islands", code: "GS"}, {name: "Spain", code: "ES"}, {name: "Sri Lanka", code: "LK"}, {name: "Sudan", code: "SD"}, {name: "Suriname", code: "SR"}, {name: "Svalbard and Jan Mayen", code: "SJ"}, {name: "Swaziland", code: "SZ"}, {name: 'Sweden', code: 'SE'}, {name: 'Switzerland', code: 'CH'}, {name: 'Syrian Arab Republic', code: 'SY'}, {name: 'Taiwan', code: 'TW'}, {name: 'Tajikistan', code: 'TJ'}, {name: 'Tanzania, United Republic of', code: 'TZ'}, {name: 'Thailand', code: 'TH'}, {name: 'Timor-Leste', code: 'TL'}, {name: 'Togo', code: 'TG'}, {name: 'Tokelau', code: 'TK'}, {name: 'Tonga', code: 'TO'}, {name: 'Trinidad and Tobago', code: 'TT'}, {name: 'Tunisia', code: 'TN'}, {name: 'Turkey', code: 'TR'}, {name: 'Turkmenistan', code: 'TM'}, {name: 'Turks and Caicos Islands', code: 'TC'}, {name: 'Tuvalu', code: 'TV'}, {name: 'Uganda', code: 'UG'}, {name: 'Ukraine', code: 'UA'}, {name: 'United Arab Emirates', code: 'AE'}, {name: 'United Kingdom', code: 'GB'}, {name: 'United States', code: 'US'}, {name: 'United States Minor Outlying Islands', code: 'UM'}, {name: 'Uruguay', code: 'UY'}, {name: 'Uzbekistan', code: 'UZ'}, {name: 'Vanuatu', code: 'VU'}, {name: 'Venezuela', code: 'VE'}, {name: 'Viet Nam', code: 'VN'}, {name: 'Virgin Islands, British', code: 'VG'}, {name: 'Virgin Islands, U.S.', code: 'VI'}, {name: 'Wallis and Futuna', code: 'WF'}, {name: 'Western Sahara', code: 'EH'}, {name: 'Yemen', code: 'YE'}, {name: 'Zambia', code: 'ZM'}, {name: 'Zimbabwe', code: 'ZW'} ];
+    const COUNTRY_LIST = [ {name: "Afghanistan", code: "AF"}, {name: "Åland Islands", code: "AX"}, {name: "Albania", code: "AL"}, {name: "Algeria", code: "DZ"}, {name: "American Samoa", code: "AS"}, {name: "Andorra", code: "AD"}, {name: "Angola", code: "AO"}, {name: "Anguilla", code: "AI"}, {name: "Antarctica", code: "AQ"}, {name: "Antigua and Barbuda", code: "AG"}, {name: "Argentina", code: "AR"}, {name: "Armenia", code: "AM"}, {name: "Aruba", code: "AW"}, {name: "Australia", code: "AU"}, {name: "Austria", code: "AT"}, {name: "Azerbaijan", code: "AZ"}, {name: "Bahamas", code: "BS"}, {name: "Bahrain", code: "BH"}, {name: "Bangladesh", code: "BD"}, {name: "Barbados", code: "BB"}, {name: "Belarus", code: "BY"}, {name: "Belgium", code: "BE"}, {name: "Belize", code: "BZ"}, {name: "Benin", code: "BJ"}, {name: "Bermuda", code: "BM"}, {name: "Bhutan", code: "BT"}, {name: "Bolivia", code: "BO"}, {name: "Bosnia and Herzegovina", code: "BA"}, {name: "Botswana", code: "BW"}, {name: "Bouvet Island", code: "BV"}, {name: "Brazil", code: "BR"}, {name: "British Indian Ocean Territory", code: "IO"}, {name: "Brunei Darussalam", code: "BN"}, {name: "Bulgaria", code: "BG"}, {name: "Burkina Faso", code: "BF"}, {name: "Burundi", code: "BI"}, {name: "Cambodia", code: "KH"}, {name: "Cameroon", code: "CM"}, {name: "Canada", code: "CA"}, {name: "Cape Verde", code: "CV"}, {name: "Cayman Islands", code: "KY"}, {name: "Central African Republic", code: "CF"}, {name: "Chad", code: "TD"}, {name: "Chile", code: "CL"}, {name: "China", code: "CN"}, {name: "Christmas Island", code: "CX"}, {name: "Cocos (Keeling) Islands", code: "CC"}, {name: "Colombia", code: "CO"}, {name: "Comoros", code: "KM"}, {name: "Congo", code: "CG"}, {name: "Congo, The Democratic Republic of the", code: "CD"}, {name: "Cook Islands", code: "CK"}, {name: "Costa Rica", code: "CR"}, {name: "Cote D'Ivoire", code: "CI"}, {name: "Croatia", code: "HR"}, {name: "Cuba", code: "CU"}, {name: "Cyprus", code: "CY"}, {name: "Czech Republic", code: "CZ"}, {name: "Denmark", code: "DK"}, {name: "Djibouti", code: "DJ"}, {name: "Dominica", code: "DM"}, {name: "Dominican Republic", code: "DO"}, {name: "Ecuador", code: "EC"}, {name: "Egypt", code: "EG"}, {name: "El Salvador", code: "SV"}, {name: "Equatorial Guinea", code: "GQ"}, {name: "Eritrea", code: "ER"}, {name: "Estonia", code: "EE"}, {name: "Ethiopia", code: "ET"}, {name: "Falkland Islands (Malvinas)", code: "FK"}, {name: "Faroe Islands", code: "FO"}, {name: "Fiji", code: "FJ"}, {name: "Finland", code: "FI"}, {name: "France", code: "FR"}, {name: "French Guiana", code: "GF"}, {name: "French Polynesia", code: "PF"}, {name: "French Southern Territories", code: "TF"}, {name: "Gabon", code: "GA"}, {name: "Gambia", code: "GM"}, {name: "Georgia", code: "GE"}, {name: "Germany", code: "DE"}, {name: "Ghana", code: "GH"}, {name: "Gibraltar", code: "GI"}, {name: "Greece", code: "GR"}, {name: "Greenland", code: "GL"}, {name: "Grenada", code: "GD"}, {name: "Guadeloupe", code: "GP"}, {name: "Guam", code: "GU"}, {name: "Guatemala", code: "GT"}, {name: "Guernsey", code: "GG"}, {name: "Guinea", code: "GN"}, {name: "Guinea-Bissau", code: "GW"}, {name: "Guyana", code: "GY"}, {name: "Haiti", code: "HT"}, {name: "Heard Island and Mcdonald Islands", code: "HM"}, {name: "Holy See (Vatican City State)", code: "VA"}, {name: "Honduras", code: "HN"}, {name: "Hong Kong", code: "HK"}, {name: "Hungary", code: "HU"}, {name: "Iceland", code: "IS"}, {name: "India", code: "IN"}, {name: "Indonesia", code: "ID"}, {name: "Iran, Islamic Republic Of", code: "IR"}, {name: "Iraq", code: "IQ"}, {name: "Ireland", code: "IE"}, {name: "Isle of Man", code: "IM"}, {name: "Israel", code: "IL"}, {name: "Italy", code: "IT"}, {name: "Jamaica", code: "JM"}, {name: "Japan", code: "JP"}, {name: "Jersey", code: "JE"}, {name: "Jordan", code: "JO"}, {name: "Kazakhstan", code: "KZ"}, {name: "Kenya", code: "KE"}, {name: "Kiribati", code: "KI"}, {name: "Korea, Democratic People'S Republic of", code: "KP"}, {name: "Korea, Republic of", code: "KR"}, {name: "Kuwait", code: "KW"}, {name: "Kyrgyzstan", code: "KG"}, {name: "Lao People'S Democratic Republic", code: "LA"}, {name: "Latvia", code: "LV"}, {name: "Lebanon", code: "LB"}, {name: "Lesotho", code: "LS"}, {name: "Liberia", code: "LR"}, {name: "Libyan Arab Jamahiriya", code: "LY"}, {name: "Liechtenstein", code: "LI"}, {name: "Lithuania", code: "LT"}, {name: "Luxembourg", code: "LU"}, {name: "Macao", code: "MO"}, {name: "Macedonia, The Former Yugoslav Republic of", code: "MK"}, {name: "Madagascar", code: "MG"}, {name: "Malawi", code: "MW"}, {name: "Malaysia", code: "MY"}, {name: "Maldives", code: "MV"}, {name: "Mali", code: "ML"}, {name: "Malta", code: "MT"}, {name: "Marshall Islands", code: "MH"}, {name: "Mauritania", code: "MR"}, {name: "Mauritius", code: "MU"}, {name: "Mayotte", code: "YT"}, {name: "Mexico", code: "MX"}, {name: "Micronesia, Federated States of", code: "FM"}, {name: "Moldova, Republic of", code: "MD"}, {name: "Monaco", code: "MC"}, {name: "Mongolia", code: "MN"}, {name: "Montserrat", code: "MS"}, {name: "Morocco", code: "MA"}, {name: "Mozambique", code: "MZ"}, {name: "Myanmar", code: "MM"}, {name: "Namibia", code: "NA"}, {name: "Nauru", code: "NR"}, {name: "Nepal", code: "NP"}, {name: "Netherlands", code: "NL"}, {name: "Netherlands Antilles", code: "AN"}, {name: "New Caledonia", code: "NC"}, {name: "New Zealand", code: "NZ"}, {name: "Nicaragua", code: "NI"}, {name: "Niger", code: "NE"}, {name: "Nigeria", code: "NG"}, {name: "Niue", code: "NU"}, {name: "Norfolk Island", code: "NF"}, {name: "Northern Mariana Islands", code: "MP"}, {name: "Norway", code: "NO"}, {name: "Oman", code: "OM"}, {name: "Pakistan", code: "PK"}, {name: "Palau", code: "PW"}, {name: "Palestinian Territory, Occupied", code: "PS"}, {name: "Panama", code: "PA"}, {name: "Papua New Guinea", code: "PG"}, {name: "Paraguay", code: "PY"}, {name: "Peru", code: "PE"}, {name: "Philippines", code: "PH"}, {name: "Pitcairn", code: "PN"}, {name: "Poland", code: "PL"}, {name: "Portugal", code: "PT"}, {name: "Puerto Rico", code: "PR"}, {name: "Qatar", code: "QA"}, {name: "Reunion", code: "RE"}, {name: "Romania", code: "RO"}, {name: "Russian Federation", code: "RU"}, {name: "Rwanda", code: "RW"}, {name: "Saint Helena", code: "SH"}, {name: "Saint Kitts and Nevis", code: "KN"}, {name: "Saint Lucia", code: "LC"}, {name: "Saint Pierre and Miquelon", code: "PM"}, {name: "Saint Vincent and the Grenadines", code: "VC"}, {name: "Samoa", code: "WS"}, {name: "San Marino", code: "SM"}, {name: "Sao Tome and Principe", code: "ST"}, {name: "Saudi Arabia", code: "SA"}, {name: "Senegal", code: "SN"}, {name: "Serbia and Montenegro", code: "CS"}, {name: "Seychelles", code: "SC"}, {name: "Sierra Leone", code: "SL"}, {name: "Singapore", code: "SG"}, {name: "Slovakia", code: "SK"}, {name: "Slovenia", code: "SI"}, {name: "Solomon Islands", code: "SB"}, {name: "Somalia", code: "SO"}, {name: "South Africa", code: "ZA"}, {name: "South Georgia and the South Sandwich Islands", code: "GS"}, {name: "Spain", code: "ES"}, {name: "Sri Lanka", code: "LK"}, {name: "Sudan", code: "SD"}, {name: "Suriname", code: "SR"}, {name: "Svalbard and Jan Mayen", code: "SJ"}, {name: "Swaziland", code: "SZ"}, {name: 'Sweden', code: 'SE'}, {name: 'Switzerland', code: 'CH'}, {name: 'Syrian Arab Republic', code: 'SY'}, {name: 'Taiwan', code: 'TW'}, {name: 'Tajikistan', code: 'TJ'}, {name: 'Tanzania, United Republic of', code: 'TZ'}, {name: 'Thailand', code: 'TH'}, {name: 'Timor-Leste', code: 'TL'}, {name: 'Togo', code: 'TG'}, {name: 'Tokelau', code: 'TK'}, {name: 'Tonga', code: 'TO'}, {name: 'Trinidad and Tobago', code: 'TT'}, {name: 'Tunisia', code: 'TN'}, {name: 'Turkey', code: 'TR'}, {name: 'Turkmenistan', code: 'TM'}, {name: 'Turks and Caicos Islands', code: 'TC'}, {name: 'Tuvalu', code: 'TV'}, {name: 'Uganda', code: 'UG'}, {name: 'Ukraine', code: 'UA'}, {name: 'United Arab Emirates', code: 'AE'}, {name: 'United Kingdom', code: 'GB'}, {name: 'United States', code: 'US'}, {name: 'United States Minor Outlying Islands', code: 'UM'}, {name: 'Uruguay', code: 'UY'}, {name: 'Uzbekistan', code: 'UZ'}, {name: 'Vanuatu', code: 'VU'}, {name: 'Venezuela', code: 'VE'}, {name: 'Viet Nam', code: 'VN'}, {name: 'Virgin Islands, British', code: 'VG'}, {name: 'Virgin Islands, U.S.', code: 'VI'}, {name: 'Wallis and Futuna', code: 'WF'}, {name: 'Western Sahara', code: 'EH'}, {name: 'Yemen', code: 'YE'}, {name: 'Zambia', code: 'ZM'}, {name: 'Zimbabwe', code: 'ZW'} ];
 
     function showToast(message, type = 'info') {
     const toast = App.elements.toast;
@@ -843,7 +865,8 @@
     const absOffset = Math.abs(offsetMinutes);
     const hours = String(Math.floor(absOffset / 60)).padStart(2, '0');
     const minutes = String(absOffset % 60).padStart(2, '0');
-    return { time: timeStr, offset: `UTC${sign}${hours}:${minutes}`, hour: now.getHours() };
+    const tzName = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    return { time: timeStr, offset: `UTC${sign}${hours}:${minutes}`, hour: now.getHours(), timeZone: tzName };
     }
 
     function getFriendlyAuthError(errorCode) {
@@ -944,7 +967,7 @@
     pfpText: defaultPfpText,
     adsEnabled: false,
     platformAdDisplay: 'both',
-    gcalSettings: { // NEW: Default GCal settings
+    gcalSettings: {
       busyStatus: '💻',
       freeStatus: '🟢'
     },
@@ -1042,7 +1065,7 @@
         const dataWithTimestamp = { ...data, updatedAt: new Date().toISOString() };
         const userRef = ref(db, `users/${App.currentUser.userId}`);
         
-        if(data.displayName !== App.currentProfileData.displayName) {
+        if(data.displayName && data.displayName !== App.currentProfileData.displayName) {
             await updateProfile(auth.currentUser, { displayName: data.displayName });
             if (!data.pfpUrl) dataWithTimestamp.pfpText = data.displayName.charAt(0).toUpperCase();
         }
@@ -1050,23 +1073,27 @@
         const achievements = App.currentProfileData.achievements || {};
         const achievementUpdates = {};
 
-        const newEmoji = data.status;
-        const newUsedEmojis = achievements.usedEmojis || {};
-        if (!newUsedEmojis[newEmoji]) {
-            newUsedEmojis[newEmoji] = true;
-            achievementUpdates['achievements/usedEmojis'] = newUsedEmojis;
-            achievementUpdates['achievements/expressive'] = Object.keys(newUsedEmojis).length;
+        if(data.status){
+            const newEmoji = data.status;
+            const newUsedEmojis = achievements.usedEmojis || {};
+            if (!newUsedEmojis[newEmoji]) {
+                newUsedEmojis[newEmoji] = true;
+                achievementUpdates['achievements/usedEmojis'] = newUsedEmojis;
+                achievementUpdates['achievements/expressive'] = Object.keys(newUsedEmojis).length;
+            }
         }
 
-        achievementUpdates['achievements/socialButterfly'] = data.links?.length || 0;
+        achievementUpdates['achievements/socialButterfly'] = data.links?.length || achievements.socialButterfly || 0;
         achievementUpdates['achievements/picturePerfect'] = data.pfpUrl ? 1 : (achievements.picturePerfect || 0);
         const isBasicProfileComplete = data.bio && data.birthday && data.countryCode;
         achievementUpdates['achievements/profileComplete'] = isBasicProfileComplete ? 1 : 0;
         
         await update(userRef, { ...dataWithTimestamp, ...achievementUpdates });
 
-        const historyRef = ref(db, `history/${App.currentUser.userId}`);
-        await push(historyRef, { status: data.status, message: data.message, timestamp: dataWithTimestamp.updatedAt });
+        if(data.status && data.message) {
+            const historyRef = ref(db, `history/${App.currentUser.userId}`);
+            await push(historyRef, { status: data.status, message: data.message, timestamp: dataWithTimestamp.updatedAt });
+        }
         
         const updatedSnapshot = await get(userRef);
         const oldTier = App.currentProfileData.membershipTier;
@@ -1217,21 +1244,20 @@
         renderCustomLinks(data.links, document.getElementById('profile-links'), tierConfig);
         renderActionLinks(data);
 
-        // NEW: Render the timetable
         renderTimetable(data);
 
         const qrBtn = document.getElementById('generate-qrcode-btn');
         if (isOwnerViewing) {
             if(tierConfig.qrCode) {
                 qrBtn.disabled = false;
-                qrBtn.textContent = "Generate QR Code";
+                qrBtn.querySelector('.btn-text').textContent = "Generate QR Code";
             } else {
                 qrBtn.disabled = true;
-                qrBtn.textContent = "Upgrade to Personal for QR Code";
+                qrBtn.querySelector('.btn-text').textContent = "Upgrade to Personal for QR Code";
             }
         } else {
             qrBtn.disabled = true;
-            qrBtn.textContent = tierConfig.qrCode ? "QR Code (Owner Only)" : "QR Code (Unavailable)";
+            qrBtn.querySelector('.btn-text').textContent = tierConfig.qrCode ? "QR Code (Owner Only)" : "QR Code (Unavailable)";
         }
     
         const topAdContainer = document.getElementById('top-ad-container');
@@ -1387,7 +1413,6 @@
         document.getElementById('status-message').value = data.message || '';
         renderVerificationSettings(data);
 
-        // --- UPDATED: Google Calendar UI logic ---
         const integrationsCard = document.getElementById('integrations-card');
         integrationsCard.classList.toggle('hidden', !tierConfig.gcalIntegration);
         if (tierConfig.gcalIntegration) {
@@ -1437,7 +1462,7 @@
         App.elements.toast = document.getElementById('toast');
         window.addEventListener('hashchange', hashChangeRouter);
         addEventListeners();
-        handleOAuthCallback(); // NEW: Check for OAuth redirect on page load
+        handleOAuthCallback();
         
         const lazyImageObserver = new IntersectionObserver((entries, observer) => {
             entries.forEach(entry => {
@@ -1457,8 +1482,8 @@
     
     async function handleDeleteAccount() {
     if (!App.currentUser) return;
-    const confirmation = confirm("Are you sure you want to permanently delete your account and all associated data? This action cannot be undone.");
-    if (!confirmation) return showToast("Account deletion cancelled.");
+    const confirmation = window.prompt("Type 'DELETE' to confirm permanent account deletion.");
+    if (confirmation !== 'DELETE') return showToast("Account deletion cancelled.");
     
     const accountId = App.currentUser.userId;
     const account = auth.currentUser;
@@ -1468,8 +1493,8 @@
     await set(ref(db, `users/${accountId}`), null);
     await set(ref(db, `history/${accountId}`), null);
     await set(ref(db, `analytics/${accountId}`), null);
-    await set(ref(db, `calendar_events/${accountId}`), null); // NEW: Clear calendar data
-    await set(ref(db, `gcal_auth_codes/${accountId}`), null); // NEW: Clear any pending auth codes
+    await set(ref(db, `calendar_events/${accountId}`), null);
+    await set(ref(db, `gcal_auth_codes/${accountId}`), null);
     await deleteUser(account);
     showToast("Account successfully deleted. 👋");
     } catch (error) {
@@ -1484,9 +1509,7 @@
     }
     
     async function handleSaveSettings() {
-        if (!App.currentUser) return;
         const saveBtn = document.getElementById('save-settings-btn');
-        saveBtn.textContent = 'Saving...';
         saveBtn.classList.add('btn-loading');
 
         const tier = App.currentProfileData.membershipTier || 'Member';
@@ -1517,7 +1540,6 @@
         };
         if(!dataToSave.pfpUrl) dataToSave.pfpText = App.currentProfileData.displayName.charAt(0).toUpperCase();
 
-        // NEW: Save GCal settings
         if(tierConfig.gcalIntegration) {
             dataToSave.gcalSettings = {
                 busyStatus: document.getElementById('gcal-busy-status').value,
@@ -1547,19 +1569,42 @@
             console.error("Save settings error:", error);
             showToast("Failed to save settings.", "error");
         } finally {
-            saveBtn.textContent = 'Save All Changes';
             saveBtn.classList.remove('btn-loading');
         }
     }
     
     function handleGenerateQrCode() {
-        const profileId = isPublicView ? new URLSearchParams(window.location.search).get('user') : App.currentUser.userId;
+        const profileId = App.currentUser?.userId;
         if (!profileId) return;
 
-        const img = document.getElementById('profile-qrcode-img'), placeholder = document.getElementById('qrcode-placeholder');
+        const img = document.getElementById('profile-qrcode-img');
+        const placeholder = document.getElementById('qrcode-placeholder');
+        const btn = document.getElementById('generate-qrcode-btn');
+
+        btn.disabled = true;
+        btn.classList.add('btn-loading');
+        placeholder.classList.add('hidden');
+        img.style.display = 'none';
+
         const shareUrl = `${window.location.origin}${window.location.pathname}?user=${profileId}`;
         img.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(shareUrl)}`;
-        img.onload = () => { img.style.display = 'block'; placeholder.classList.add('hidden'); showToast('QR Code generated! 🖼️'); };
+
+        img.onload = () => {
+            img.style.display = 'block';
+            showToast('QR Code generated! 🖼️');
+            btn.querySelector('.btn-text').textContent = 'Re-generate QR Code';
+            btn.disabled = false;
+            btn.classList.remove('btn-loading');
+        };
+        
+        img.onerror = () => {
+            showToast('Failed to generate QR code.', 'error');
+            placeholder.classList.remove('hidden');
+            placeholder.textContent = 'Error generating QR. Please try again.';
+            btn.querySelector('.btn-text').textContent = 'Generate QR Code';
+            btn.disabled = false;
+            btn.classList.remove('btn-loading');
+        };
     }
     
     function handleShareStatus() {
@@ -1858,12 +1903,15 @@
     answers[`q${i+1}`] = answer;
     }
     
-    if (confirm("You are about to submit your profile and answers for manual review. Continue?")) {
+    const confirmation = window.prompt("Type 'SUBMIT' to confirm your verification request.");
+    if (confirmation === 'SUBMIT') {
     const updates = { verificationRequested: true, verificationAnswers: answers };
     await update(ref(db, `users/${App.currentUser.userId}`), updates);
     showToast("Verification request submitted!");
     const currentData = { ...App.currentProfileData, ...updates };
     renderVerificationSettings(currentData);
+    } else {
+    showToast("Verification cancelled.");
     }
     }
     
@@ -1963,60 +2011,44 @@
     showToast(`User ${field} updated.`);
     }
 
-    // --- NEW & UPDATED FUNCTIONS FOR GOOGLE CALENDAR & TIMETABLE ---
-    
     function handleConnectGoogleCalendar() {
-        // --- PASTE YOUR GOOGLE CLOUD CLIENT ID HERE ---
         const clientId = "703348367691-fto8h5ngp2hm5qn5fkbfhtsh7re3pcub.apps.googleusercontent.com";
-        
-        // --- THIS MUST BE THE URL OF YOUR DEPLOYED WEB APP (where this index.html lives) ---
-        // This MUST be added as an "Authorized redirect URI" in your Google Cloud OAuth 2.0 Client ID settings.
         const redirectUri = window.location.origin + window.location.pathname;
-
         const scope = 'https://www.googleapis.com/auth/calendar.events.readonly';
-        
-        // We add the user's ID to the state parameter so the callback function knows who is authenticating.
         const state = App.currentUser.userId;
-
         const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${scope}&access_type=offline&prompt=consent&state=${state}`;
-        
         window.location.href = authUrl;
     }
 
     async function handleDisconnectGoogleCalendar() {
         if (!App.currentUser) return;
         const updates = {
-            googleRefreshToken: null // Remove the token from the database
+            googleRefreshToken: null
         };
         await update(ref(db, `users/${App.currentUser.userId}`), updates);
-        App.currentProfileData.googleRefreshToken = null; // Update local state
-        populateSettings(App.currentProfileData); // Re-render the settings page
-        renderTimetable(App.currentProfileData); // Re-render the timetable
+        App.currentProfileData.googleRefreshToken = null;
+        populateSettings(App.currentProfileData);
+        renderTimetable(App.currentProfileData);
         showToast("Google Calendar has been disconnected.");
     }
     
     async function handleOAuthCallback() {
         const params = new URLSearchParams(window.location.search);
         const code = params.get('code');
-        const state = params.get('state'); // This should be the userId
+        const state = params.get('state');
 
-        // If 'code' and 'state' are in the URL, the user is coming back from Google Auth
         if (code && state) {
-            // Clean the URL to avoid re-processing on refresh
             const cleanUrl = window.location.origin + window.location.pathname + window.location.hash;
             history.replaceState({}, document.title, cleanUrl);
             
             showToast('Finalizing calendar connection...', 'info');
 
-            // Save the authorization code to the database for the backend function to process.
-            // A Cloud Function triggered by writes to this path would handle the token exchange.
             try {
                 await set(ref(db, `gcal_auth_codes/${state}`), code);
-                showToast('Calendar connected! Your status will begin syncing shortly. ✅', 'info');
+                showToast('Calendar connected! Your backend function will now sync. ✅', 'info');
                 
-                // Optimistically update UI
                 if(App.currentProfileData && App.currentProfileData.userId === state){
-                    App.currentProfileData.googleRefreshToken = 'pending'; // A temporary truthy value
+                    App.currentProfileData.googleRefreshToken = 'pending';
                     populateSettings(App.currentProfileData);
                 }
 
@@ -2039,20 +2071,18 @@
 
         card.classList.remove('hidden');
 
-        if (!userData.googleRefreshToken) {
+        if (!userData.googleRefreshToken || userData.googleRefreshToken === 'pending') {
             container.innerHTML = '<p class="muted">Connect your Google Calendar in settings to see your availability here.</p>';
             return;
         }
 
-        // Attach a real-time listener to the calendar events path
         const timetableRef = ref(db, `calendar_events/${userData.userId}`);
         timetableListener = onValue(timetableRef, (snapshot) => {
             const eventsData = snapshot.val();
             const busySlots = eventsData?.busySlots || [];
             
             let html = '<div id="timetable-grid">';
-            // Headers
-            html += '<div></div>'; // Top-left empty cell
+            html += '<div></div>';
             const today = new Date();
             for (let i = 0; i < 7; i++) {
                 const day = new Date(today);
@@ -2060,10 +2090,9 @@
                 html += `<div class="day-header">${day.toLocaleDateString('en-US', { weekday: 'short' })}<br>${day.getDate()}</div>`;
             }
 
-            // Time Slots (8 AM to 8 PM)
             for (let hour = 8; hour < 20; hour++) {
                 const timeStr = (hour % 12 === 0 ? 12 : hour % 12) + (hour < 12 ? 'a' : 'p');
-                html += `<div class="time-label">${timeStr}</div>`; // Time label column
+                html += `<div class="time-label">${timeStr}</div>`;
 
                 for (let day = 0; day < 7; day++) {
                     const slotDate = new Date(today);
@@ -2087,6 +2116,89 @@
             container.innerHTML = '<p class="muted">Could not load availability data.</p>';
         });
     }
+    
+    // NEW: Function to handle Gemini AI Sync
+    async function handleGeminiAiSync() {
+        const btn = document.getElementById('gemini-sync-btn');
+        const calendarText = document.getElementById('calendar-input-for-ai').value.trim();
+        
+        if (!calendarText) {
+            showToast("Please paste your calendar agenda first.", "error");
+            return;
+        }
+
+        btn.classList.add('btn-loading');
+
+        const timeData = getLocalTimeData();
+        const now = new Date();
+        const availableEmojis = Array.from(document.getElementById('status-emoji').options).map(o => o.value);
+        
+        const systemPrompt = `You are an intelligent status assistant. Your task is to analyze a user's calendar events for today and determine their current status.
+        - The user's current time is ${now.toLocaleTimeString()} in the ${timeData.timeZone} timezone.
+        - Analyze the provided calendar text to find the event that is happening right now.
+        - If no event is happening now, the status should be 'Available'.
+        - From the current event's title, create a short, generic status message. IMPORTANT: Remove all personal identifiable information like names, project codenames, or specific locations. For example, 'Project Phoenix Sync with Alice' should become 'In a meeting'. 'Dr. Smith Appt' should become 'On an appointment'.
+        - Based on the event title and type, choose the most appropriate emoji for the status from this list: ${availableEmojis.join(', ')}.
+        - If the user is available, use the '🟢' emoji and the message 'Available'.`;
+
+        const userPrompt = `Here is my calendar for today:\n\n${calendarText}`;
+
+        const payload = {
+            "contents": [{"parts": [{"text": userPrompt}]}],
+            "systemInstruction": {"parts": [{"text": systemPrompt}]},
+            "generationConfig": {
+                "responseMimeType": "application/json",
+                "responseSchema": {
+                    "type": "OBJECT",
+                    "properties": {
+                        "status_emoji": { "type": "STRING" },
+                        "status_message": { "type": "STRING" }
+                    },
+                    "required": ["status_emoji", "status_message"]
+                }
+            }
+        };
+
+        try {
+            const response = await fetch(GEMINI_API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                throw new Error(`API Error: ${response.statusText}`);
+            }
+
+            const result = await response.json();
+            const candidate = result.candidates?.[0];
+            const textContent = candidate?.content?.parts?.[0]?.text;
+            
+            if (textContent) {
+                const parsedJson = JSON.parse(textContent);
+                const { status_emoji, status_message } = parsedJson;
+                
+                if (status_emoji && status_message) {
+                    // Update the UI fields before saving
+                    document.getElementById('status-emoji').value = status_emoji;
+                    document.getElementById('status-message').value = status_message;
+                    // Save everything
+                    await handleSaveSettings();
+                    showToast("AI has updated your status!");
+                } else {
+                    throw new Error("AI response was missing required fields.");
+                }
+            } else {
+                throw new Error("No content received from Gemini API.");
+            }
+        } catch (error) {
+            console.error("Gemini AI Sync Error:", error);
+            showToast("Failed to sync with AI. Check console for details.", "error");
+        } finally {
+            btn.classList.remove('btn-loading');
+        }
+    }
+
 
     function addEventListeners() {
     document.querySelector('.auth-tabs')?.addEventListener('click', e => {
@@ -2108,46 +2220,54 @@
     document.getElementById('share-status-btn')?.addEventListener('click', handleShareStatus);
     document.getElementById('run-search-btn')?.addEventListener('click', handleSearchUsers);
     document.getElementById('generate-qrcode-btn')?.addEventListener('click', handleGenerateQrCode);
-    
-    // --- EVENT LISTENERS FOR GOOGLE CALENDAR BUTTONS ---
     document.getElementById('connect-gcal-btn')?.addEventListener('click', handleConnectGoogleCalendar);
     document.getElementById('disconnect-gcal-btn')?.addEventListener('click', handleDisconnectGoogleCalendar);
 
-    App.elements.mainHeader?.addEventListener('click', e => {
-    const navBtn = e.target.closest('.nav-btn');
-    if (navBtn) navigateTo(navBtn.dataset.page);
+    // This is for the button that triggers the Gemini AI to analyze calendar events.
+    document.getElementById('gemini-sync-btn')?.addEventListener('click', handleGeminiAiSync);
+
+    // This listens for clicks on the main navigation header to switch between pages.
+    document.getElementById('mainHeader')?.addEventListener('click', (e) => {
+        if (e.target.closest('.nav-btn')) {
+            navigateTo(e.target.closest('.nav-btn').dataset.page, false);
+        }
     });
-    
-    const countrySearch = document.getElementById('country-search');
+
+    const countrySearchInput = document.getElementById('country-search');
     const countryDropdown = document.getElementById('country-dropdown');
-    countrySearch?.addEventListener('focus', () => { countryDropdown.classList.remove('hidden'); filterCountries('country-search', 'country-dropdown'); });
-    countrySearch?.addEventListener('keyup', () => filterCountries('country-search', 'country-dropdown'));
-    document.addEventListener('click', (e) => {
-    if (!e.target.closest('.country-select-wrapper')) countryDropdown?.classList.add('hidden');
+    countrySearchInput?.addEventListener('focus', () => {
+        filterCountries('country-search', 'country-dropdown');
+        countryDropdown.classList.remove('hidden');
     });
-    
-    const giftBox = document.getElementById('gift-box-icon');
-    giftBox.addEventListener('click', () => {
-        giftBox.classList.add('unboxing');
+    countrySearchInput?.addEventListener('input', () => filterCountries('country-search', 'country-dropdown'));
+
+    // This handles the gamified tier upgrade animation.
+    document.getElementById('gift-box-icon')?.addEventListener('click', (e) => {
+        e.target.classList.add('unboxing');
         setTimeout(() => {
             document.getElementById('upgrade-gift-stage').style.display = 'none';
             document.getElementById('upgrade-results-stage').classList.add('show');
         }, 500);
     });
-    
-    document.getElementById('close-upgrade-modal-btn').addEventListener('click', () => {
+
+    // Closes the tier upgrade modal.
+    document.getElementById('close-upgrade-modal-btn')?.addEventListener('click', () => {
         const modal = document.getElementById('tier-upgrade-modal');
         modal.classList.remove('show');
+        // Reset the modal for next time
         setTimeout(() => {
             document.getElementById('upgrade-gift-stage').style.display = 'block';
             document.getElementById('upgrade-results-stage').classList.remove('show');
-            giftBox.classList.remove('unboxing');
-            showToast(`Your new perks are active!`);
-        }, 400);
+            document.getElementById('gift-box-icon').classList.remove('unboxing');
+        }, 500);
     });
-    }
-    
-    document.addEventListener('DOMContentLoaded', handlePageLoad);
-    </script>
+}
+
+// This is the final line of the script. It tells the browser to run the 
+// handlePageLoad function once the entire HTML document has been loaded.
+// This ensures that all elements are available in the DOM before any scripts try to interact with them.
+window.onload = handlePageLoad;
+
+</script>
 </body>
 </html>
